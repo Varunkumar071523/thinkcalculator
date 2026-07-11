@@ -15,6 +15,7 @@ export type SIPResult = {
   readonly monthlyRate: number
   readonly totalMonths: number
 }
+export type SIPScheduleRow = { readonly periodNumber: number; readonly monthsElapsed: number; readonly investedAmount: number; readonly estimatedReturns: number; readonly futureValue: number }
 
 export type SIPField = keyof SIPInput
 export type SIPValidationErrors = Partial<Record<SIPField, string>>

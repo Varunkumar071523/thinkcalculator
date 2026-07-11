@@ -19,6 +19,7 @@ export type FDResult = {
   readonly durationInYears: number
   readonly totalMonths: number
 }
+export type FDScheduleRow = { readonly periodNumber: number; readonly monthsElapsed: number; readonly principalAmount: number; readonly interestEarned: number; readonly maturityAmount: number }
 
 export type FDField = keyof FDInput
 export type FDValidationErrors = Partial<Record<FDField, string>>

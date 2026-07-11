@@ -1,0 +1,4 @@
+import { calculateLumpsum } from "@/features/calculators/lumpsum/calculate-lumpsum"
+import type { LumpsumInput, LumpsumScheduleRow } from "@/features/calculators/lumpsum/lumpsum-types"
+function rowMonths(totalMonths:number,unit:LumpsumInput["durationUnit"]){const step=unit==="years"||totalMonths>24?12:1;const points:number[]=[];for(let month=step;month<totalMonths;month+=step)points.push(month);points.push(totalMonths);return points}
+export function calculateLumpsumSchedule(input:LumpsumInput):readonly LumpsumScheduleRow[]{const result=calculateLumpsum(input);return rowMonths(result.totalMonths,input.durationUnit).map((monthsElapsed,index)=>{const futureValue=input.annualReturnRate===0?input.initialInvestment:input.initialInvestment*Math.pow(1+input.annualReturnRate/100,monthsElapsed/12);return{periodNumber:index+1,monthsElapsed,initialInvestment:input.initialInvestment,estimatedReturns:futureValue-input.initialInvestment,futureValue}})}
