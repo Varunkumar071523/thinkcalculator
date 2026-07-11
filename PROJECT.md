@@ -57,20 +57,18 @@ Tagline: Calculate. Compare. Decide.
 - Sprint 5: production Lumpsum Calculator with compound-growth tests
 - Sprint 6: production Fixed Deposit Calculator with compounding options, validation, content, SEO, and tests
 - Sprint 7: production Recurring Deposit Calculator with compounding options, validation, content, SEO, and tests
+- Sprint 8: enhanced EMI experience with validated shareable URLs, copy and print actions, accessible visualization, amortization schedule, and automated tests
 
 ### Current Sprint
 
-Sprint 8: Calculator Experience Enhancement
+Sprint 9: Enhanced Calculator Experience Rollout
 
-- Shareable calculator URLs with validated EMI input parameters
-- Copy-result and copy-link actions with accessible feedback
-- Print-friendly calculation summaries and amortization schedules
-- Full EMI amortization schedule with compact initial display
-- Principal-versus-interest visualization without a chart dependency
-- Vitest coverage for URL state and amortization calculations
+- Roll out validated shareable URL state to SIP, Lumpsum, FD, and RD calculators
+- Reuse shared copy-result, copy-link, browser-print, summary, table, and accessible chart components
+- Add calculator-specific growth and maturity schedules with full-precision reconciliation
+- Add Vitest coverage for URL parsing, serialization, and schedule calculations
 
 ### Next
 
-- Roll out share, copy, print, schedule, and visualization capabilities to SIP, Lumpsum, FD, and RD calculators
-- robots.txt
-- sitemap.xml
+- Platform SEO infrastructure, including robots.txt and sitemap.xml
+- Production launch-readiness review

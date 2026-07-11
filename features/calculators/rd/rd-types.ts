@@ -20,6 +20,7 @@ export type RDResult = {
   readonly totalMonths: number
   readonly durationInYears: number
 }
+export type RDScheduleRow = { readonly periodNumber: number; readonly monthsElapsed: number; readonly totalDeposited: number; readonly interestEarned: number; readonly maturityAmount: number }
 
 export type RDField = keyof RDInput
 export type RDValidationErrors = Partial<Record<RDField, string>>

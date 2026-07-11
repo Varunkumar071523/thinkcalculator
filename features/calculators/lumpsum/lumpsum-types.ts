@@ -15,6 +15,7 @@ export type LumpsumResult = {
   readonly durationInYears: number
   readonly totalMonths: number
 }
+export type LumpsumScheduleRow = { readonly periodNumber: number; readonly monthsElapsed: number; readonly initialInvestment: number; readonly estimatedReturns: number; readonly futureValue: number }
 
 export type LumpsumField = keyof LumpsumInput
 export type LumpsumValidationErrors = Partial<Record<LumpsumField, string>>

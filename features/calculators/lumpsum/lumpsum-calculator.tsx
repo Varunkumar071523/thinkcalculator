@@ -1,80 +1,8 @@
+
+
 "use client"
-
-import { useState, type FormEvent } from "react"
-
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
-import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
-import { Button } from "@/components/ui/button"
-import { CalculatorResultCard } from "@/features/calculators/core/calculator-result-card"
-import { CalculatorShell } from "@/features/calculators/core/calculator-shell"
-import { calculateLumpsum } from "@/features/calculators/lumpsum/calculate-lumpsum"
-import { LUMPSUM_LIMITS, parseAndValidateLumpsumForm, type LumpsumFormValues } from "@/features/calculators/lumpsum/lumpsum-schema"
-import type { LumpsumResult, LumpsumValidationErrors } from "@/features/calculators/lumpsum/lumpsum-types"
-import type { CalculatorResultItem } from "@/types/calculator"
-
-const defaultValues: LumpsumFormValues = {
-  initialInvestment: "100000",
-  annualReturnRate: "12",
-  duration: "10",
-  durationUnit: "years",
-}
-
-function createResultItems(result: LumpsumResult): readonly CalculatorResultItem[] {
-  return [
-    { id: "future-value", label: "Estimated future value", value: result.futureValue, displayType: "currency", description: "An estimate based on the return rate entered, not a guaranteed outcome.", isPrimary: true },
-    { id: "initial-investment", label: "Initial investment", value: result.initialInvestment, displayType: "currency" },
-    { id: "estimated-returns", label: "Estimated returns", value: result.estimatedReturns, displayType: "currency" },
-    { id: "annual-return", label: "Annual return entered", value: result.annualRate * 100, displayType: "percentage" },
-    { id: "total-months", label: "Investment duration in months", value: result.totalMonths, displayType: "number" },
-  ]
-}
-
-export function LumpsumCalculator() {
-  const [values, setValues] = useState<LumpsumFormValues>(defaultValues)
-  const [errors, setErrors] = useState<LumpsumValidationErrors>({})
-  const [result, setResult] = useState<LumpsumResult | null>(null)
-
-  function updateValue(field: keyof LumpsumFormValues, value: string) {
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateLumpsumForm(values)
-    if (!validation.success) {
-      setErrors(validation.errors)
-      setResult(null)
-      return
-    }
-
-    setErrors({})
-    setResult(calculateLumpsum(validation.data))
-  }
-
-  function handleReset() {
-    setValues(defaultValues)
-    setErrors({})
-    setResult(null)
-  }
-
-  const durationIsYears = values.durationUnit === "years"
-
-  return (
-    <>
-      <CalculatorShell title="Calculate lumpsum value" description="Enter a one-time investment and an assumed return to estimate its future value.">
-        <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-          <CalculatorNumberInput id="initial-investment" label="Initial investment" description="Enter the one-time amount you plan to invest." prefix="₹" min={LUMPSUM_LIMITS.initialInvestment.min} max={LUMPSUM_LIMITS.initialInvestment.max} step={1_000} value={values.initialInvestment} onValueChange={(value) => updateValue("initialInvestment", value)} error={errors.initialInvestment} required />
-          <CalculatorNumberInput id="annual-return-rate" label="Expected annual return" description="This is an assumption; actual market returns may be higher or lower." suffix="%" min={LUMPSUM_LIMITS.annualReturnRate.min} max={LUMPSUM_LIMITS.annualReturnRate.max} step={0.1} value={values.annualReturnRate} onValueChange={(value) => updateValue("annualReturnRate", value)} error={errors.annualReturnRate} required />
-          <CalculatorNumberInput id="investment-duration" label="Investment duration" description="Enter how long the amount may remain invested." suffix={durationIsYears ? "years" : "months"} min={1} max={durationIsYears ? LUMPSUM_LIMITS.durationYears.max : LUMPSUM_LIMITS.durationMonths.max} step={1} value={values.duration} onValueChange={(value) => updateValue("duration", value)} error={errors.duration} required />
-          <CalculatorSelectInput id="duration-unit" label="Duration unit" value={values.durationUnit} onValueChange={(value) => updateValue("durationUnit", value)} options={[{ label: "Years", value: "years" }, { label: "Months", value: "months" }]} error={errors.durationUnit} required />
-          <div className="flex flex-col gap-3 pt-1 sm:flex-row">
-            <Button className="flex-1" size="lg" type="submit">Calculate value</Button>
-            <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-          </div>
-        </form>
-      </CalculatorShell>
-      <CalculatorResultCard title="Lumpsum estimate" items={result ? createResultItems(result) : []} emptyTitle="Your investment estimate will appear here" emptyDescription="Enter the investment, expected return, and duration, then select Calculate value." />
-    </>
-  )
-}
+import { useEffect,useState,type FormEvent } from "react";import { CalculationSummary } from "@/components/calculators/calculation-summary";import { CalculatorActions } from "@/components/calculators/calculator-actions";import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input";import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input";import { DataTable,type DataTableColumn } from "@/components/calculators/data-table";import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart";import { Button } from "@/components/ui/button";import { Card,CardContent } from "@/components/ui/card";import { CalculatorResultCard,CalculatorShell } from "@/features/calculators/core";import { formatIndianCurrency,formatPercentage } from "@/lib/formatters";import type { CalculatorResultItem } from "@/types/calculator"
+import { calculateLumpsumSchedule } from "./calculate-lumpsum-schedule";import { calculateLumpsum } from "./calculate-lumpsum";import { parseAndValidateLumpsumForm,type LumpsumFormValues } from "./lumpsum-schema";import { buildLumpsumCalculatorUrl,LUMPSUM_DEFAULT_INPUT,parseLumpsumUrlState } from "./lumpsum-url-state";import type { LumpsumInput,LumpsumResult,LumpsumScheduleRow,LumpsumValidationErrors } from "./lumpsum-types"
+const toForm=(i:LumpsumInput):LumpsumFormValues=>({initialInvestment:String(i.initialInvestment),annualReturnRate:String(i.annualReturnRate),duration:String(i.duration),durationUnit:i.durationUnit});const items=(r:LumpsumResult):readonly CalculatorResultItem[]=>[{id:"future",label:"Estimated future value",value:r.futureValue,displayType:"currency",isPrimary:true},{id:"initial",label:"Initial investment",value:r.initialInvestment,displayType:"currency"},{id:"returns",label:"Estimated returns",value:r.estimatedReturns,displayType:"currency"}];const columns:readonly DataTableColumn<LumpsumScheduleRow>[]=[{header:"Period",cell:r=>r.periodNumber},{header:"Months elapsed",cell:r=>r.monthsElapsed},{header:"Initial investment",cell:r=>formatIndianCurrency(r.initialInvestment)},{header:"Estimated returns",cell:r=>formatIndianCurrency(r.estimatedReturns)},{header:"Future value",cell:r=>formatIndianCurrency(r.futureValue)}]
+export function LumpsumCalculator(){const[values,setValues]=useState(()=>toForm(LUMPSUM_DEFAULT_INPUT));const[errors,setErrors]=useState<LumpsumValidationErrors>({});const[c,setC]=useState<{input:LumpsumInput;result:LumpsumResult;date:string}|null>(null);useEffect(()=>{const t=window.setTimeout(()=>setValues(toForm(parseLumpsumUrlState(new URLSearchParams(window.location.search)))),0);return()=>clearTimeout(t)},[]);function update(f:keyof LumpsumFormValues,v:string){setValues(x=>({...x,[f]:v}));setErrors(x=>({...x,[f]:undefined}))}function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();const v=parseAndValidateLumpsumForm(values);if(!v.success){setErrors(v.errors);setC(null);return}const result=calculateLumpsum(v.data);setErrors({});setC({input:v.data,result,date:new Intl.DateTimeFormat("en-IN",{dateStyle:"long"}).format(new Date())});history.replaceState(null,"",buildLumpsumCalculatorUrl(v.data))}function reset(){setValues(toForm(LUMPSUM_DEFAULT_INPUT));setErrors({});setC(null);history.replaceState(null,"","/finance/lumpsum-calculator")}const schedule=c?calculateLumpsumSchedule(c.input):[];const share=c?buildLumpsumCalculatorUrl(c.input,"https://thinkcalculator.in"):"";const text=c?["ThinkCalculator Lumpsum Calculation","",`Initial investment: ${formatIndianCurrency(c.input.initialInvestment)}`,`Expected annual return: ${formatPercentage(c.input.annualReturnRate)}`,`Investment duration: ${c.input.duration} ${c.input.durationUnit}`,`Estimated returns: ${formatIndianCurrency(c.result.estimatedReturns)}`,`Estimated future value: ${formatIndianCurrency(c.result.futureValue)}`,"","Calculator:","https://thinkcalculator.in/finance/lumpsum-calculator"].join("\n"):""
+return <><div data-calculator-form><CalculatorShell title="Calculate lumpsum value" description="Enter a one-time investment and an assumed return to estimate its future value."><form className="space-y-5" onSubmit={submit} noValidate><CalculatorNumberInput id="initial-investment" label="Initial investment" prefix="₹" min={1000} max={100000000} step={1000} value={values.initialInvestment} onValueChange={v=>update("initialInvestment",v)} error={errors.initialInvestment} required/><CalculatorNumberInput id="annual-return-rate" label="Expected annual return" suffix="%" min={0} max={50} step={0.1} value={values.annualReturnRate} onValueChange={v=>update("annualReturnRate",v)} error={errors.annualReturnRate} required/><CalculatorNumberInput id="investment-duration" label="Investment duration" suffix={values.durationUnit} min={1} max={values.durationUnit==="years"?50:600} step={1} value={values.duration} onValueChange={v=>update("duration",v)} error={errors.duration} required/><CalculatorSelectInput id="duration-unit" label="Duration unit" value={values.durationUnit} onValueChange={v=>update("durationUnit",v)} options={[{label:"Years",value:"years"},{label:"Months",value:"months"}]} error={errors.durationUnit} required/><div className="flex flex-col gap-3 sm:flex-row"><Button className="flex-1" size="lg" type="submit">Calculate value</Button><Button className="flex-1" size="lg" variant="outline" type="button" onClick={reset}>Reset</Button></div></form></CalculatorShell></div><div className="space-y-6"><CalculatorResultCard title="Lumpsum estimate" items={c?items(c.result):[]} emptyTitle="Your investment estimate will appear here" emptyDescription="Enter the investment, expected return, and duration, then select Calculate value."/>{c?<><CalculatorActions resultText={text} shareUrl={share}/><Card><CardContent><SimpleDonutChart title="Investment versus estimated returns" items={[{label:"Initial investment",value:c.result.initialInvestment,formattedValue:formatIndianCurrency(c.result.initialInvestment),colorClass:"bg-chart-1"},{label:"Estimated returns",value:c.result.estimatedReturns,formattedValue:formatIndianCurrency(c.result.estimatedReturns),colorClass:"bg-chart-2"}]}/></CardContent></Card><CalculationSummary title="ThinkCalculator Lumpsum Calculation" calculationDate={c.date} disclaimer="Returns are estimates for informational purposes only and are not guaranteed." items={[{label:"Initial investment",value:formatIndianCurrency(c.input.initialInvestment)},{label:"Expected annual return",value:formatPercentage(c.input.annualReturnRate)},{label:"Investment duration",value:`${c.input.duration} ${c.input.durationUnit}`},{label:"Estimated returns",value:formatIndianCurrency(c.result.estimatedReturns)},{label:"Estimated future value",value:formatIndianCurrency(c.result.futureValue)}]}/></>:null}</div>{c?<section className="col-span-full mt-4" data-calculation-experience aria-labelledby="lumpsum-schedule"><h2 id="lumpsum-schedule" className="text-2xl font-semibold">Lumpsum growth schedule</h2><p className="mt-3 text-muted-foreground">The growth schedule illustrates how compounding may grow a one-time investment over time.</p><div className="mt-6"><DataTable caption="Lumpsum growth schedule" rows={schedule} columns={columns}/></div><p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places.</p></section>:null}</>}
