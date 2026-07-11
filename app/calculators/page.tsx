@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { TrendingUp, WalletCards } from "lucide-react"
+import { PiggyBank, TrendingUp, WalletCards } from "lucide-react"
 
 import { SiteContainer } from "@/components/layout/site-container"
 import { CalculatorCard } from "@/components/shared/calculator-card"
@@ -23,6 +23,12 @@ const availableCalculators = [{
   description: "Estimate future value, total invested amount, and potential SIP returns.",
   category: "Finance",
   icon: TrendingUp,
+}, {
+  title: "Lumpsum Calculator",
+  href: "/finance/lumpsum-calculator",
+  description: "Estimate the future value and potential returns of a one-time investment.",
+  category: "Finance",
+  icon: PiggyBank,
 }]
 
 export default function CalculatorsPage() {
