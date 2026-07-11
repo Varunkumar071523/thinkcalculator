@@ -16,6 +16,17 @@ export type EMIResult = {
   readonly totalMonths: number
 }
 
+export type AmortizationRow = {
+  readonly paymentNumber: number
+  readonly openingBalance: number
+  readonly emi: number
+  readonly principalPaid: number
+  readonly interestPaid: number
+  readonly closingBalance: number
+  readonly cumulativePrincipal: number
+  readonly cumulativeInterest: number
+}
+
 export type EMIField = keyof EMIInput
 
 export type EMIValidationErrors = Partial<Record<EMIField, string>>
