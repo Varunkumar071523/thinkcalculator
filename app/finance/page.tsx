@@ -1,6 +1,9 @@
 import type { Metadata } from "next"
+import { WalletCards } from "lucide-react"
 
-import { PageIntro } from "@/components/shared/page-intro"
+import { SiteContainer } from "@/components/layout/site-container"
+import { CalculatorCard } from "@/components/shared/calculator-card"
+import { Badge } from "@/components/ui/badge"
 
 export const metadata: Metadata = {
   title: "Finance Calculators",
@@ -8,6 +11,26 @@ export const metadata: Metadata = {
   alternates: { canonical: "/finance" },
 }
 
+const emiCalculator = {
+  title: "EMI Calculator",
+  href: "/finance/emi-calculator",
+  description: "Calculate monthly EMI, total interest, and total loan repayment.",
+  category: "Finance",
+  icon: WalletCards,
+}
+
 export default function FinancePage() {
-  return <PageIntro title="Finance calculators" description="Plan loans, investments, savings, and taxes with tools designed around practical financial decisions in India." />
+  return (
+    <SiteContainer className="py-12 sm:py-20">
+      <header className="max-w-3xl">
+        <Badge variant="secondary">Finance</Badge>
+        <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">Finance calculators</h1>
+        <p className="mt-5 text-lg leading-8 text-muted-foreground">Plan loans, investments, savings, and taxes with tools designed around practical financial decisions in India.</p>
+      </header>
+      <section className="mt-12" aria-labelledby="loan-calculators-heading">
+        <h2 id="loan-calculators-heading" className="text-2xl font-semibold tracking-tight">Loan calculators</h2>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /></div>
+      </section>
+    </SiteContainer>
+  )
 }

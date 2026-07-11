@@ -3,6 +3,7 @@ import type {
   CalculatorDefinition,
   RelatedCalculator,
 } from "@/types/calculator"
+import { emiCalculatorDefinition } from "@/features/calculators/emi/emi-definition"
 
 export const demoCalculatorDefinition = {
   id: "framework-demo",
@@ -114,6 +115,7 @@ export const demoCalculatorDefinition = {
 
 export const calculatorRegistry: readonly CalculatorDefinition[] = [
   demoCalculatorDefinition,
+  emiCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(
