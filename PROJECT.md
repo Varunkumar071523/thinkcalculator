@@ -51,20 +51,20 @@ Tagline: Calculate. Compare. Decide.
 - Tailwind CSS configuration
 - Git initialization
 - Sprint 1: project foundation, global layout, navigation, homepage shell, and route metadata
+- Sprint 2: reusable typed calculator framework and static demonstration page
 
 ### Current Sprint
 
-Sprint 2: Reusable calculator framework
+Sprint 3: Production EMI Calculator
 
-- Typed calculator definitions and in-memory registry
-- Reusable calculator page, form, result, content, FAQ, and related-tool components
-- Accessible number and select inputs
-- Indian currency, number, and percentage formatters
-- Static framework demonstration page
+- Pure, validated EMI calculation logic
+- Interactive EMI form with field-level errors and reset support
+- EMI results, formula, calculated worked example, FAQs, and related tools
+- Production metadata, structured data, and internal linking
+- Unit test specification for standard, boundary, and invalid inputs
 
 ### Next
 
-- EMI Calculator as the first production calculator
-- Calculator validation and pure calculation tests
+- SIP Calculator as the next planned production calculator
 - robots.txt
 - sitemap.xml

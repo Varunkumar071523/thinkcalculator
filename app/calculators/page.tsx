@@ -1,6 +1,9 @@
 import type { Metadata } from "next"
+import { WalletCards } from "lucide-react"
 
-import { PageIntro } from "@/components/shared/page-intro"
+import { SiteContainer } from "@/components/layout/site-container"
+import { CalculatorCard } from "@/components/shared/calculator-card"
+import { Badge } from "@/components/ui/badge"
 
 export const metadata: Metadata = {
   title: "Calculators",
@@ -8,6 +11,26 @@ export const metadata: Metadata = {
   alternates: { canonical: "/calculators" },
 }
 
+const availableCalculators = [{
+  title: "EMI Calculator",
+  href: "/finance/emi-calculator",
+  description: "Calculate monthly EMI, total interest payable, and total loan repayment.",
+  category: "Finance",
+  icon: WalletCards,
+}]
+
 export default function CalculatorsPage() {
-  return <PageIntro title="Calculators" description="Find straightforward tools for the numbers behind your money, work, studies, health, and everyday choices." sectionTitle="Calculator library in progress" sectionDescription="We are building each calculator with validated inputs, transparent methods, worked examples, and helpful explanations." />
+  return (
+    <SiteContainer className="py-12 sm:py-20">
+      <header className="max-w-3xl">
+        <Badge variant="secondary">Calculator library</Badge>
+        <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">Calculators</h1>
+        <p className="mt-5 text-lg leading-8 text-muted-foreground">Find straightforward tools for the numbers behind your money, work, studies, health, and everyday choices.</p>
+      </header>
+      <section className="mt-12" aria-labelledby="available-calculators-heading">
+        <h2 id="available-calculators-heading" className="text-2xl font-semibold tracking-tight">Available calculators</h2>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{availableCalculators.map((item) => <CalculatorCard key={item.href} calculator={item} />)}</div>
+      </section>
+    </SiteContainer>
+  )
 }

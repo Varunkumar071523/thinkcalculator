@@ -62,7 +62,7 @@ export const categories: SiteCategory[] = [
 ]
 
 export const popularCalculators: CalculatorSummary[] = [
-  { title: "EMI Calculator", href: "/calculators", description: "Estimate monthly loan payments and total interest.", category: "Finance", icon: WalletCards },
+  { title: "EMI Calculator", href: "/finance/emi-calculator", description: "Estimate monthly loan payments and total interest.", category: "Finance", icon: WalletCards },
   { title: "SIP Calculator", href: "/calculators", description: "Project the future value of regular investments.", category: "Finance", icon: TrendingUp },
   { title: "Income Tax Calculator", href: "/calculators", description: "Get ready to estimate your income tax liability.", category: "Finance", icon: Landmark },
   { title: "GST Calculator", href: "/calculators", description: "Calculate GST-inclusive and GST-exclusive amounts.", category: "Business", icon: ReceiptIndianRupee },
