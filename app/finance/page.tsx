@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { PiggyBank, TrendingUp, WalletCards } from "lucide-react"
+import { IndianRupee, PiggyBank, TrendingUp, WalletCards } from "lucide-react"
 
 import { SiteContainer } from "@/components/layout/site-container"
 import { CalculatorCard } from "@/components/shared/calculator-card"
@@ -35,6 +35,14 @@ const lumpsumCalculator = {
   icon: PiggyBank,
 }
 
+const fdCalculator = {
+  title: "FD Calculator",
+  href: "/finance/fd-calculator",
+  description: "Estimate fixed deposit maturity amount and interest earned.",
+  category: "Finance",
+  icon: IndianRupee,
+}
+
 export default function FinancePage() {
   return (
     <SiteContainer className="py-12 sm:py-20">
@@ -45,7 +53,7 @@ export default function FinancePage() {
       </header>
       <section className="mt-12" aria-labelledby="loan-calculators-heading">
         <h2 id="loan-calculators-heading" className="text-2xl font-semibold tracking-tight">Loan calculators</h2>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /><CalculatorCard calculator={sipCalculator} /><CalculatorCard calculator={lumpsumCalculator} /></div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /><CalculatorCard calculator={sipCalculator} /><CalculatorCard calculator={lumpsumCalculator} /><CalculatorCard calculator={fdCalculator} /></div>
       </section>
     </SiteContainer>
   )

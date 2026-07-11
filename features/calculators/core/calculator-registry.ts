@@ -6,6 +6,7 @@ import type {
 import { emiCalculatorDefinition } from "@/features/calculators/emi/emi-definition"
 import { sipCalculatorDefinition } from "@/features/calculators/sip/sip-definition"
 import { lumpsumCalculatorDefinition } from "@/features/calculators/lumpsum/lumpsum-definition"
+import { fdCalculatorDefinition } from "@/features/calculators/fd/fd-definition"
 
 export const demoCalculatorDefinition = {
   id: "framework-demo",
@@ -120,6 +121,7 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   emiCalculatorDefinition,
   sipCalculatorDefinition,
   lumpsumCalculatorDefinition,
+  fdCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(
