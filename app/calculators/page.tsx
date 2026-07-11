@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { PiggyBank, TrendingUp, WalletCards } from "lucide-react"
+import { IndianRupee, PiggyBank, TrendingUp, WalletCards } from "lucide-react"
 
 import { SiteContainer } from "@/components/layout/site-container"
 import { CalculatorCard } from "@/components/shared/calculator-card"
@@ -29,6 +29,12 @@ const availableCalculators = [{
   description: "Estimate the future value and potential returns of a one-time investment.",
   category: "Finance",
   icon: PiggyBank,
+}, {
+  title: "FD Calculator",
+  href: "/finance/fd-calculator",
+  description: "Estimate fixed deposit maturity amount and interest earned.",
+  category: "Finance",
+  icon: IndianRupee,
 }]
 
 export default function CalculatorsPage() {
