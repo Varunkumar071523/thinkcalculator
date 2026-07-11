@@ -53,19 +53,20 @@ Tagline: Calculate. Compare. Decide.
 - Sprint 1: project foundation, global layout, navigation, homepage shell, and route metadata
 - Sprint 2: reusable typed calculator framework and static demonstration page
 - Sprint 3: production EMI Calculator and executable Vitest unit tests
+- Sprint 4: production SIP Calculator with validation, content, SEO, and tests
 
 ### Current Sprint
 
-Sprint 4: Production SIP Calculator
+Sprint 5: Production Lumpsum Calculator
 
-- Pure, validated beginning-of-month SIP calculation logic
-- Interactive SIP form with field-level errors and reset support
-- SIP results, formula, calculated worked example, FAQs, and related tools
+- Pure, validated compound-growth calculation with fractional-year support
+- Interactive Lumpsum form with field-level errors and reset support
+- Lumpsum results, formula, calculated worked example, FAQs, and related tools
 - Production metadata, structured data, and internal linking
-- Vitest coverage for standard, boundary, zero-return, and invalid inputs
+- Vitest coverage for standard, boundary, fractional-duration, zero-return, and invalid inputs
 
 ### Next
 
-- Lumpsum Calculator as the next planned production calculator
+- FD Calculator as the next planned production calculator
 - robots.txt
 - sitemap.xml

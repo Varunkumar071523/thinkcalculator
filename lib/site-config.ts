@@ -5,6 +5,7 @@ import {
   HeartPulse,
   IndianRupee,
   Landmark,
+  PiggyBank,
   Percent,
   ReceiptIndianRupee,
   TrendingUp,
@@ -64,6 +65,7 @@ export const categories: SiteCategory[] = [
 export const popularCalculators: CalculatorSummary[] = [
   { title: "EMI Calculator", href: "/finance/emi-calculator", description: "Estimate monthly loan payments and total interest.", category: "Finance", icon: WalletCards },
   { title: "SIP Calculator", href: "/finance/sip-calculator", description: "Project the future value of regular investments.", category: "Finance", icon: TrendingUp },
+  { title: "Lumpsum Calculator", href: "/finance/lumpsum-calculator", description: "Estimate the future value of a one-time investment.", category: "Finance", icon: PiggyBank },
   { title: "Income Tax Calculator", href: "/calculators", description: "Get ready to estimate your income tax liability.", category: "Finance", icon: Landmark },
   { title: "GST Calculator", href: "/calculators", description: "Calculate GST-inclusive and GST-exclusive amounts.", category: "Business", icon: ReceiptIndianRupee },
   { title: "FD Calculator", href: "/calculators", description: "Estimate fixed-deposit maturity value and interest.", category: "Finance", icon: IndianRupee },
