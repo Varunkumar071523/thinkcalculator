@@ -61,7 +61,8 @@ Sprint 3: Production EMI Calculator
 - Interactive EMI form with field-level errors and reset support
 - EMI results, formula, calculated worked example, FAQs, and related tools
 - Production metadata, structured data, and internal linking
-- Unit test specification for standard, boundary, and invalid inputs
+- Vitest unit-test infrastructure for pure calculator functions
+- Executable EMI calculation tests for standard, boundary, and invalid inputs
 
 ### Next
 
