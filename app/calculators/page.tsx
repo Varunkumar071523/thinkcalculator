@@ -35,6 +35,12 @@ const availableCalculators = [{
   description: "Estimate fixed deposit maturity amount and interest earned.",
   category: "Finance",
   icon: IndianRupee,
+}, {
+  title: "RD Calculator",
+  href: "/finance/rd-calculator",
+  description: "Estimate recurring deposit maturity amount and interest earned.",
+  category: "Finance",
+  icon: PiggyBank,
 }]
 
 export default function CalculatorsPage() {

@@ -55,20 +55,21 @@ Tagline: Calculate. Compare. Decide.
 - Sprint 3: production EMI Calculator and executable Vitest unit tests
 - Sprint 4: production SIP Calculator with validation, content, SEO, and tests
 - Sprint 5: production Lumpsum Calculator with compound-growth tests
+- Sprint 6: production Fixed Deposit Calculator with compounding options, validation, content, SEO, and tests
 
 ### Current Sprint
 
-Sprint 6: Production Fixed Deposit Calculator
+Sprint 7: Production Recurring Deposit Calculator
 
-- Pure, validated fixed-deposit compound-interest calculation
+- Pure, validated recurring-deposit calculation that compounds each beginning-of-month contribution for its remaining term
 - Monthly, quarterly, half-yearly, and yearly compounding support
-- Interactive FD form with field-level errors and reset support
-- FD results, calculated worked example, FAQs, and related tools
+- Interactive RD form with field-level errors and reset support
+- RD results, calculated worked example, FAQs, and related tools
 - Production metadata, structured data, and internal linking
-- Vitest coverage for compounding frequencies, boundaries, fractional duration, zero interest, and invalid inputs
+- Vitest coverage for contribution timing, compounding frequencies, boundaries, duration units, zero interest, and invalid inputs
 
 ### Next
 
-- RD Calculator as the next planned production calculator
+- PPF Calculator as the next planned production calculator
 - robots.txt
 - sitemap.xml
