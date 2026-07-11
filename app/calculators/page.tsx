@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { WalletCards } from "lucide-react"
+import { TrendingUp, WalletCards } from "lucide-react"
 
 import { SiteContainer } from "@/components/layout/site-container"
 import { CalculatorCard } from "@/components/shared/calculator-card"
@@ -17,6 +17,12 @@ const availableCalculators = [{
   description: "Calculate monthly EMI, total interest payable, and total loan repayment.",
   category: "Finance",
   icon: WalletCards,
+}, {
+  title: "SIP Calculator",
+  href: "/finance/sip-calculator",
+  description: "Estimate future value, total invested amount, and potential SIP returns.",
+  category: "Finance",
+  icon: TrendingUp,
 }]
 
 export default function CalculatorsPage() {

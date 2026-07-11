@@ -52,20 +52,20 @@ Tagline: Calculate. Compare. Decide.
 - Git initialization
 - Sprint 1: project foundation, global layout, navigation, homepage shell, and route metadata
 - Sprint 2: reusable typed calculator framework and static demonstration page
+- Sprint 3: production EMI Calculator and executable Vitest unit tests
 
 ### Current Sprint
 
-Sprint 3: Production EMI Calculator
+Sprint 4: Production SIP Calculator
 
-- Pure, validated EMI calculation logic
-- Interactive EMI form with field-level errors and reset support
-- EMI results, formula, calculated worked example, FAQs, and related tools
+- Pure, validated beginning-of-month SIP calculation logic
+- Interactive SIP form with field-level errors and reset support
+- SIP results, formula, calculated worked example, FAQs, and related tools
 - Production metadata, structured data, and internal linking
-- Vitest unit-test infrastructure for pure calculator functions
-- Executable EMI calculation tests for standard, boundary, and invalid inputs
+- Vitest coverage for standard, boundary, zero-return, and invalid inputs
 
 ### Next
 
-- SIP Calculator as the next planned production calculator
+- Lumpsum Calculator as the next planned production calculator
 - robots.txt
 - sitemap.xml

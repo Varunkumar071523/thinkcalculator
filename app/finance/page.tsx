@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { WalletCards } from "lucide-react"
+import { TrendingUp, WalletCards } from "lucide-react"
 
 import { SiteContainer } from "@/components/layout/site-container"
 import { CalculatorCard } from "@/components/shared/calculator-card"
@@ -19,6 +19,14 @@ const emiCalculator = {
   icon: WalletCards,
 }
 
+const sipCalculator = {
+  title: "SIP Calculator",
+  href: "/finance/sip-calculator",
+  description: "Estimate future value, invested amount, and potential SIP returns.",
+  category: "Finance",
+  icon: TrendingUp,
+}
+
 export default function FinancePage() {
   return (
     <SiteContainer className="py-12 sm:py-20">
@@ -29,7 +37,7 @@ export default function FinancePage() {
       </header>
       <section className="mt-12" aria-labelledby="loan-calculators-heading">
         <h2 id="loan-calculators-heading" className="text-2xl font-semibold tracking-tight">Loan calculators</h2>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /></div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /><CalculatorCard calculator={sipCalculator} /></div>
       </section>
     </SiteContainer>
   )
