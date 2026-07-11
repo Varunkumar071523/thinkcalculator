@@ -43,6 +43,11 @@ const fdCalculator = {
   icon: IndianRupee,
 }
 
+const rdCalculator = {
+  title: "RD Calculator", href: "/finance/rd-calculator",
+  description: "Estimate recurring deposit maturity amount and interest earned.", category: "Finance", icon: PiggyBank,
+}
+
 export default function FinancePage() {
   return (
     <SiteContainer className="py-12 sm:py-20">
@@ -53,7 +58,7 @@ export default function FinancePage() {
       </header>
       <section className="mt-12" aria-labelledby="loan-calculators-heading">
         <h2 id="loan-calculators-heading" className="text-2xl font-semibold tracking-tight">Loan calculators</h2>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /><CalculatorCard calculator={sipCalculator} /><CalculatorCard calculator={lumpsumCalculator} /><CalculatorCard calculator={fdCalculator} /></div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /><CalculatorCard calculator={sipCalculator} /><CalculatorCard calculator={lumpsumCalculator} /><CalculatorCard calculator={fdCalculator} /><CalculatorCard calculator={rdCalculator} /></div>
       </section>
     </SiteContainer>
   )

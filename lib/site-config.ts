@@ -69,6 +69,7 @@ export const popularCalculators: CalculatorSummary[] = [
   { title: "Income Tax Calculator", href: "/calculators", description: "Get ready to estimate your income tax liability.", category: "Finance", icon: Landmark },
   { title: "GST Calculator", href: "/calculators", description: "Calculate GST-inclusive and GST-exclusive amounts.", category: "Business", icon: ReceiptIndianRupee },
   { title: "FD Calculator", href: "/finance/fd-calculator", description: "Estimate fixed-deposit maturity value and interest.", category: "Finance", icon: IndianRupee },
+  { title: "RD Calculator", href: "/finance/rd-calculator", description: "Estimate recurring-deposit maturity value and interest.", category: "Finance", icon: PiggyBank },
   { title: "Percentage Calculator", href: "/calculators", description: "Solve common percentage questions quickly.", category: "Everyday", icon: Percent },
 ]
 
