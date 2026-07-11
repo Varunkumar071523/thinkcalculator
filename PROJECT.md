@@ -50,19 +50,21 @@ Tagline: Calculate. Compare. Decide.
 - ESLint configuration
 - Tailwind CSS configuration
 - Git initialization
+- Sprint 1: project foundation, global layout, navigation, homepage shell, and route metadata
 
 ### Current Sprint
 
-Sprint 1: Project foundation
+Sprint 2: Reusable calculator framework
+
+- Typed calculator definitions and in-memory registry
+- Reusable calculator page, form, result, content, FAQ, and related-tool components
+- Accessible number and select inputs
+- Indian currency, number, and percentage formatters
+- Static framework demonstration page
 
 ### Next
 
-- Project rules
-- Design tokens
-- Global layout
-- Header
-- Footer
-- Homepage shell
-- Metadata
+- EMI Calculator as the first production calculator
+- Calculator validation and pure calculation tests
 - robots.txt
 - sitemap.xml
