@@ -62,20 +62,21 @@ Tagline: Calculate. Compare. Decide.
 - Sprint 10.1: launch-ready homepage redesign with registry-backed calculator discovery, category browsing, learning and glossary previews, FAQs, and newsletter preview UI
 - Sprint 10.2: reusable SEO metadata helpers, registry-backed sitemap, robots directives, root Organization and WebSite structured data, and calculator metadata audit
 - Sprint 10.3: typed calculator knowledge-content framework with reusable sections, navigation, callouts, comparison tables, learning links, and five enriched finance calculators
+- Sprint 10.4: production readiness, performance, accessibility, brand assets, error experiences, response headers, and deployment checklist
 
 ### Current Sprint
 
-Sprint 10.4: Production Readiness, Performance, Accessibility, and Brand Assets
+Sprint 11: Blog & Guide Content Engine
 
-- Add generated app icons, Apple icon, default Open Graph image, and a typed web manifest
-- Add custom not-found and recoverable error experiences
-- Add safe production response headers and remove the framework disclosure header
-- Audit font loading, static rendering, client boundaries, schedules, accessibility, and social metadata
-- Maintain a deployment and browser-testing checklist
+- Typed, version-controlled registry for blog articles, guides, authors, categories, and tags
+- Structured editorial sections without Markdown, MDX, a CMS, or a database
+- Four published sample resources and one excluded draft
+- Static index and detail routes with metadata, Article or BlogPosting schema, FAQs, and internal links
+- Editorial search remains future work; homepage search stays calculator-only
 
 ### Next
 
-- Blog, Guide, and Glossary Content Engine
+- Glossary Engine
 - Production launch-readiness review
 
 ### Deferred
