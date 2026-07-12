@@ -3,6 +3,13 @@ import type { Metadata } from "next"
 import { siteConfig } from "@/lib/site-config"
 import type { CalculatorDefinition } from "@/types/calculator"
 
+const socialImage = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+  alt: "ThinkCalculator — Calculate. Compare. Decide. Financial calculators for India.",
+} as const
+
 type PageMetadataOptions = {
   title: string
   description: string
@@ -16,7 +23,7 @@ export function createCanonicalUrl(path = "/"): string {
 }
 
 export function createOpenGraph({ title, description, path }: Pick<PageMetadataOptions, "title" | "description" | "path">): NonNullable<Metadata["openGraph"]> {
-  return { type: "website", locale: "en_IN", url: createCanonicalUrl(path), siteName: siteConfig.name, title, description }
+  return { type: "website", locale: "en_IN", url: createCanonicalUrl(path), siteName: siteConfig.name, title, description, images: [socialImage] }
 }
 
 export function createPageMetadata({ title, description, path, keywords, noIndex = false }: PageMetadataOptions): Metadata {
@@ -26,7 +33,7 @@ export function createPageMetadata({ title, description, path, keywords, noIndex
     keywords: keywords ? [...keywords] : undefined,
     alternates: { canonical: createCanonicalUrl(path) },
     openGraph: createOpenGraph({ title, description, path }),
-    twitter: { card: "summary", title, description },
+    twitter: { card: "summary_large_image", title, description, images: [socialImage] },
     robots: { index: !noIndex, follow: true },
   }
 }
