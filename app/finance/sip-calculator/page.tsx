@@ -6,7 +6,8 @@ import {
   WorkedExampleSection,
   getRelatedCalculators,
 } from "@/features/calculators/core"
-import { SIPCalculator, sipCalculatorDefinition } from "@/features/calculators/sip"
+import { CalculatorContentLayout } from "@/components/content/calculator-content-layout"
+import { SIPCalculator, sipCalculatorDefinition, sipKnowledgeContent } from "@/features/calculators/sip"
 import { siteConfig } from "@/lib/site-config"
 import { createCalculatorMetadata } from "@/lib/seo"
 
@@ -57,6 +58,7 @@ export default function SIPCalculatorPage() {
       <CalculatorPageLayout calculator={calculator} form={<SIPCalculator />} result={null}>
         {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
         {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
+        <CalculatorContentLayout content={sipKnowledgeContent} />
         <FAQSection faqs={calculator.faqs} />
         <RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
       </CalculatorPageLayout>

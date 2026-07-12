@@ -6,7 +6,8 @@ import {
   WorkedExampleSection,
   getRelatedCalculators,
 } from "@/features/calculators/core"
-import { FDCalculator, fdCalculatorDefinition } from "@/features/calculators/fd"
+import { CalculatorContentLayout } from "@/components/content/calculator-content-layout"
+import { FDCalculator, fdCalculatorDefinition, fdKnowledgeContent } from "@/features/calculators/fd"
 import { siteConfig } from "@/lib/site-config"
 import { createCalculatorMetadata } from "@/lib/seo"
 
@@ -57,6 +58,7 @@ export default function FDCalculatorPage() {
       <CalculatorPageLayout calculator={calculator} form={<FDCalculator />} result={null}>
         {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
         {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
+        <CalculatorContentLayout content={fdKnowledgeContent} />
         <FAQSection faqs={calculator.faqs} />
         <RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
       </CalculatorPageLayout>
