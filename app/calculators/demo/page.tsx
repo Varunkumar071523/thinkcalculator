@@ -1,5 +1,3 @@
-import type { Metadata } from "next"
-
 import { DemoCalculator } from "@/features/calculators/demo/demo-calculator"
 import {
   CalculatorPageLayout,
@@ -10,16 +8,9 @@ import {
   demoCalculatorDefinition,
   getRelatedCalculators,
 } from "@/features/calculators/core"
+import { createCalculatorMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: demoCalculatorDefinition.metadata.title,
-  description: demoCalculatorDefinition.metadata.description,
-  keywords: demoCalculatorDefinition.metadata.keywords
-    ? [...demoCalculatorDefinition.metadata.keywords]
-    : undefined,
-  alternates: { canonical: demoCalculatorDefinition.canonicalPath },
-  robots: { index: false, follow: true },
-}
+export const metadata = createCalculatorMetadata(demoCalculatorDefinition)
 
 export default function CalculatorDemoPage() {
   const calculator = demoCalculatorDefinition

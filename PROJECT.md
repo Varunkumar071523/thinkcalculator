@@ -59,17 +59,17 @@ Tagline: Calculate. Compare. Decide.
 - Sprint 7: production Recurring Deposit Calculator with compounding options, validation, content, SEO, and tests
 - Sprint 8: enhanced EMI experience with validated shareable URLs, copy and print actions, accessible visualization, amortization schedule, and automated tests
 - Sprint 9: enhanced calculator experience rollout with shareable URL state, reusable result actions, accessible charts, detailed schedules, and expanded tests for SIP, Lumpsum, FD, and RD calculators
+- Sprint 10.1: launch-ready homepage redesign with registry-backed calculator discovery, category browsing, learning and glossary previews, FAQs, and newsletter preview UI
 
 ### Current Sprint
 
-Sprint 10.1: Homepage Redesign and Calculator Discovery
+Sprint 10.2: SEO Infrastructure and Launch Readiness
 
-- Redesign the homepage as a launch-ready, India-focused financial-calculator landing page
-- Add registry-backed calculator search and discovery without an API or database
-- Showcase production calculators, categories, learning previews, glossary terms, FAQs, and a clearly disabled newsletter preview
-- Keep the homepage statically rendered with a small, isolated client search component
+- Add reusable page and calculator metadata helpers
+- Generate sitemap.xml and robots.txt from static routes and the calculator registry
+- Add factual Organization and WebSite structured data at the root
+- Audit calculator canonical, Open Graph, Twitter, and robots metadata
 
 ### Next
 
-- Platform SEO infrastructure, including robots.txt, sitemap.xml, and launch metadata review
 - Production launch-readiness review

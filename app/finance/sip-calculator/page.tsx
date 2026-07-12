@@ -1,5 +1,3 @@
-import type { Metadata } from "next"
-
 import {
   CalculatorPageLayout,
   FAQSection,
@@ -10,23 +8,11 @@ import {
 } from "@/features/calculators/core"
 import { SIPCalculator, sipCalculatorDefinition } from "@/features/calculators/sip"
 import { siteConfig } from "@/lib/site-config"
+import { createCalculatorMetadata } from "@/lib/seo"
 
 const calculator = sipCalculatorDefinition
 
-export const metadata: Metadata = {
-  title: calculator.metadata.title,
-  description: calculator.metadata.description,
-  keywords: calculator.metadata.keywords ? [...calculator.metadata.keywords] : undefined,
-  alternates: { canonical: calculator.canonicalPath },
-  openGraph: {
-    type: "website",
-    url: calculator.canonicalPath,
-    title: calculator.metadata.title,
-    description: calculator.metadata.description,
-    siteName: siteConfig.name,
-  },
-  robots: { index: true, follow: true },
-}
+export const metadata = createCalculatorMetadata(calculator)
 
 const structuredData = {
   "@context": "https://schema.org",
