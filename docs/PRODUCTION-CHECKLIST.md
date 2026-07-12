@@ -1,45 +1,144 @@
 # ThinkCalculator Production Checklist
 
-Use this checklist before each public deployment. Items remain unchecked until verified in the target environment.
+Checked items are verified in the current source/build baseline. Deployment-specific and live-domain checks remain open until performed in the target environment.
 
-## Build and tests
+## 1. Source control
 
-- [ ] Run the complete Vitest suite.
-- [ ] Run ESLint without warnings.
-- [ ] Complete a production build with the deployment environment configuration.
-- [ ] Confirm all intended routes are statically generated.
+- [x] Git repository and reviewed feature-branch history exist.
+- [x] Application and content configuration are version-controlled.
+- [ ] Confirm the release branch is current and the deployment diff is clean.
+- [ ] Record the exact deployed commit.
 
-## SEO
+## 2. Tests
 
-- [ ] Inspect titles, descriptions, canonicals, Open Graph, and Twitter cards on deployed pages.
-- [ ] Validate Organization, WebSite, calculator, breadcrumb, and FAQ structured data.
-- [ ] Open the deployed sitemap and robots routes.
-- [ ] Submit the production sitemap in Search Console after launch.
+- [x] `npm run test` passes: 153 tests in 19 files at documentation freeze.
+- [x] Core calculations, URL state, schedules, registries, content exclusions, and production configuration have automated coverage.
+- [ ] Re-run the full suite on the release commit in CI or the deployment environment.
 
-## Accessibility
+## 3. Lint and build
 
-- [ ] Navigate the header, calculator forms, results, schedules, content, and footer using only a keyboard.
-- [ ] Test skip navigation, focus visibility, validation messages, and live status announcements.
-- [ ] Test with a screen reader on at least one desktop and one mobile platform.
-- [ ] Check zoom, reflow, contrast, reduced motion, and table scrolling.
+- [x] `npm run lint` passes at documentation freeze.
+- [x] `npm run build` passes at documentation freeze.
+- [x] `git diff --check` passes at documentation freeze.
+- [ ] Repeat all checks for the release commit with production configuration.
 
-## Security headers
+## 4. Static-route verification
 
-- [ ] Inspect deployed response headers and confirm the configured policies are present.
-- [ ] Confirm clipboard, print, generated images, and external links still work.
-- [ ] Design and validate a nonce-compatible Content Security Policy before enabling one.
+- [x] Current public routes build as static or SSG output.
+- [x] Four editorial routes are generated from published registry items.
+- [x] Invalid and draft editorial slugs return not found.
+- [ ] Inspect the final hosting route table and representative responses.
 
-## Browser, mobile, and print testing
+## 5. SEO
 
-- [ ] Test current Chrome, Firefox, Safari, and Edge releases.
-- [ ] Test representative small, medium, and large viewports on physical devices where possible.
-- [ ] Confirm there is no page-level horizontal scrolling.
-- [ ] Print or save each calculator result as PDF and inspect schedules.
+- [x] Reusable metadata helpers, unique canonicals, Open Graph, and Twitter metadata exist.
+- [x] Calculator query state is excluded from canonical URLs.
+- [ ] Crawl the live site for duplicate/missing titles, descriptions, canonicals, and broken links.
 
-## Deployment and operations
+## 6. Sitemap and robots
 
-- [ ] Verify HTTPS, redirects, DNS, caching, and the production domain.
-- [ ] Confirm generated icon, Apple icon, manifest, and social-image routes load.
-- [ ] Configure privacy-respecting analytics only after a separate review.
-- [ ] Document hosting backups and test the restore process.
-- [ ] Record the deployed revision and a rollback procedure.
+- [x] Sitemap includes static routes, published calculators, Blog/Guide indexes, and published editorial content.
+- [x] Draft editorial content is excluded.
+- [x] Robots metadata route exists.
+- [ ] Open and validate live `/sitemap.xml` and `/robots.txt`.
+
+## 7. Metadata and social previews
+
+- [x] Default social image route and metadata wiring exist.
+- [x] Manifest, icon, and Apple icon routes exist.
+- [ ] Inspect live previews in major social/debugging tools.
+- [ ] Verify absolute production URLs and image responses on the public domain.
+
+## 8. Structured data
+
+- [x] Root Organization and WebSite schema exist.
+- [x] Editorial Article/BlogPosting and visible FAQ schema exist.
+- [x] Unsupported ratings, reviews, and credentials are omitted.
+- [ ] Validate representative live pages with schema testing tools.
+
+## 9. Accessibility
+
+- [x] Semantic landmarks, skip link, visible focus styles, labels, and accessible tables are implemented.
+- [x] Charts have textual values and do not depend on colour alone.
+- [ ] Complete keyboard-only and screen-reader testing on representative live pages.
+- [ ] Verify zoom, reflow, contrast, status announcements, and reduced motion.
+
+## 10. Browser testing
+
+- [ ] Test current Chrome, Firefox, Safari, and Edge.
+- [ ] Verify navigation, forms, sharing, clipboard, schedules, errors, and editorial anchors.
+
+## 11. Mobile testing
+
+- [x] Layouts are implemented mobile-first with contained table overflow.
+- [ ] Test representative physical iOS and Android devices.
+- [ ] Confirm no page-level horizontal scrolling or obscured controls.
+
+## 12. Calculator validation
+
+- [x] Five production calculators have unit tests and worked examples.
+- [x] Validation is separate from pure calculation logic.
+- [ ] Cross-check representative scenarios against independent trusted calculations.
+- [ ] Verify rounding, extremes, invalid input, and provider-specific caveats manually.
+
+## 13. Print testing
+
+- [x] Browser Print / Save as PDF actions are implemented; no PDF generator is required.
+- [ ] Print each calculator in supported browsers and inspect clipping, page breaks, charts, and schedules.
+
+## 14. Security headers
+
+- [x] Production header configuration exists and framework disclosure is disabled.
+- [x] Strict CSP is explicitly deferred pending nonce-compatible validation.
+- [ ] Inspect live response headers and verify clipboard, print, JSON-LD, images, and external links.
+
+## 15. HTTPS and domain
+
+- [ ] Verify `https://thinkcalculator.in`, certificate chain, renewal, DNS, redirects, and preferred host.
+- [ ] Verify HTTP-to-HTTPS and alternate-host behaviour without loops.
+
+## 16. Hosting
+
+- [ ] Confirm the Hostinger environment supports the built Next.js application and headers.
+- [ ] Verify Node/runtime version, build/start commands, caching, logs, resource limits, and restart behaviour.
+
+## 17. Environment variables
+
+- [x] Current Version 1 application does not document required secrets.
+- [ ] Audit the release for environment variables and configure them securely if introduced.
+- [ ] Confirm no secret is committed or exposed to client bundles.
+
+## 18. Analytics
+
+- [ ] Select a privacy-appropriate analytics approach.
+- [ ] Review consent, retention, privacy policy, performance, and event naming before enabling it.
+
+## 19. Search Console
+
+- [ ] Verify domain ownership.
+- [ ] Submit the production sitemap and review coverage/canonical reports.
+
+## 20. Bing Webmaster Tools
+
+- [ ] Verify the site, submit the sitemap, and review crawl reports.
+
+## 21. Backup
+
+- [ ] Document source, configuration, deployment, and hosting backup responsibilities.
+- [ ] Test restoration rather than relying only on backup existence.
+
+## 22. Rollback
+
+- [ ] Document the last-known-good revision and rollback commands/process.
+- [ ] Perform a rollback rehearsal and record expected recovery time.
+
+## 23. Monitoring
+
+- [ ] Configure uptime/error monitoring and ownership.
+- [ ] Define alert thresholds, notification paths, log retention, and incident notes.
+
+## 24. Post-launch smoke tests
+
+- [ ] Check homepage, navigation, calculator indexes, all five calculators, Blog, Guides, representative articles, 404, robots, sitemap, manifest, icons, and social image.
+- [ ] Run a representative calculation, share/reopen its URL, copy, print, and inspect schedules/charts.
+- [ ] Check mobile/desktop accessibility, metadata, schema, headers, analytics, logs, and monitoring.

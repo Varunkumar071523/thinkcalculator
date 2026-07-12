@@ -1,0 +1,40 @@
+# Changelog
+
+This changelog summarises project milestones. No semantic version or release date is asserted unless verified separately.
+
+## Unreleased
+
+### Added
+
+- Documentation freeze and current operational status.
+- Architecture guide and phased roadmap.
+- Contribution guide, editorial handbook, production checklist, and architecture decision log.
+
+## Milestone: Platform Foundation
+
+- Next.js App Router and TypeScript setup.
+- Tailwind CSS v4 and shared shadcn-based design primitives.
+- Calculator framework, homepage, responsive navigation, category discovery, and calculator search.
+
+## Milestone: Core Calculators
+
+- Production EMI, SIP, Lumpsum, FD, and RD calculators.
+- Typed validation, pure calculation logic, formulas, examples, FAQs, metadata, and unit tests.
+
+## Milestone: Calculator Experience
+
+- Validated shareable query state and canonical clean routes.
+- Copy results and browser Print / Save as PDF.
+- Accessible lightweight charts, amortisation/growth schedules, and reusable result actions.
+
+## Milestone: SEO and Production Readiness
+
+- Metadata helpers, canonicals, sitemap, robots, and factual structured data.
+- Manifest, app icons, social-image route, security headers, and framework-header removal.
+- Custom not-found and recoverable error handling.
+
+## Milestone: Content Platform
+
+- Typed calculator knowledge-content framework.
+- Typed, registry-based Blog and Guide engine.
+- Four published editorial items and one draft excluded from public routes, lists, relations, and sitemap.
