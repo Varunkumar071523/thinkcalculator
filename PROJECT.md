@@ -1,86 +1,49 @@
-# ThinkCalculator
+# ThinkCalculator Project Status
 
-## Product
+ThinkCalculator is an India-focused calculator and educational-content platform at <https://thinkcalculator.in>. The tagline is “Calculate. Compare. Decide.”
 
-ThinkCalculator is an India-focused calculator and educational content platform.
+## Current status
 
-Domain: https://thinkcalculator.in
+- Phase: Version 1 platform foundation complete; topic-authority work is next.
+- Milestone: documentation freeze after the Blog and Guide engine.
+- Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI (Base/Nova), and Vitest.
+- Architecture: static rendering where practical, Server Components by default, typed version-controlled registries, and no Version 1 database.
+- Verification baseline: 153 automated tests passing across 19 test files.
 
-Tagline: Calculate. Compare. Decide.
+## Completed capabilities
 
-## Version 1 Goals
+- Five production finance calculators: EMI, SIP, Lumpsum, FD, and RD.
+- Typed validation and pure calculation functions separated from UI.
+- Calculator discovery and calculator-only homepage search.
+- Validated shareable query URLs, copyable results, browser Print / Save as PDF, accessible charts, and schedules.
+- Calculator knowledge content with formulas, examples, FAQs, comparison tables, and internal links.
+- SEO metadata helpers, canonical URLs, sitemap, robots, factual structured data, manifest, icons, and social-image routes.
+- Production headers, custom not-found/error experiences, and accessibility-oriented navigation.
+- Typed Blog and Guide engine with four published items and one draft excluded from routes, lists, related content, and sitemap.
 
-- Build a fast, mobile-first calculator platform
-- Launch high-quality finance calculators
-- Publish educational guides and articles
-- Establish a reusable calculator framework
-- Optimize all public pages for search engines
-- Deploy on the existing Hostinger environment
+## Known limitations and risks
 
-## Version 1 Architecture
+- Production deployment, DNS, HTTPS, analytics, webmaster tools, backups, rollback, and live browser validation remain unverified.
+- Editorial search, public glossary, and topic hubs do not yet exist; homepage search remains calculator-only.
+- Financial results are estimates; provider rules, taxes, fees, market movement, and rounding may differ.
+- Google-hosted Geist fonts require network access during a clean production build.
+- Current editorial content is intentionally small and maintained directly in TypeScript.
 
-- Next.js App Router
-- TypeScript
-- Tailwind CSS
-- MDX and structured TypeScript data
-- No database for calculator or editorial content
-- Calculation logic separated from presentation
-- Static generation wherever practical
+## Deferred
 
-## Initial Modules
+- Strict CSP pending a nonce-compatible design for Next.js scripts, JSON-LD, images, clipboard, and print.
+- Service worker and offline support.
+- CMS/MDX, database, accounts, saved calculations, generated PDFs, newsletter backend, comments, and public APIs.
 
-- Homepage
-- Calculator categories
-- Calculator framework
-- Finance calculators
-- Blog
-- Guides
-- Glossary
-- Search
-- SEO infrastructure
+## Next phase
 
-## Development Status
+Glossary Engine and Topic Authority: glossary terms, topic/category hubs, editorial discovery, stronger internal linking, and content clusters. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
 
-### Completed
+## Validation
 
-- Product planning
-- Initial architecture
-- Next.js project initialization
-- TypeScript configuration
-- ESLint configuration
-- Tailwind CSS configuration
-- Git initialization
-- Sprint 1: project foundation, global layout, navigation, homepage shell, and route metadata
-- Sprint 2: reusable typed calculator framework and static demonstration page
-- Sprint 3: production EMI Calculator and executable Vitest unit tests
-- Sprint 4: production SIP Calculator with validation, content, SEO, and tests
-- Sprint 5: production Lumpsum Calculator with compound-growth tests
-- Sprint 6: production Fixed Deposit Calculator with compounding options, validation, content, SEO, and tests
-- Sprint 7: production Recurring Deposit Calculator with compounding options, validation, content, SEO, and tests
-- Sprint 8: enhanced EMI experience with validated shareable URLs, copy and print actions, accessible visualization, amortization schedule, and automated tests
-- Sprint 9: enhanced calculator experience rollout with shareable URL state, reusable result actions, accessible charts, detailed schedules, and expanded tests for SIP, Lumpsum, FD, and RD calculators
-- Sprint 10.1: launch-ready homepage redesign with registry-backed calculator discovery, category browsing, learning and glossary previews, FAQs, and newsletter preview UI
-- Sprint 10.2: reusable SEO metadata helpers, registry-backed sitemap, robots directives, root Organization and WebSite structured data, and calculator metadata audit
-- Sprint 10.3: typed calculator knowledge-content framework with reusable sections, navigation, callouts, comparison tables, learning links, and five enriched finance calculators
-- Sprint 10.4: production readiness, performance, accessibility, brand assets, error experiences, response headers, and deployment checklist
-
-### Current Sprint
-
-Sprint 11: Blog & Guide Content Engine
-
-- Typed, version-controlled registry for blog articles, guides, authors, categories, and tags
-- Structured editorial sections without Markdown, MDX, a CMS, or a database
-- Four published sample resources and one excluded draft
-- Static index and detail routes with metadata, Article or BlogPosting schema, FAQs, and internal links
-- Editorial search remains future work; homepage search stays calculator-only
-
-### Next
-
-- Glossary Engine
-- Production launch-readiness review
-
-### Deferred
-
-- Strict Content Security Policy is deferred until a nonce-compatible policy can be validated with Next.js scripts, inline JSON-LD, metadata images, clipboard, and print behavior.
-- Service-worker and offline support are outside Version 1 scope.
-- Route-level loading UI is omitted because the current public pages are statically rendered and do not wait on request-time data.
+```bash
+npm run test
+npm run lint
+npm run build
+git diff --check
+```
