@@ -61,17 +61,25 @@ Tagline: Calculate. Compare. Decide.
 - Sprint 9: enhanced calculator experience rollout with shareable URL state, reusable result actions, accessible charts, detailed schedules, and expanded tests for SIP, Lumpsum, FD, and RD calculators
 - Sprint 10.1: launch-ready homepage redesign with registry-backed calculator discovery, category browsing, learning and glossary previews, FAQs, and newsletter preview UI
 - Sprint 10.2: reusable SEO metadata helpers, registry-backed sitemap, robots directives, root Organization and WebSite structured data, and calculator metadata audit
+- Sprint 10.3: typed calculator knowledge-content framework with reusable sections, navigation, callouts, comparison tables, learning links, and five enriched finance calculators
 
 ### Current Sprint
 
-Sprint 10.3: Calculator Content Framework and Knowledge Components
+Sprint 10.4: Production Readiness, Performance, Accessibility, and Brand Assets
 
-- Add typed, structured calculator knowledge-content models
-- Add reusable long-form sections, tables, callouts, navigation, references, and learning-link components
-- Enrich EMI, SIP, Lumpsum, FD, and RD pages with educational content and factual comparisons
-- Validate content structure, table-of-contents IDs, and production internal links
+- Add generated app icons, Apple icon, default Open Graph image, and a typed web manifest
+- Add custom not-found and recoverable error experiences
+- Add safe production response headers and remove the framework disclosure header
+- Audit font loading, static rendering, client boundaries, schedules, accessibility, and social metadata
+- Maintain a deployment and browser-testing checklist
 
 ### Next
 
-- Blog and guide content engine
+- Blog, Guide, and Glossary Content Engine
 - Production launch-readiness review
+
+### Deferred
+
+- Strict Content Security Policy is deferred until a nonce-compatible policy can be validated with Next.js scripts, inline JSON-LD, metadata images, clipboard, and print behavior.
+- Service-worker and offline support are outside Version 1 scope.
+- Route-level loading UI is omitted because the current public pages are statically rendered and do not wait on request-time data.
