@@ -16,15 +16,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { calculatorRegistry } from "@/features/calculators/core/calculator-registry"
-import { siteConfig } from "@/lib/site-config"
+import { createPageMetadata } from "@/lib/seo"
 import type { CalculatorSummary, SiteCategory } from "@/types/site"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "ThinkCalculator: Free Financial Calculators for India",
   description: "Use free calculators for EMI, SIP, lumpsum investments, fixed deposits, recurring deposits, and more. View formulas, schedules, and shareable results.",
-  alternates: { canonical: "/" },
-  openGraph: { title: "ThinkCalculator: Free Financial Calculators for India", description: "Calculate EMI, SIP, lumpsum investments, fixed deposits, recurring deposits, and more with clear methods and useful schedules.", url: "/" },
-}
+  path: "/",
+})
 
 const iconBySlug = {
   emi: WalletCards,
@@ -90,12 +89,11 @@ const faqs = [
 ] as const
 
 const faqJsonLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map(([question, answer]) => ({ "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } })) }
-const websiteJsonLd = { "@context": "https://schema.org", "@type": "WebSite", name: siteConfig.name, url: siteConfig.url, description: siteConfig.description }
 
 export default function HomePage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([websiteJsonLd, faqJsonLd]).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }} />
       <section className="relative overflow-hidden border-b bg-muted/30">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-primary/5 to-transparent" aria-hidden="true" />
         <SiteContainer className="relative py-16 sm:py-24 lg:py-28">
