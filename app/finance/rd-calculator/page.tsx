@@ -1,5 +1,6 @@
 import { CalculatorPageLayout, FAQSection, FormulaSection, RelatedCalculators, WorkedExampleSection, getRelatedCalculators } from "@/features/calculators/core"
-import { RDCalculator, rdCalculatorDefinition } from "@/features/calculators/rd"
+import { CalculatorContentLayout } from "@/components/content/calculator-content-layout"
+import { RDCalculator, rdCalculatorDefinition, rdKnowledgeContent } from "@/features/calculators/rd"
 import { siteConfig } from "@/lib/site-config"
 import { createCalculatorMetadata } from "@/lib/seo"
 
@@ -15,9 +16,9 @@ export default function RDCalculatorPage() {
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
     <CalculatorPageLayout calculator={calculator} form={<RDCalculator />} result={null}>
-      <section aria-labelledby="rd-estimate-heading" className="max-w-3xl"><h2 id="rd-estimate-heading" className="text-2xl font-semibold tracking-tight">How to use this RD estimate</h2><p className="mt-3 leading-7 text-muted-foreground">This India-focused calculator assumes each instalment is deposited at the beginning of the month. It provides an educational estimate, not personalised financial advice. Actual bank calculations may differ because of bank-specific rules, deposit dates, compounding conventions, premature closure, penalties, and taxes.</p></section>
       {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
       {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
+      <CalculatorContentLayout content={rdKnowledgeContent} />
       <FAQSection faqs={calculator.faqs} /><RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
     </CalculatorPageLayout>
   </>

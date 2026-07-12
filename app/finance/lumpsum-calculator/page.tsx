@@ -6,7 +6,8 @@ import {
   WorkedExampleSection,
   getRelatedCalculators,
 } from "@/features/calculators/core"
-import { LumpsumCalculator, lumpsumCalculatorDefinition } from "@/features/calculators/lumpsum"
+import { CalculatorContentLayout } from "@/components/content/calculator-content-layout"
+import { LumpsumCalculator, lumpsumCalculatorDefinition, lumpsumKnowledgeContent } from "@/features/calculators/lumpsum"
 import { siteConfig } from "@/lib/site-config"
 import { createCalculatorMetadata } from "@/lib/seo"
 
@@ -57,6 +58,7 @@ export default function LumpsumCalculatorPage() {
       <CalculatorPageLayout calculator={calculator} form={<LumpsumCalculator />} result={null}>
         {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
         {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
+        <CalculatorContentLayout content={lumpsumKnowledgeContent} />
         <FAQSection faqs={calculator.faqs} />
         <RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
       </CalculatorPageLayout>

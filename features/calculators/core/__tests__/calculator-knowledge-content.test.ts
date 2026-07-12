@@ -1,0 +1,65 @@
+import { describe, expect, it } from "vitest"
+
+import { emiCalculatorDefinition, emiKnowledgeContent } from "@/features/calculators/emi"
+import { fdCalculatorDefinition, fdKnowledgeContent } from "@/features/calculators/fd"
+import { lumpsumCalculatorDefinition, lumpsumKnowledgeContent } from "@/features/calculators/lumpsum"
+import { rdCalculatorDefinition, rdKnowledgeContent } from "@/features/calculators/rd"
+import { sipCalculatorDefinition, sipKnowledgeContent } from "@/features/calculators/sip"
+
+const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator"])
+const calculators = [
+  { definition: emiCalculatorDefinition, content: emiKnowledgeContent },
+  { definition: sipCalculatorDefinition, content: sipKnowledgeContent },
+  { definition: lumpsumCalculatorDefinition, content: lumpsumKnowledgeContent },
+  { definition: fdCalculatorDefinition, content: fdKnowledgeContent },
+  { definition: rdCalculatorDefinition, content: rdKnowledgeContent },
+]
+
+describe("calculator knowledge content", () => {
+  it("is present and structurally complete for every production calculator", () => {
+    expect(calculators).toHaveLength(5)
+    for (const { content } of calculators) {
+      expect(content.title.trim()).not.toBe("")
+      expect(content.description.trim()).not.toBe("")
+      expect(content.sections.length).toBeGreaterThanOrEqual(9)
+      const types = new Set(content.sections.map((section) => section.type))
+      for (const required of ["input-guide", "how-it-works", "interpretation", "benefits", "limitations", "common-mistakes", "practical-tips", "comparison"]) expect(types.has(required as never)).toBe(true)
+    }
+  })
+
+  it("has unique stable section ids and matching table-of-contents data", () => {
+    for (const { content } of calculators) {
+      const ids = content.sections.map((section) => section.id)
+      expect(new Set(ids).size).toBe(ids.length)
+      expect(content.sections.map(({ id, title }) => ({ id, title }))).toEqual(content.sections.map((section) => ({ id: section.id, title: section.title })))
+      for (const section of content.sections) expect(section.title.trim()).not.toBe("")
+    }
+  })
+
+  it("uses only populated blocks and valid comparison tables", () => {
+    for (const { content } of calculators) for (const section of content.sections) for (const block of section.content) {
+      if (block.type === "paragraph") expect(block.text.trim()).not.toBe("")
+      if (block.type === "callout") { expect(block.title.trim()).not.toBe(""); expect(block.text.trim()).not.toBe("") }
+      if (block.type === "list") { expect(block.items.length).toBeGreaterThan(0); for (const item of block.items) expect(item.trim()).not.toBe("") }
+      if (block.type === "table") { expect(block.headers.length).toBeGreaterThan(1); expect(block.rows.length).toBeGreaterThan(0); for (const row of block.rows) expect(row).toHaveLength(block.headers.length) }
+    }
+  })
+
+  it("links only to existing production calculator routes", () => {
+    for (const { content } of calculators) for (const link of content.relatedLinks) {
+      expect(link.href).not.toBe("#")
+      expect(productionRoutes.has(link.href)).toBe(true)
+    }
+  })
+
+  it("does not repeat FAQ answers as knowledge blocks", () => {
+    for (const { definition, content } of calculators) {
+      const faqText = new Set(definition.faqs.flatMap((faq) => [faq.question, faq.answer]))
+      for (const section of content.sections) for (const block of section.content) {
+        if (block.type === "paragraph") expect(faqText.has(block.text)).toBe(false)
+        if (block.type === "callout") expect(faqText.has(block.text)).toBe(false)
+        if (block.type === "list") for (const item of block.items) expect(faqText.has(item)).toBe(false)
+      }
+    }
+  })
+})

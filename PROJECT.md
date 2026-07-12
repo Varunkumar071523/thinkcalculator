@@ -60,16 +60,18 @@ Tagline: Calculate. Compare. Decide.
 - Sprint 8: enhanced EMI experience with validated shareable URLs, copy and print actions, accessible visualization, amortization schedule, and automated tests
 - Sprint 9: enhanced calculator experience rollout with shareable URL state, reusable result actions, accessible charts, detailed schedules, and expanded tests for SIP, Lumpsum, FD, and RD calculators
 - Sprint 10.1: launch-ready homepage redesign with registry-backed calculator discovery, category browsing, learning and glossary previews, FAQs, and newsletter preview UI
+- Sprint 10.2: reusable SEO metadata helpers, registry-backed sitemap, robots directives, root Organization and WebSite structured data, and calculator metadata audit
 
 ### Current Sprint
 
-Sprint 10.2: SEO Infrastructure and Launch Readiness
+Sprint 10.3: Calculator Content Framework and Knowledge Components
 
-- Add reusable page and calculator metadata helpers
-- Generate sitemap.xml and robots.txt from static routes and the calculator registry
-- Add factual Organization and WebSite structured data at the root
-- Audit calculator canonical, Open Graph, Twitter, and robots metadata
+- Add typed, structured calculator knowledge-content models
+- Add reusable long-form sections, tables, callouts, navigation, references, and learning-link components
+- Enrich EMI, SIP, Lumpsum, FD, and RD pages with educational content and factual comparisons
+- Validate content structure, table-of-contents IDs, and production internal links
 
 ### Next
 
+- Blog and guide content engine
 - Production launch-readiness review
