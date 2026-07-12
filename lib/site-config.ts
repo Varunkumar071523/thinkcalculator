@@ -30,9 +30,8 @@ export const siteConfig = {
 export const mainNavigation: SiteLink[] = [
   { title: "Calculators", href: "/calculators" },
   { title: "Finance", href: "/finance" },
-  { title: "Business", href: "/business" },
-  { title: "Health", href: "/health" },
-  { title: "Education", href: "/education" },
+  { title: "Blog", href: "/blog" },
+  { title: "Guides", href: "/guides" },
 ]
 
 export const categories: SiteCategory[] = [
@@ -85,6 +84,8 @@ export const footerGroups: FooterGroup[] = [
   {
     title: "Resources",
     links: [
+      { title: "Blog", href: "/blog" },
+      { title: "Guides", href: "/guides" },
       { title: "Health", href: "/health" },
       { title: "Education", href: "/education" },
     ],

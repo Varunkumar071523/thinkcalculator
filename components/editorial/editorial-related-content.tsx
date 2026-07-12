@@ -1,0 +1,3 @@
+import Link from "next/link"
+import type { EditorialRelatedLink } from "@/types/editorial-content"
+export function EditorialRelatedContent({ links }: { readonly links: readonly EditorialRelatedLink[] }) { if (!links.length) return null; return <section><h2 className="text-2xl font-semibold">Related reading</h2><div className="mt-4 grid gap-4 sm:grid-cols-2">{links.map((link) => <Link key={link.href} href={link.href} className="rounded-xl border p-5 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><h3 className="font-semibold">{link.title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{link.description}</p></Link>)}</div></section> }

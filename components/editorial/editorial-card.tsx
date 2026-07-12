@@ -1,0 +1,3 @@
+import Link from "next/link"
+import type { EditorialContentItem } from "@/types/editorial-content"
+export function EditorialCard({ item }: { readonly item: EditorialContentItem }) { return <article className="flex flex-col rounded-xl border p-5"><p className="text-sm font-medium text-primary">{item.category.name}</p><h2 className="mt-2 text-xl font-semibold"><Link href={item.canonicalPath} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{item.title}</Link></h2><p className="mt-3 flex-1 leading-7 text-muted-foreground">{item.description}</p><p className="mt-4 text-sm text-muted-foreground">{item.estimatedReadingMinutes} min read</p></article> }

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { siteConfig } from "@/lib/site-config"
 import type { CalculatorDefinition } from "@/types/calculator"
+import type { EditorialContentItem } from "@/types/editorial-content"
 
 const socialImage = {
   url: "/opengraph-image",
@@ -46,4 +47,8 @@ export function createCalculatorMetadata(calculator: CalculatorDefinition): Meta
     keywords: calculator.metadata.keywords,
     noIndex: calculator.status !== "published",
   })
+}
+
+export function createEditorialMetadata(item: EditorialContentItem): Metadata {
+  return createPageMetadata({ title: item.metadata.title, description: item.metadata.description, path: item.canonicalPath, keywords: item.metadata.keywords, noIndex: item.status !== "published" })
 }

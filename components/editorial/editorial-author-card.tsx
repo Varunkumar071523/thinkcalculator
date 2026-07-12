@@ -1,0 +1,2 @@
+import type { EditorialAuthor } from "@/types/editorial-content"
+export function EditorialAuthorCard({ author }: { readonly author: EditorialAuthor }) { return <aside aria-label="About the author" className="rounded-xl border bg-muted/30 p-5"><p className="text-sm font-medium text-muted-foreground">About the author</p><h2 className="mt-1 font-semibold">{author.name}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{author.description}</p></aside> }
