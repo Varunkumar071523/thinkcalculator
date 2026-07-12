@@ -58,17 +58,18 @@ Tagline: Calculate. Compare. Decide.
 - Sprint 6: production Fixed Deposit Calculator with compounding options, validation, content, SEO, and tests
 - Sprint 7: production Recurring Deposit Calculator with compounding options, validation, content, SEO, and tests
 - Sprint 8: enhanced EMI experience with validated shareable URLs, copy and print actions, accessible visualization, amortization schedule, and automated tests
+- Sprint 9: enhanced calculator experience rollout with shareable URL state, reusable result actions, accessible charts, detailed schedules, and expanded tests for SIP, Lumpsum, FD, and RD calculators
 
 ### Current Sprint
 
-Sprint 9: Enhanced Calculator Experience Rollout
+Sprint 10.1: Homepage Redesign and Calculator Discovery
 
-- Roll out validated shareable URL state to SIP, Lumpsum, FD, and RD calculators
-- Reuse shared copy-result, copy-link, browser-print, summary, table, and accessible chart components
-- Add calculator-specific growth and maturity schedules with full-precision reconciliation
-- Add Vitest coverage for URL parsing, serialization, and schedule calculations
+- Redesign the homepage as a launch-ready, India-focused financial-calculator landing page
+- Add registry-backed calculator search and discovery without an API or database
+- Showcase production calculators, categories, learning previews, glossary terms, FAQs, and a clearly disabled newsletter preview
+- Keep the homepage statically rendered with a small, isolated client search component
 
 ### Next
 
-- Platform SEO infrastructure, including robots.txt and sitemap.xml
+- Platform SEO infrastructure, including robots.txt, sitemap.xml, and launch metadata review
 - Production launch-readiness review

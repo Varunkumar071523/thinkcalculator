@@ -8,6 +8,7 @@ export type SiteLink = {
 export type SiteCategory = SiteLink & {
   description: string
   icon: LucideIcon
+  availability?: string
 }
 
 export type CalculatorSummary = SiteLink & {
