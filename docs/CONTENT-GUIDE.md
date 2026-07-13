@@ -32,6 +32,8 @@ For PPF content, cite primary Government of India sources for scheme rules. Desc
 
 For GST content, distinguish exclusive and inclusive arithmetic from legal rate classification. Describe 5%, 12%, 18%, and 28% only as common presets represented in official schedules, and 0% only as a calculation option. Require the user to select supply type; do not infer place of supply. Disclose that cess, reverse charge, input tax credit, composition levy, TDS/TCS, discounts, valuation adjustments, invoice rounding, filing, penalties, and compliance are excluded.
 
+For Gratuity content, use the current Code on Social Security, 2020 framework and record the source review date. Ask for eligible last-drawn wages rather than treating gross salary or CTC as the statutory basis. Keep the standard monthly rated 15/26 calculation separate from legal eligibility, explain that only a part-year in excess of six months increments counted service, show the formula amount before the current ceiling, and qualify the ordinary five-year rule with special cases. Do not model piece-rated, seasonal, fixed-term, deceased-employee, disablement, working-journalist, coverage, continuous-service, better-term, exemption, or forfeiture questions without a separately verified scope.
+
 ## Blogs
 
 Blogs explain a concept or comparison. Use four to seven coherent structured sections where the subject warrants them, a practical example, a callout or table when useful, relevant calculators, related published content, and only genuinely useful FAQs.

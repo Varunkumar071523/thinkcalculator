@@ -27,7 +27,11 @@ export function ClusterNavigation({ resourceId, authoredLinks = [], variant = "f
   const content = (
     <>
       <h2 id={headingId} className={variant === "full" ? "text-2xl font-semibold tracking-tight sm:text-3xl" : "font-semibold"}>Explore this topic</h2>
-      <p className="mt-2 leading-6 text-muted-foreground">Continue through the public learning {navigation.topics.length === 1 ? "hub" : "hubs"} and related resources connected to this page.</p>
+      <p className="mt-2 leading-6 text-muted-foreground">
+        {navigation.topics.length > 0
+          ? `Continue through the public learning ${navigation.topics.length === 1 ? "hub" : "hubs"} and related resources connected to this page.`
+          : "Continue with the related public resources connected to this page."}
+      </p>
       <ul className={variant === "full" ? "mt-5 grid gap-3 sm:grid-cols-2" : "mt-5 grid gap-3"}>
         {navigation.topics.map((topic) => (
           <li key={topic.canonicalPath}>

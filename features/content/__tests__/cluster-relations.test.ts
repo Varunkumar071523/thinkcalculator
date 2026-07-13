@@ -128,6 +128,14 @@ describe("focused content clusters", () => {
     expect(resolveClusterNavigation("fd-calculator")).toBeUndefined()
   })
 
+  it("preserves live authored links for resources outside a public topic hub", () => {
+    const navigation = resolveClusterNavigation("glossary-gratuity", [{ href: "/finance/gratuity-calculator" }])
+    expect(navigation?.topics).toEqual([])
+    expect(navigation?.related.map((item) => [item.canonicalPath, item.source])).toEqual([
+      ["/finance/gratuity-calculator", "authored"],
+    ])
+  })
+
   it("builds live, unique, intentional learning paths", () => {
     for (const topic of publicTopics) {
       const path = getTopicLearningPath(topic)

@@ -6,6 +6,11 @@ This changelog summarises project milestones. No semantic version or release dat
 
 ### Added
 
+- Sprint 19 Gratuity Calculator at `/finance/gratuity-calculator` with pure standard monthly rated employee logic, strict eligible-wage and whole-service validation, explicit exactly-six-versus-seven-month handling, a centralized ₹20 lakh ceiling, visible pre-ceiling and capped results, qualified ordinary-service warning, complete shareable URL state, copy, and print support.
+- Current Code on Social Security, 2020 source records reviewed on 13 July 2026, including the 21 November 2025 commencement position, Social Security (Central) Rules, 2026, section 2(88) wage basis and 50% rule, 15/26 formula, service fraction, transition FAQ, ordinary eligibility and exceptions, the saved 2018 ceiling notification with current Ministry confirmation, and explicit exclusions from the numerical model.
+- Published `/glossary/gratuity`, calculator and Finance-directory discovery, homepage calculator search, related calculators, metadata, factual structured data, sitemap coverage, substantive knowledge content, and bidirectional calculator/glossary links.
+- Focused calculation, validation, URL-state, registry, knowledge-content, glossary, metadata, source, discovery, and sitemap tests. The verified Sprint 19 baseline is 433 tests across 39 files, passing lint, and a 49-page static/SSG production build.
+
 - Sprint 18 GST Calculator at `/business/gst-calculator` with pure add/remove arithmetic, strict plain-decimal amount and rate validation, 0% to 100% custom rates, centralized 0%, 5%, 12%, 18%, and 28% presets, user-selected intra-State CGST plus SGST/UTGST or inter-State IGST presentation, accessible breakdown, copy/share, and print support.
 - Centralized official source records checked on 13 July 2026, visible rate-classification and place-of-supply limitations, substantive knowledge content, worked examples, FAQs, compliance exclusions, and a published `/glossary/gst` DefinedTerm page.
 - Registry-derived Business directory and GST discovery across `/calculators`, `/business`, homepage calculator search, and sitemap, while editorial `/search` continues to exclude calculators and includes the GST glossary term. No sparse Business topic hub was published.

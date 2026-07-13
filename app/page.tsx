@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import {
   ArrowRight, BadgeIndianRupee, BarChart3, BookOpen, BriefcaseBusiness,
-  CheckCircle2, FileText, IndianRupee, LineChart, MapPin,
+  CheckCircle2, FileText, HandCoins, IndianRupee, LineChart, MapPin,
   PiggyBank, ReceiptIndianRupee, Send, Share2, Sparkles, WalletCards,
 } from "lucide-react"
 
@@ -34,6 +34,7 @@ const iconBySlug = {
   "cagr-calculator": LineChart,
   "ppf-calculator": PiggyBank,
   "gst-calculator": ReceiptIndianRupee,
+  "gratuity-calculator": HandCoins,
 } as const
 
 const publishedCalculators = calculatorRegistry.filter((calculator) => calculator.status === "published")
