@@ -5,10 +5,10 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 ## Current status
 
 - Phase: Phase 2 Topic Authority in progress.
-- Milestone: Sprint 12 Glossary Engine complete.
+- Milestone: Sprint 13 Topic and Category Hubs complete.
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI (Base/Nova), and Vitest.
 - Architecture: static rendering where practical, Server Components by default, typed version-controlled registries, and no Version 1 database.
-- Verification baseline: 158 automated tests passing across 20 test files.
+- Verification baseline: 173 automated tests passing across 21 test files.
 
 ## Completed capabilities
 
@@ -21,11 +21,13 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - Production headers, custom not-found/error experiences, and accessibility-oriented navigation.
 - Typed Blog and Guide engine with four published items and one draft excluded from routes, lists, related content, and sitemap.
 - Typed Glossary Engine with six substantive published terms, one excluded draft, static routes, DefinedTerm schema, internal links, and sitemap coverage.
+- Typed Topic Hub engine with public `/topics/loans` and `/topics/investing` clusters, curated stable-ID relationships, substantive eligibility checks, static routes, breadcrumb schema, and sitemap coverage.
 
 ## Known limitations and risks
 
 - Production deployment, DNS, HTTPS, analytics, webmaster tools, backups, rollback, and live browser validation remain unverified.
-- Editorial search and topic hubs do not yet exist; homepage search remains calculator-only.
+- Editorial search does not yet exist; homepage search remains calculator-only.
+- A savings hub is intentionally withheld until published editorial and glossary coverage makes it substantive rather than calculator-only.
 - Financial results are estimates; provider rules, taxes, fees, market movement, and rounding may differ.
 - Google-hosted Geist fonts require network access during a clean production build.
 - Current editorial content is intentionally small and maintained directly in TypeScript.
@@ -38,7 +40,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 
 ## Next phase
 
-Continue Topic Authority with topic/category hubs, editorial discovery, stronger contextual links, and focused content clusters. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
+Continue Topic Authority with editorial discovery, stronger contextual links, and focused content clusters. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
 
 ## Validation
 

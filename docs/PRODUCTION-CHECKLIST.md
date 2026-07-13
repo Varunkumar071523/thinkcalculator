@@ -11,7 +11,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 2. Tests
 
-- [x] `npm run test` passes: 158 tests in 20 files after Sprint 12.
+- [x] `npm run test` passes: 173 tests in 21 files after Sprint 13.
 - [x] Core calculations, URL state, schedules, registries, content exclusions, and production configuration have automated coverage.
 - [ ] Re-run the full suite on the release commit in CI or the deployment environment.
 
@@ -27,6 +27,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 - [x] Current public routes build as static or SSG output.
 - [x] Four editorial routes are generated from published registry items.
 - [x] Six glossary term routes are generated from published registry items.
+- [x] Two substantive topic routes are generated from eligible published definitions; draft and sparse topics are excluded.
 - [x] Invalid and draft editorial slugs return not found.
 - [ ] Inspect the final hosting route table and representative responses.
 
@@ -38,7 +39,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 6. Sitemap and robots
 
-- [x] Sitemap includes static routes, published calculators, Blog/Guide/Glossary indexes, published editorial content, and published glossary terms.
+- [x] Sitemap includes static routes, published calculators, Blog/Guide/Glossary/Topic indexes, published editorial content, published glossary terms, and substantive public topic hubs.
 - [x] Draft editorial content is excluded.
 - [x] Robots metadata route exists.
 - [ ] Open and validate live `/sitemap.xml` and `/robots.txt`.
@@ -55,6 +56,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 - [x] Root Organization and WebSite schema exist.
 - [x] Editorial Article/BlogPosting and visible FAQ schema exist.
 - [x] Glossary pages use visible factual DefinedTerm schema.
+- [x] Topic pages use breadcrumb schema matching visible navigation.
 - [x] Unsupported ratings, reviews, and credentials are omitted.
 - [ ] Validate representative live pages with schema testing tools.
 

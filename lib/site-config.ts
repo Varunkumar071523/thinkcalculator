@@ -88,6 +88,7 @@ export const footerGroups: FooterGroup[] = [
       { title: "Blog", href: "/blog" },
       { title: "Guides", href: "/guides" },
       { title: "Glossary", href: "/glossary" },
+      { title: "Topics", href: "/topics" },
       { title: "Health", href: "/health" },
       { title: "Education", href: "/education" },
     ],
