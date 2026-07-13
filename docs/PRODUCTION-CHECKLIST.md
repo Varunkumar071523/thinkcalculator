@@ -11,15 +11,15 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 2. Tests
 
-- [x] `npm run test` passes: 190 tests in 22 files after Sprint 14 review.
-- [x] Core calculations, URL state, schedules, registries, content exclusions, and production configuration have automated coverage.
+- [x] `npm run test` passes: 207 tests in 23 files after Sprint 15 implementation.
+- [x] Core calculations, URL state, schedules, registries, content exclusions, cluster reciprocity, learning-path integrity, search/sitemap boundaries, and production configuration have automated coverage.
 - [ ] Re-run the full suite on the release commit in CI or the deployment environment.
 
 ## 3. Lint and build
 
-- [x] `npm run lint` passes at documentation freeze.
-- [x] `npm run build` passes at documentation freeze.
-- [x] `git diff --check` passes at documentation freeze.
+- [x] `npm run lint` passes for Sprint 15.
+- [x] `npm run build` passes for Sprint 15.
+- [x] `git diff --check` passes for Sprint 15.
 - [ ] Repeat all checks for the release commit with production configuration.
 
 ## 4. Static-route verification
@@ -29,8 +29,10 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 - [x] Six glossary term routes are generated from published registry items.
 - [x] Two substantive topic routes are generated from eligible published definitions; draft and sparse topics are excluded.
 - [x] `/search` keeps a static page shell and derives results client-side from a small public registry projection behind Suspense.
-- [x] The production build generates 41 static/SSG pages in the Sprint 14 baseline.
+- [x] The production build still generates 41 static/SSG pages in the Sprint 15 baseline; no public route was added.
 - [x] Invalid and draft editorial slugs return not found.
+- [x] Eligible calculator, editorial, and glossary cluster members expose reciprocal hub navigation; sparse, unresolved, draft, and non-member resources do not render a false cluster section.
+- [x] Public topic learning paths are ordered, linked to live unique destinations, keyboard reachable, and free of nested interactive controls.
 - [ ] Inspect the final hosting route table and representative responses.
 
 ## 5. SEO

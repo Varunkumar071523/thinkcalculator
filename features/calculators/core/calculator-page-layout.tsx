@@ -1,5 +1,6 @@
 import { SiteContainer } from "@/components/layout/site-container"
 import { Badge } from "@/components/ui/badge"
+import { ClusterNavigation } from "@/components/topics/cluster-navigation"
 import { CalculatorBreadcrumbs } from "@/features/calculators/core/calculator-breadcrumbs"
 import type { CalculatorPageLayoutProps } from "@/features/calculators/core/calculator-types"
 
@@ -17,6 +18,7 @@ export function CalculatorPageLayout({ calculator, form, result, children }: Cal
         {result ? <aside aria-label="Calculator results">{result}</aside> : null}
       </div>
       {children ? <div className="mt-16 space-y-16 sm:mt-20 sm:space-y-20">{children}</div> : null}
+      <ClusterNavigation resourceId={calculator.id} className="mt-16 sm:mt-20" />
     </SiteContainer>
   )
 }

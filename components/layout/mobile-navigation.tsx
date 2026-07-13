@@ -14,7 +14,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { mainNavigation } from "@/lib/site-config"
+import { calculatorSearchPath, mainNavigation } from "@/lib/site-config"
 
 export function MobileNavigation() {
   return (
@@ -33,7 +33,7 @@ export function MobileNavigation() {
               {item.title}
             </SheetClose>
           ))}
-          <SheetClose nativeButton={false} render={<Link href="/calculators" className="mt-3 inline-flex items-center gap-2 rounded-lg border px-3 py-2.5 font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />}>
+          <SheetClose nativeButton={false} render={<Link href={calculatorSearchPath} className="mt-3 inline-flex items-center gap-2 rounded-lg border px-3 py-2.5 font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />}>
             <Search className="size-4" aria-hidden="true" /> Search calculators
           </SheetClose>
         </nav>

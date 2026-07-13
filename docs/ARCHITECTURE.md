@@ -25,9 +25,12 @@ pure calculations       structured sections   defined terms
 validation + URL state  taxonomy + relations  examples + relations
         \                     |                    /
        topic registry resolves stable IDs
-                    |
-       derived public editorial search index
-                    |
+             /                    \
+ public cluster relation      derived public
+       resolver            editorial search index
+          |                         |
+ reciprocal links + linked hub learning paths
+             \                    /
          Next.js App Router pages
            |              |
      Server Components  small Client Components
@@ -100,7 +103,9 @@ Calculators and editorial items are registry-based and version-controlled so a c
 
 The glossary follows the same pattern through a separate typed registry. Published terms provide a plain definition, substantive structured sections, calculation context, examples, and relations to live calculators and editorial pages. Dynamic glossary segments use static parameters with `dynamicParams = false`; drafts are excluded from routes and sitemap. Visible term pages use factual `DefinedTerm` structured data linked to the public glossary set.
 
-Topic definitions curate relationships with stable calculator, editorial, and glossary IDs while resolving display data and canonical paths from the owning registries. A topic is public only when it is published, has a meaningful overview and three-step learning path, resolves every reference to published content, and contains at least one calculator, blog, guide, and glossary term. This keeps draft, unresolved, and sparse topics out of lookup, static parameters, navigation, and sitemap. The initial public hubs are Loans and Investing; Savings remains registered only as a non-public eligibility case because its current public mix is calculator-only.
+Topic definitions curate relationships with stable calculator, editorial, and glossary IDs while resolving display data and canonical paths from the owning registries. A topic is public only when it is published, has a meaningful overview and at least three unique linked learning-path destinations, resolves every reference to published content, and contains at least one calculator, blog, guide, and glossary term. This keeps draft, unresolved, and sparse topics out of lookup, static parameters, navigation, and sitemap. The initial public hubs are Loans and Investing; Savings remains registered only as a non-public eligibility case because its current public mix is calculator-only.
+
+`features/content/cluster-relations.ts` is the canonical public relationship projection for reciprocal navigation. It derives memberships only from eligible topic definitions, resolves every label and path through the owning public registry, removes the current page and duplicate canonical paths, preserves valid authored relations first, then fills missing resource types in curated topic-member order under a small deterministic cap. Calculator, editorial, and glossary pages consume the same Server Component presentation; topic hubs render their curated destinations as semantic linked ordered lists. This adds no route, client state, sitemap entry, or second content registry.
 
 Editorial search derives a small typed document projection from published editorial entries, published glossary terms, and eligible public topics. It does not own or duplicate canonical content and intentionally excludes calculators, drafts, sparse topics, unresolved topics, and unavailable routes. Client query utilities are isolated from registry-backed index construction so only derived public documents cross the Client Component boundary. Query processing trims and collapses whitespace, compares case-insensitively, caps effective input at 120 characters, and uses literal substring checks. Submissions and incoming query URLs are normalised to a single encoded `q` value; blank queries return to clean `/search`. Ranking is exact title, title prefix, title substring, keyword/category/tag/alias, then description, with title and path tie-breakers.
 
@@ -114,7 +119,7 @@ Only visible, factual data is encoded. The root uses Organization and WebSite da
 
 ## 17. Testing strategy
 
-Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. The Sprint 14 suite contains 190 tests across 22 files, including search query boundaries, URL encoding, repeated-parameter handling, live-route integrity, deterministic ranking, sitemap, SearchAction, and public-content exclusion invariants.
+Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. The Sprint 15 suite contains 207 tests across 23 files, including reciprocal public-cluster coverage, canonical-path and draft exclusion, authored precedence, deterministic related-link selection, linked learning-path integrity, unchanged search/sitemap scopes, and the earlier search and production invariants.
 
 ## 18. Accessibility principles
 

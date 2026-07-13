@@ -7,6 +7,7 @@ export type TopicStatus = "draft" | "published"
 export type TopicSection = Readonly<{
   title: string
   description: string
+  resourceId: string
 }>
 
 export type TopicDefinition = Readonly<{
