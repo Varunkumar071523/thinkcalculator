@@ -10,6 +10,7 @@ import { fdCalculatorDefinition } from "@/features/calculators/fd/fd-definition"
 import { rdCalculatorDefinition } from "@/features/calculators/rd/rd-definition"
 import { cagrCalculatorDefinition } from "@/features/calculators/cagr/cagr-definition"
 import { ppfCalculatorDefinition } from "@/features/calculators/ppf/ppf-definition"
+import { gstCalculatorDefinition } from "@/features/calculators/gst/gst-definition"
 
 export const demoCalculatorDefinition = {
   id: "framework-demo",
@@ -128,6 +129,7 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   rdCalculatorDefinition,
   cagrCalculatorDefinition,
   ppfCalculatorDefinition,
+  gstCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(

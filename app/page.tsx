@@ -33,6 +33,7 @@ const iconBySlug = {
   "rd-calculator": BadgeIndianRupee,
   "cagr-calculator": LineChart,
   "ppf-calculator": PiggyBank,
+  "gst-calculator": ReceiptIndianRupee,
 } as const
 
 const publishedCalculators = calculatorRegistry.filter((calculator) => calculator.status === "published")
@@ -56,8 +57,8 @@ const homepageCategories: SiteCategory[] = [
   { title: "Loans", href: "/finance", description: "Estimate repayments and understand borrowing costs.", icon: WalletCards },
   { title: "Investments", href: "/finance", description: "Explore regular and one-time investment growth.", icon: LineChart },
   { title: "Savings", href: "/finance", description: "Plan fixed and recurring deposit maturity values.", icon: PiggyBank },
-  { title: "Taxes", href: "/calculators", description: "Tax calculators are being planned for a future release.", icon: ReceiptIndianRupee, availability: "Limited tools" },
-  { title: "Business", href: "/business", description: "Business-focused calculators are being prepared.", icon: BriefcaseBusiness, availability: "Limited tools" },
+  { title: "Taxes", href: "/business/gst-calculator", description: "Add or remove an entered GST percentage with clear limitations.", icon: ReceiptIndianRupee, availability: "GST arithmetic" },
+  { title: "Business", href: "/business", description: "Explore published tools for everyday business calculations.", icon: BriefcaseBusiness },
 ]
 
 const benefits = [
@@ -108,12 +109,12 @@ export default function HomePage() {
               <Button size="lg" variant="outline" nativeButton={false} render={<Link href="/finance" />}>Browse finance tools</Button>
             </div>
             <div className="mt-10"><CalculatorSearch calculators={searchableCalculators} /></div>
-            <p className="mt-4 text-sm text-muted-foreground">Search {publishedCalculators.length} available financial calculators by name or purpose.</p>
+            <p className="mt-4 text-sm text-muted-foreground">Search {publishedCalculators.length} available calculators by name or purpose.</p>
           </div>
         </SiteContainer>
       </section>
 
-      <section className="py-16 sm:py-20"><SiteContainer><SectionHeading eyebrow="Featured calculators" title="Start with the numbers that matter" description="Use our current finance tools to explore loans, investments, and savings with transparent methods." /><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{calculatorCards.map((calculator) => <CalculatorCard key={calculator.href} calculator={calculator} />)}</div></SiteContainer></section>
+      <section className="py-16 sm:py-20"><SiteContainer><SectionHeading eyebrow="Featured calculators" title="Start with the numbers that matter" description="Explore loans, investments, savings, and GST arithmetic with transparent methods and visible limitations." /><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{calculatorCards.map((calculator) => <CalculatorCard key={calculator.href} calculator={calculator} />)}</div></SiteContainer></section>
 
       <section className="border-y bg-muted/30 py-16 sm:py-20"><SiteContainer><SectionHeading eyebrow="Browse by category" title="Find a tool for your next decision" description="Explore today’s finance calculators and see which categories are still growing." /><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">{homepageCategories.map((category) => <CategoryCard key={category.title} category={category} />)}</div></SiteContainer></section>
 

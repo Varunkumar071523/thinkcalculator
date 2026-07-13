@@ -30,7 +30,7 @@ export function CalculatorSearch({ calculators }: { calculators: readonly Search
 
   return (
     <div className="relative mx-auto w-full max-w-2xl text-left">
-      <label htmlFor={inputId} className="sr-only">Search financial calculators</label>
+      <label htmlFor={inputId} className="sr-only">Search calculators</label>
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <Input
@@ -38,7 +38,7 @@ export function CalculatorSearch({ calculators }: { calculators: readonly Search
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search EMI, SIP, deposits…"
+          placeholder="Search EMI, SIP, GST, deposits…"
           className="h-14 rounded-xl bg-background pr-12 pl-12 text-base shadow-sm"
           autoComplete="off"
           aria-controls={`${inputId}-results`}
@@ -64,7 +64,7 @@ export function CalculatorSearch({ calculators }: { calculators: readonly Search
               ))}
             </ul>
           ) : (
-            <p className="px-3 py-5 text-center text-sm text-muted-foreground">No calculator matches “{query.trim()}”. Try EMI, SIP, FD, or RD.</p>
+            <p className="px-3 py-5 text-center text-sm text-muted-foreground">No calculator matches “{query.trim()}”. Try EMI, SIP, GST, FD, or RD.</p>
           )}
         </div>
       ) : null}

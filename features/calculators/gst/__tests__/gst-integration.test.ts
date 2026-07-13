@@ -1,0 +1,27 @@
+import { describe, expect, it } from "vitest"
+import { businessCalculators } from "@/app/business/page"
+import { availableCalculators } from "@/app/calculators/page"
+import sitemap from "@/app/sitemap"
+import { calculatorRegistry } from "@/features/calculators/core/calculator-registry"
+import { createEditorialSearchDocuments, getGlossaryTermBySlug, getPublicTopics } from "@/features/content"
+import { createCalculatorMetadata, createCanonicalUrl } from "@/lib/seo"
+import { popularCalculators } from "@/lib/site-config"
+import { gstCalculatorDefinition } from "../gst-definition"
+import { createGSTResultText, formatGSTCurrency } from "../gst-content"
+import { gstKnowledgeContent } from "../gst-knowledge-content"
+import { getGSTRatePreset, GST_RATE_CONFIG } from "../gst-rate-config"
+
+describe("GST production integration", () => {
+  it("registers one unique published Business calculator", () => { expect(calculatorRegistry.filter((item) => item.id === "gst-calculator")).toEqual([gstCalculatorDefinition]); expect(gstCalculatorDefinition).toMatchObject({ status: "published", category: "Business", canonicalPath: "/business/gst-calculator" }); expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(8) })
+  it("derives calculator and Business discovery from the registry", () => { expect(availableCalculators.map((item) => item.href)).toContain("/business/gst-calculator"); expect(businessCalculators.map((item) => item.href)).toEqual(["/business/gst-calculator"]); expect(popularCalculators.map((item) => item.href)).toContain("/business/gst-calculator") })
+  it("keeps calculator and editorial search separated", () => { const editorial = createEditorialSearchDocuments(); expect(editorial.map((item) => item.canonicalPath)).not.toContain("/business/gst-calculator"); expect(editorial.map((item) => item.canonicalPath)).toContain("/glossary/gst") })
+  it("publishes a substantive GST glossary relation", () => { const term = getGlossaryTermBySlug("gst"); expect(term).toMatchObject({ id: "glossary-gst", status: "published", canonicalPath: "/glossary/gst" }); expect(term!.sections.length).toBeGreaterThanOrEqual(4); expect(term!.relatedCalculators.map((item) => item.href)).toContain("/business/gst-calculator") })
+  it("does not publish a false Business topic", () => { expect(getPublicTopics().map(({ definition }) => definition.slug)).toEqual(["loans", "investing"]); expect(JSON.stringify(gstCalculatorDefinition)).not.toContain("/topics/business") })
+  it("includes calculator, glossary, and Business directory once without query URLs", () => { const urls = sitemap().map((item) => item.url); for (const path of ["/business", "/business/gst-calculator", "/glossary/gst"]) expect(urls.filter((url) => url === createCanonicalUrl(path))).toHaveLength(1); expect(urls.some((url) => url.includes("?"))).toBe(false) })
+  it("uses clean canonical metadata with OG and Twitter fields", () => { const metadata = createCalculatorMetadata(gstCalculatorDefinition); expect(metadata.alternates?.canonical).toBe(createCanonicalUrl("/business/gst-calculator")); expect(metadata.openGraph).toBeTruthy(); expect(metadata.twitter).toBeTruthy() })
+  it("centralizes unique presets, custom classification, and source records", () => { expect(GST_RATE_CONFIG.presets.map((item) => item.value)).toEqual([0, 5, 12, 18, 28]); expect(new Set(GST_RATE_CONFIG.presets.map((item) => item.value)).size).toBe(GST_RATE_CONFIG.presets.length); expect(getGSTRatePreset(18)?.label).toBe("18%"); expect(getGSTRatePreset(7.5)).toBeUndefined(); expect(GST_RATE_CONFIG.sources).toHaveLength(4); GST_RATE_CONFIG.sources.forEach((source) => { expect(source.checkedOn).toBe("2026-07-13"); expect(source.issuingAuthority).not.toBe(""); expect(source.claimSupported).not.toBe("") }) })
+  it("contains official references and rate/compliance limitations", () => { expect(gstKnowledgeContent.references).toHaveLength(4); const text = JSON.stringify(gstKnowledgeContent).toLowerCase(); for (const phrase of ["classification", "place-of-supply", "cess", "input tax credit", "reverse charge", "not tax or legal advice"]) expect(text).toContain(phrase) })
+  it("keeps copied results complete, label-aligned, finite, and free of negative zero", () => { const input = { amount: 1_000, gstRate: 0, calculationMode: "add" as const, supplyType: "inter-state" as const }; const text = createGSTResultText(input, { ...input, taxableValue: 1_000, totalGSTAmount: -0, invoiceValue: 1_000, cgstAmount: -0, sgstUtgstAmount: 0, igstAmount: -0 }); for (const phrase of ["GST rate entered: 0%", "Mode: Add GST", "Inter-State", "Taxable / exclusive value", "Total GST", "Invoice / inclusive value", "CGST", "SGST/UTGST", "IGST"]) expect(text).toContain(phrase); expect(text).not.toMatch(/NaN|Infinity|-₹0/); expect(formatGSTCurrency(-0)).toBe(formatGSTCurrency(0)) })
+  it("discloses independent display rounding without an invoice claim", () => { const text = JSON.stringify(gstKnowledgeContent).toLowerCase(); expect(text).toContain("round"); expect(text).toContain("invoice"); expect(gstCalculatorDefinition.description.toLowerCase()).not.toContain("invoice-ready") })
+  it("uses unique section and FAQ identifiers", () => { const ids = gstKnowledgeContent.sections.map((item) => item.id); expect(new Set(ids).size).toBe(ids.length); const questions = gstCalculatorDefinition.faqs.map((item) => item.question); expect(new Set(questions).size).toBe(questions.length) })
+})

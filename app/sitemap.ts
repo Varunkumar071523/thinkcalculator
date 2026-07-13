@@ -7,6 +7,7 @@ import { createCanonicalUrl } from "@/lib/seo"
 const staticRoutes = [
   { path: "/", changeFrequency: "weekly", priority: 1 },
   { path: "/finance", changeFrequency: "monthly", priority: 0.9 },
+  { path: "/business", changeFrequency: "monthly", priority: 0.8 },
   { path: "/calculators", changeFrequency: "monthly", priority: 0.9 },
   { path: "/blog", changeFrequency: "weekly", priority: 0.8 },
   { path: "/guides", changeFrequency: "monthly", priority: 0.8 },

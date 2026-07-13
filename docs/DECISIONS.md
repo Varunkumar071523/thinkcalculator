@@ -161,3 +161,11 @@ Statuses reflect the current platform and may be revisited when their triggers o
 - Decision: Verify time-sensitive claims against primary official sources, record the effective date, and avoid unsupported thresholds or rates.
 - Consequences: Slower but more defensible publishing; stale content needs review.
 - Revisit trigger: Never remove the requirement; revisit only the review workflow.
+
+## 21. GST remains user-selected arithmetic, not classification logic
+
+- Status: Accepted.
+- Context: GST rate classification and place-of-supply treatment depend on current law and transaction facts that a generic percentage calculator cannot safely infer.
+- Decision: Centralize common arithmetic presets and official source records, allow a custom rate, and require the user to select add/remove mode and intra/inter-State arithmetic. Do not determine a rate, place of supply, invoice compliance, credits, returns, or filing obligations.
+- Consequences: The tool can transparently add or remove an entered percentage and display tax heads without presenting legal or tax advice. Users must verify applicability externally.
+- Revisit trigger: A separately approved, source-maintained regulatory product with legal review and a defined update owner is proposed.
