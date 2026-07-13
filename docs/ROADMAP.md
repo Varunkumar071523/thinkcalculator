@@ -20,13 +20,15 @@ The roadmap is phased by capability and exit criteria, not arbitrary dates. Curr
 
 Continued publication within the existing engines is ongoing editorial work, not an unfinished Phase 2 platform capability. Savings stays non-public until its canonical registries contain the same substantive mix required of Loans and Investing.
 
-## Phase 3 — Calculator Expansion — Next
+## Phase 3 — Calculator Expansion — In Progress
 
 - Objective: broaden practical finance and business coverage without weakening validation quality.
-- Deliverables: candidates include CAGR, PPF, GST, gratuity, step-up SIP, SWP, inflation, retirement, income tax, and HRA calculators.
+- Deliverables: CAGR completed in Sprint 16; remaining candidates include PPF, GST, gratuity, step-up SIP, SWP, inflation, retirement, income tax, and HRA calculators.
 - Exit criteria: each selected calculator has typed inputs/results, pure logic, validation, tests, content, SEO, accessibility, and related links.
 - Dependencies: verified formulas and reliable official sources for regulatory rules.
 - Out of scope: launching every candidate at once or publishing unstable tax logic without a maintenance plan.
+
+PPF is the likely next candidate, subject to verifying its current rules against official sources and defining a maintenance plan before implementation.
 
 ## Phase 4 — Public Launch
 

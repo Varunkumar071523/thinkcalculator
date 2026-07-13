@@ -1,6 +1,6 @@
 # ThinkCalculator
 
-ThinkCalculator is an India-focused platform for transparent financial calculators and educational content. The current platform includes EMI, SIP, Lumpsum, FD, and RD calculators plus statically generated Blog, Guide, Glossary, Topic Hub, and editorial-search experiences.
+ThinkCalculator is an India-focused platform for transparent financial calculators and educational content. The current platform includes EMI, SIP, Lumpsum, FD, RD, and CAGR calculators plus statically generated Blog, Guide, Glossary, Topic Hub, and editorial-search experiences.
 
 Public learning hubs are available at `/topics`, with substantive initial clusters for loans and investing. Topic relationships use stable registry IDs and resolve live titles, descriptions, statuses, and paths from the calculator, editorial, and glossary registries. Those same relationships generate reciprocal, contextual navigation on eligible calculator, article, guide, and glossary pages, while each hub provides a linked learning path.
 

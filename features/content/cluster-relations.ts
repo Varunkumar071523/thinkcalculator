@@ -45,6 +45,7 @@ export function resolveClusterNavigation(
   const current = publicResources.find((item) => item.id === resourceId)
   const memberships = getPublicClusterMemberships(resourceId)
   if (!current || memberships.length === 0) return undefined
+  const currentType = current.type
 
   const resourcesByPath = new Map(publicResources.map((item) => [item.canonicalPath, item]))
   const resourcesById = new Map(publicResources.map((item) => [item.id, item]))
@@ -64,10 +65,19 @@ export function resolveClusterNavigation(
     if (!derivedPriority.has(id)) derivedPriority.set(id, derivedPriority.size)
   }
 
+  const matchingGlossaryId = currentType === "calculator"
+    ? `glossary-${current.id.replace(/-calculator$/, "")}`
+    : undefined
+  function contextualPriority(item: ClusterResourceLink): number {
+    if (item.id === matchingGlossaryId) return 0
+    if (currentType === "calculator" && item.id === "glossary-compounding") return 1
+    return 2
+  }
+
   const derived = derivedIds
     .map((id) => resourcesById.get(id))
     .filter((item): item is ClusterResourceLink => item !== undefined && item.type !== current.type)
-    .toSorted((left, right) => typeOrder[left.type as Exclude<ClusterResourceType, "topic">] - typeOrder[right.type as Exclude<ClusterResourceType, "topic">] || (derivedPriority.get(left.id) ?? Number.MAX_SAFE_INTEGER) - (derivedPriority.get(right.id) ?? Number.MAX_SAFE_INTEGER) || left.canonicalPath.localeCompare(right.canonicalPath, "en-IN"))
+    .toSorted((left, right) => typeOrder[left.type as Exclude<ClusterResourceType, "topic">] - typeOrder[right.type as Exclude<ClusterResourceType, "topic">] || contextualPriority(left) - contextualPriority(right) || (derivedPriority.get(left.id) ?? Number.MAX_SAFE_INTEGER) - (derivedPriority.get(right.id) ?? Number.MAX_SAFE_INTEGER) || left.canonicalPath.localeCompare(right.canonicalPath, "en-IN"))
 
   const typeCounts = new Map<ClusterResourceType, number>()
   for (const item of related) typeCounts.set(item.type, (typeCounts.get(item.type) ?? 0) + 1)

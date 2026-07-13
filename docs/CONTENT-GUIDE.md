@@ -26,6 +26,8 @@ Content discussing estimates must state that results are educational scenarios, 
 
 Every production calculator needs a unique title/description, input explanations, method or formula, assumptions, implementation-checked example, useful FAQs, related calculators, relevant learning links, and a factual disclaimer. Do not duplicate a full blog or guide merely to make a page longer.
 
+For CAGR content, describe a smoothed annualised endpoint rate rather than yearly performance or a forecast. Keep CAGR distinct from total return, disclose that volatility and intermediate cash flows are omitted, avoid arbitrary “good return” thresholds, and treat a zero ending value as a complete loss rather than invalid input.
+
 ## Blogs
 
 Blogs explain a concept or comparison. Use four to seven coherent structured sections where the subject warrants them, a practical example, a callout or table when useful, relevant calculators, related published content, and only genuinely useful FAQs.
