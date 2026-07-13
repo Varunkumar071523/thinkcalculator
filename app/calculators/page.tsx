@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
-import { IndianRupee, PiggyBank, TrendingUp, WalletCards } from "lucide-react"
+import { BarChart3, IndianRupee, Landmark, LineChart, PiggyBank, WalletCards } from "lucide-react"
 
 import { SiteContainer } from "@/components/layout/site-container"
 import { CalculatorCard } from "@/components/shared/calculator-card"
 import { Badge } from "@/components/ui/badge"
+import { calculatorRegistry } from "@/features/calculators/core/calculator-registry"
+import type { CalculatorSummary } from "@/types/site"
 
 export const metadata: Metadata = {
   title: "Calculators",
@@ -11,43 +13,25 @@ export const metadata: Metadata = {
   alternates: { canonical: "/calculators" },
 }
 
-const availableCalculators = [{
-  title: "EMI Calculator",
-  href: "/finance/emi-calculator",
-  description: "Calculate monthly EMI, total interest payable, and total loan repayment.",
-  category: "Finance",
-  icon: WalletCards,
-}, {
-  title: "SIP Calculator",
-  href: "/finance/sip-calculator",
-  description: "Estimate future value, total invested amount, and potential SIP returns.",
-  category: "Finance",
-  icon: TrendingUp,
-}, {
-  title: "Lumpsum Calculator",
-  href: "/finance/lumpsum-calculator",
-  description: "Estimate the future value and potential returns of a one-time investment.",
-  category: "Finance",
-  icon: PiggyBank,
-}, {
-  title: "FD Calculator",
-  href: "/finance/fd-calculator",
-  description: "Estimate fixed deposit maturity amount and interest earned.",
-  category: "Finance",
-  icon: IndianRupee,
-}, {
-  title: "RD Calculator",
-  href: "/finance/rd-calculator",
-  description: "Estimate recurring deposit maturity amount and interest earned.",
-  category: "Finance",
-  icon: PiggyBank,
-}, {
-  title: "CAGR Calculator",
-  href: "/finance/cagr-calculator",
-  description: "Calculate annualised compound growth, total return, and gain or loss.",
-  category: "Finance",
-  icon: TrendingUp,
-}]
+const iconBySlug = {
+  "emi-calculator": WalletCards,
+  "sip-calculator": LineChart,
+  "lumpsum-calculator": PiggyBank,
+  "fd-calculator": IndianRupee,
+  "rd-calculator": PiggyBank,
+  "cagr-calculator": LineChart,
+  "ppf-calculator": Landmark,
+} as const
+
+export const availableCalculators: CalculatorSummary[] = calculatorRegistry
+  .filter((calculator) => calculator.status === "published")
+  .map((calculator) => ({
+    title: calculator.title,
+    href: calculator.canonicalPath,
+    description: calculator.description,
+    category: calculator.category,
+    icon: iconBySlug[calculator.slug as keyof typeof iconBySlug] ?? BarChart3,
+  }))
 
 export default function CalculatorsPage() {
   return (

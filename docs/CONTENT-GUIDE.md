@@ -28,6 +28,8 @@ Every production calculator needs a unique title/description, input explanations
 
 For CAGR content, describe a smoothed annualised endpoint rate rather than yearly performance or a forecast. Keep CAGR distinct from total return, disclose that volatility and intermediate cash flows are omitted, avoid arbitrary “good return” thresholds, and treat a zero ending value as a complete loss rather than invalid input.
 
+For PPF content, cite primary Government of India sources for scheme rules. Describe 7.1% as an editable reference default with its verified effective basis, not as a guaranteed or unqualified current rate. Keep the beginning-of-year annual projection distinct from the official monthly lowest-balance rule, and do not imply that extension eligibility, withdrawals, loans, missed deposits, revival, closure, tax outcomes, or account-office processing are modeled.
+
 ## Blogs
 
 Blogs explain a concept or comparison. Use four to seven coherent structured sections where the subject warrants them, a practical example, a callout or table when useful, relevant calculators, related published content, and only genuinely useful FAQs.

@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
-import { IndianRupee, PiggyBank, TrendingUp, WalletCards } from "lucide-react"
+import { BarChart3, IndianRupee, Landmark, LineChart, PiggyBank, WalletCards } from "lucide-react"
 
 import { SiteContainer } from "@/components/layout/site-container"
 import { CalculatorCard } from "@/components/shared/calculator-card"
 import { Badge } from "@/components/ui/badge"
+import { calculatorRegistry } from "@/features/calculators/core/calculator-registry"
+import type { CalculatorSummary } from "@/types/site"
 
 export const metadata: Metadata = {
   title: "Finance Calculators",
@@ -11,47 +13,25 @@ export const metadata: Metadata = {
   alternates: { canonical: "/finance" },
 }
 
-const emiCalculator = {
-  title: "EMI Calculator",
-  href: "/finance/emi-calculator",
-  description: "Calculate monthly EMI, total interest, and total loan repayment.",
-  category: "Finance",
-  icon: WalletCards,
-}
+const iconBySlug = {
+  "emi-calculator": WalletCards,
+  "sip-calculator": LineChart,
+  "lumpsum-calculator": PiggyBank,
+  "fd-calculator": IndianRupee,
+  "rd-calculator": PiggyBank,
+  "cagr-calculator": LineChart,
+  "ppf-calculator": Landmark,
+} as const
 
-const sipCalculator = {
-  title: "SIP Calculator",
-  href: "/finance/sip-calculator",
-  description: "Estimate future value, invested amount, and potential SIP returns.",
-  category: "Finance",
-  icon: TrendingUp,
-}
-
-const lumpsumCalculator = {
-  title: "Lumpsum Calculator",
-  href: "/finance/lumpsum-calculator",
-  description: "Estimate the future value and potential returns of a one-time investment.",
-  category: "Finance",
-  icon: PiggyBank,
-}
-
-const fdCalculator = {
-  title: "FD Calculator",
-  href: "/finance/fd-calculator",
-  description: "Estimate fixed deposit maturity amount and interest earned.",
-  category: "Finance",
-  icon: IndianRupee,
-}
-
-const rdCalculator = {
-  title: "RD Calculator", href: "/finance/rd-calculator",
-  description: "Estimate recurring deposit maturity amount and interest earned.", category: "Finance", icon: PiggyBank,
-}
-
-const cagrCalculator = {
-  title: "CAGR Calculator", href: "/finance/cagr-calculator",
-  description: "Calculate annualised compound growth between beginning and ending values.", category: "Finance", icon: TrendingUp,
-}
+export const financeCalculators: CalculatorSummary[] = calculatorRegistry
+  .filter((calculator) => calculator.status === "published" && calculator.category === "Finance")
+  .map((calculator) => ({
+    title: calculator.title,
+    href: calculator.canonicalPath,
+    description: calculator.description,
+    category: calculator.category,
+    icon: iconBySlug[calculator.slug as keyof typeof iconBySlug] ?? BarChart3,
+  }))
 
 export default function FinancePage() {
   return (
@@ -63,7 +43,7 @@ export default function FinancePage() {
       </header>
       <section className="mt-12" aria-labelledby="available-finance-calculators-heading">
         <h2 id="available-finance-calculators-heading" className="text-2xl font-semibold tracking-tight">Available finance calculators</h2>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /><CalculatorCard calculator={sipCalculator} /><CalculatorCard calculator={lumpsumCalculator} /><CalculatorCard calculator={cagrCalculator} /><CalculatorCard calculator={fdCalculator} /><CalculatorCard calculator={rdCalculator} /></div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{financeCalculators.map((calculator) => <CalculatorCard key={calculator.href} calculator={calculator} />)}</div>
       </section>
     </SiteContainer>
   )

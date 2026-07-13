@@ -6,8 +6,9 @@ import { lumpsumCalculatorDefinition, lumpsumKnowledgeContent } from "@/features
 import { rdCalculatorDefinition, rdKnowledgeContent } from "@/features/calculators/rd"
 import { sipCalculatorDefinition, sipKnowledgeContent } from "@/features/calculators/sip"
 import { cagrCalculatorDefinition, cagrKnowledgeContent } from "@/features/calculators/cagr"
+import { ppfCalculatorDefinition, ppfKnowledgeContent } from "@/features/calculators/ppf"
 
-const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator"])
+const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator"])
 const calculators = [
   { definition: emiCalculatorDefinition, content: emiKnowledgeContent },
   { definition: sipCalculatorDefinition, content: sipKnowledgeContent },
@@ -15,11 +16,12 @@ const calculators = [
   { definition: fdCalculatorDefinition, content: fdKnowledgeContent },
   { definition: rdCalculatorDefinition, content: rdKnowledgeContent },
   { definition: cagrCalculatorDefinition, content: cagrKnowledgeContent },
+  { definition: ppfCalculatorDefinition, content: ppfKnowledgeContent },
 ]
 
 describe("calculator knowledge content", () => {
   it("is present and structurally complete for every production calculator", () => {
-    expect(calculators).toHaveLength(6)
+    expect(calculators).toHaveLength(7)
     for (const { content } of calculators) {
       expect(content.title.trim()).not.toBe("")
       expect(content.description.trim()).not.toBe("")
