@@ -42,6 +42,10 @@ The Glossary Engine stores typed terms in `features/content/glossary-registry.ts
 
 Topic hubs connect existing published resources into a useful learning path; they are not category archives or title-only lists. Curate stable resource IDs only where the taxonomy cannot safely derive the relationship, and always resolve public titles, descriptions, and paths from their canonical registries. A public hub needs a meaningful overview, clear start-here guidance, unique metadata, and at least one live calculator, blog, guide, and glossary term. Draft, unresolved, unpublished, and sparse definitions must remain outside public lookup, static parameters, navigation, and sitemap.
 
+## Editorial search
+
+The public `/search?q={query}` experience derives documents from canonical published Blog, Guide, Glossary, and eligible Topic registries. Do not create a manually copied search-content registry. Drafts, sparse or unresolved topics, unavailable routes, and calculators are excluded; calculator discovery remains a separate homepage and calculator-directory experience. Search uses titles, concise descriptions, reviewed taxonomy, keywords, and topic summaries rather than full rendered bodies. Submitted queries are trimmed, whitespace-collapsed, lower-cased, capped at 120 characters, and safely encoded as the sole `q` parameter; blank queries return to `/search`. Query URLs are shareable but canonicalise to the useful, indexable `/search` discovery page and are never added to the sitemap.
+
 ## Internal links
 
 - Link only to live routes and published editorial content; never use `href="#"`.
@@ -56,7 +60,7 @@ Topic hubs connect existing published resources into a useful learning path; the
 - Canonicals use the production origin and stable clean path.
 - Use BlogPosting for blogs and Article for general guides; use FAQPage only for visible, useful FAQs.
 - Include only factual headline, description, URL, dates, author name, publisher, and main page fields.
-- Never add ratings, review counts, fake images, fake credentials, or a SearchAction without a stable search route.
+- Never add ratings, review counts, fake images, fake credentials, or a SearchAction without a stable search route. The existing WebSite SearchAction must continue to match `/search?q={search_term_string}` exactly.
 
 ## FAQ rules
 
