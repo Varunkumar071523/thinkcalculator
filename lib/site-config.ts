@@ -32,6 +32,7 @@ export const mainNavigation: SiteLink[] = [
   { title: "Finance", href: "/finance" },
   { title: "Blog", href: "/blog" },
   { title: "Guides", href: "/guides" },
+  { title: "Glossary", href: "/glossary" },
 ]
 
 export const categories: SiteCategory[] = [
@@ -86,6 +87,7 @@ export const footerGroups: FooterGroup[] = [
     links: [
       { title: "Blog", href: "/blog" },
       { title: "Guides", href: "/guides" },
+      { title: "Glossary", href: "/glossary" },
       { title: "Health", href: "/health" },
       { title: "Education", href: "/education" },
     ],

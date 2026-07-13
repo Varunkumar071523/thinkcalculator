@@ -10,10 +10,10 @@ The roadmap is phased by capability and exit criteria, not arbitrary dates. Curr
 - Dependencies: Next.js application toolchain and version-controlled content.
 - Out of scope: live deployment and ongoing content expansion.
 
-## Phase 2 — Topic Authority — Next
+## Phase 2 — Topic Authority — In progress
 
 - Objective: connect calculators with a useful, navigable learning layer.
-- Deliverables: Glossary Engine, topic/category hubs, editorial search, expanded internal links, and focused content clusters.
+- Deliverables: Glossary Engine (complete), topic/category hubs, editorial search, expanded internal links, and focused content clusters.
 - Exit criteria: every public glossary and hub route has substantive content, metadata, schema where accurate, tests, and sitemap coverage; search has a stable public route before any SearchAction is added.
 - Dependencies: current editorial taxonomy and registry conventions; editorial review capacity.
 - Out of scope: mass-generated articles, CMS migration, and personalised recommendations.

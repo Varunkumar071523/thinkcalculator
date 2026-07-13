@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next"
 
 import { calculatorRegistry } from "@/features/calculators/core/calculator-registry"
-import { getPublishedContent } from "@/features/content"
+import { getPublishedContent, getPublishedGlossaryTerms } from "@/features/content"
 import { createCanonicalUrl } from "@/lib/seo"
 
 const staticRoutes = [
@@ -10,6 +10,7 @@ const staticRoutes = [
   { path: "/calculators", changeFrequency: "monthly", priority: 0.9 },
   { path: "/blog", changeFrequency: "weekly", priority: 0.8 },
   { path: "/guides", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/glossary", changeFrequency: "monthly", priority: 0.8 },
   { path: "/about", changeFrequency: "yearly", priority: 0.5 },
   { path: "/contact", changeFrequency: "yearly", priority: 0.4 },
   { path: "/disclaimer", changeFrequency: "yearly", priority: 0.4 },
@@ -24,5 +25,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }))
 
   const editorial = getPublishedContent().map((item) => ({ url: createCanonicalUrl(item.canonicalPath), lastModified: item.updatedAt ?? item.publishedAt, changeFrequency: "monthly" as const, priority: 0.7 }))
-  return [...staticRoutes.map((route) => ({ url: createCanonicalUrl(route.path), changeFrequency: route.changeFrequency, priority: route.priority })), ...calculators, ...editorial]
+  const glossary = getPublishedGlossaryTerms().map((item) => ({ url: createCanonicalUrl(item.canonicalPath), changeFrequency: "monthly" as const, priority: 0.7 }))
+  return [...staticRoutes.map((route) => ({ url: createCanonicalUrl(route.path), changeFrequency: route.changeFrequency, priority: route.priority })), ...calculators, ...editorial, ...glossary]
 }
