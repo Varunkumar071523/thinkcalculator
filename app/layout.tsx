@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 
 import { SiteFooter } from "@/components/layout/site-footer"
 import { SiteHeader } from "@/components/layout/site-header"
-import { createCanonicalUrl, createOpenGraph } from "@/lib/seo"
+import { createCanonicalUrl, createOpenGraph, createRootStructuredData } from "@/lib/seo"
 import { siteConfig } from "@/lib/site-config"
 import "./globals.css"
 
@@ -21,13 +21,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-const rootStructuredData = {
-  "@context": "https://schema.org",
-  "@graph": [
-    { "@type": "Organization", "@id": `${siteConfig.url}/#organization`, name: siteConfig.name, url: siteConfig.url },
-    { "@type": "WebSite", "@id": `${siteConfig.url}/#website`, name: siteConfig.name, url: siteConfig.url, description: siteConfig.description, publisher: { "@id": `${siteConfig.url}/#organization` }, inLanguage: "en-IN" },
-  ],
-}
+const rootStructuredData = createRootStructuredData()
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

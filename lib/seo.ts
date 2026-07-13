@@ -23,6 +23,29 @@ export function createCanonicalUrl(path = "/"): string {
   return new URL(path, `${siteConfig.url}/`).toString()
 }
 
+export function createRootStructuredData() {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "Organization", "@id": `${siteConfig.url}/#organization`, name: siteConfig.name, url: siteConfig.url },
+      {
+        "@type": "WebSite",
+        "@id": `${siteConfig.url}/#website`,
+        name: siteConfig.name,
+        url: siteConfig.url,
+        description: siteConfig.description,
+        publisher: { "@id": `${siteConfig.url}/#organization` },
+        inLanguage: "en-IN",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: { "@type": "EntryPoint", urlTemplate: `${siteConfig.url}/search?q={search_term_string}` },
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
+  }
+}
+
 export function createOpenGraph({ title, description, path }: Pick<PageMetadataOptions, "title" | "description" | "path">): NonNullable<Metadata["openGraph"]> {
   return { type: "website", locale: "en_IN", url: createCanonicalUrl(path), siteName: siteConfig.name, title, description, images: [socialImage] }
 }

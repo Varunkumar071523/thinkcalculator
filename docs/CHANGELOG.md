@@ -10,6 +10,7 @@ This changelog summarises project milestones. No semantic version or release dat
 - Architecture guide and phased roadmap.
 - Contribution guide, editorial handbook, production checklist, and architecture decision log.
 - Static Topic Hub engine with `/topics`, Loans and Investing hubs, hybrid stable-ID relationships, public eligibility validation, breadcrumb schema, and sitemap coverage.
+- Registry-derived editorial search at `/search?q=...` for published blogs, guides, glossary terms, and eligible topic hubs, with deterministic ranking, static-shell rendering, canonical/sitemap coverage, and WebSite SearchAction.
 
 ## Milestone: Platform Foundation
 

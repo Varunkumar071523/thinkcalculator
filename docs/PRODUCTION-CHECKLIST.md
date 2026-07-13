@@ -11,7 +11,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 2. Tests
 
-- [x] `npm run test` passes: 173 tests in 21 files after Sprint 13.
+- [x] `npm run test` passes: 190 tests in 22 files after Sprint 14 review.
 - [x] Core calculations, URL state, schedules, registries, content exclusions, and production configuration have automated coverage.
 - [ ] Re-run the full suite on the release commit in CI or the deployment environment.
 
@@ -28,6 +28,8 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 - [x] Four editorial routes are generated from published registry items.
 - [x] Six glossary term routes are generated from published registry items.
 - [x] Two substantive topic routes are generated from eligible published definitions; draft and sparse topics are excluded.
+- [x] `/search` keeps a static page shell and derives results client-side from a small public registry projection behind Suspense.
+- [x] The production build generates 41 static/SSG pages in the Sprint 14 baseline.
 - [x] Invalid and draft editorial slugs return not found.
 - [ ] Inspect the final hosting route table and representative responses.
 
@@ -35,11 +37,13 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 - [x] Reusable metadata helpers, unique canonicals, Open Graph, and Twitter metadata exist.
 - [x] Calculator query state is excluded from canonical URLs.
+- [x] Editorial search query URLs canonicalise to clean `/search`; the queryless discovery page is intentionally indexable.
 - [ ] Crawl the live site for duplicate/missing titles, descriptions, canonicals, and broken links.
 
 ## 6. Sitemap and robots
 
 - [x] Sitemap includes static routes, published calculators, Blog/Guide/Glossary/Topic indexes, published editorial content, published glossary terms, and substantive public topic hubs.
+- [x] Sitemap includes clean `/search` once and excludes every search query URL.
 - [x] Draft editorial content is excluded.
 - [x] Robots metadata route exists.
 - [ ] Open and validate live `/sitemap.xml` and `/robots.txt`.
@@ -57,6 +61,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 - [x] Editorial Article/BlogPosting and visible FAQ schema exist.
 - [x] Glossary pages use visible factual DefinedTerm schema.
 - [x] Topic pages use breadcrumb schema matching visible navigation.
+- [x] The existing WebSite object has one factual SearchAction matching `/search?q={search_term_string}`; no SearchResultsPage schema is emitted.
 - [x] Unsupported ratings, reviews, and credentials are omitted.
 - [ ] Validate representative live pages with schema testing tools.
 
@@ -69,7 +74,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 10. Browser testing
 
-- [ ] Test current Chrome, Firefox, Safari, and Edge.
+- [ ] Test current Chrome, Firefox, Safari, and Edge, including search submission, refresh, and back/forward navigation.
 - [ ] Verify navigation, forms, sharing, clipboard, schedules, errors, and editorial anchors.
 
 ## 11. Mobile testing
@@ -143,6 +148,6 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 24. Post-launch smoke tests
 
-- [ ] Check homepage, navigation, calculator indexes, all five calculators, Blog, Guides, representative articles, 404, robots, sitemap, manifest, icons, and social image.
+- [ ] Check homepage, navigation, calculator indexes, all five calculators, Blog, Guides, editorial search states, representative articles, 404, robots, sitemap, manifest, icons, and social image.
 - [ ] Run a representative calculation, share/reopen its URL, copy, print, and inspect schedules/charts.
 - [ ] Check mobile/desktop accessibility, metadata, schema, headers, analytics, logs, and monitoring.

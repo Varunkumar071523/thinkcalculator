@@ -26,6 +26,8 @@ validation + URL state  taxonomy + relations  examples + relations
         \                     |                    /
        topic registry resolves stable IDs
                     |
+       derived public editorial search index
+                    |
          Next.js App Router pages
            |              |
      Server Components  small Client Components
@@ -43,7 +45,7 @@ Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI using Ba
 
 Public shells, directories, calculator knowledge content, blog indexes, and guide indexes are statically rendered. Dynamic editorial segments use `generateStaticParams`; `dynamicParams = false` prevents unregistered slugs from becoming public pages. Static generation is preferred because the data is version-controlled and does not require request-time personalisation.
 
-Server Components are the default. A Client Component is used only when browser state or events are required, such as calculator inputs, query-state synchronisation, clipboard actions, printing, or the mobile sheet. Calculation modules remain framework-independent.
+Server Components are the default. A Client Component is used only when browser state or events are required, such as calculator inputs, query-state synchronisation, clipboard actions, printing, or the mobile sheet. `/search` keeps its page shell static and places `useSearchParams` inside a focused Client Component and Suspense boundary, so query URLs work with refresh and browser history without forcing request-time rendering. Calculation and search-ranking modules remain framework-independent.
 
 ## 6. Folder structure
 
@@ -64,6 +66,7 @@ Server Components are the default. A Client Component is used only when browser 
 - Indexes: `/calculators`, `/finance`, `/blog`, and `/guides`.
 - Glossary: `/glossary` and `/glossary/[slug]`.
 - Topics: `/topics` and `/topics/[slug]`.
+- Editorial resource search: `/search?q={query}`; the canonical document is always clean `/search`.
 - Calculator routes remain query-canonical: shareable input state may use a query string, while canonical metadata always identifies the clean path without query parameters.
 - Missing, draft, or wrong-type editorial slugs return not found and are omitted from static parameters.
 
@@ -99,17 +102,19 @@ The glossary follows the same pattern through a separate typed registry. Publish
 
 Topic definitions curate relationships with stable calculator, editorial, and glossary IDs while resolving display data and canonical paths from the owning registries. A topic is public only when it is published, has a meaningful overview and three-step learning path, resolves every reference to published content, and contains at least one calculator, blog, guide, and glossary term. This keeps draft, unresolved, and sparse topics out of lookup, static parameters, navigation, and sitemap. The initial public hubs are Loans and Investing; Savings remains registered only as a non-public eligibility case because its current public mix is calculator-only.
 
+Editorial search derives a small typed document projection from published editorial entries, published glossary terms, and eligible public topics. It does not own or duplicate canonical content and intentionally excludes calculators, drafts, sparse topics, unresolved topics, and unavailable routes. Client query utilities are isolated from registry-backed index construction so only derived public documents cross the Client Component boundary. Query processing trims and collapses whitespace, compares case-insensitively, caps effective input at 120 characters, and uses literal substring checks. Submissions and incoming query URLs are normalised to a single encoded `q` value; blank queries return to clean `/search`. Ranking is exact title, title prefix, title substring, keyword/category/tag/alias, then description, with title and path tie-breakers.
+
 ## 15. SEO architecture
 
-`lib/seo.ts` centralises canonical URL, page, calculator, editorial, Open Graph, and Twitter metadata. Root metadata supplies the site defaults. `app/sitemap.ts` combines stable routes, published calculators, published editorial and glossary entries, and public substantive topics; `app/robots.ts` exposes crawl rules. There is no `SearchAction` because no stable public search route exists.
+`lib/seo.ts` centralises canonical URL, page, calculator, editorial, Open Graph, Twitter metadata, and root structured data. Root metadata supplies the site defaults. `app/sitemap.ts` combines stable routes, published calculators, published editorial and glossary entries, and public substantive topics; `app/robots.ts` exposes crawl rules. The useful queryless `/search` page is indexable and appears once in the sitemap, while query URLs remain canonical to `/search` and never appear in the sitemap. The existing WebSite graph includes a factual SearchAction for `/search?q={search_term_string}`.
 
 ## 16. Structured data
 
-Only visible, factual data is encoded. The root uses Organization and WebSite data. Editorial pages use BlogPosting or Article and useful FAQ data. Calculator and breadcrumb schema is used where supported by visible content; topic pages use BreadcrumbList matching their visible breadcrumbs. Ratings, review counts, fake credentials, fake images, and unsupported claims are prohibited.
+Only visible, factual data is encoded. The root uses Organization and WebSite data, with the implemented editorial search represented by one SearchAction on the existing WebSite object. Editorial pages use BlogPosting or Article and useful FAQ data. Calculator and breadcrumb schema is used where supported by visible content; topic pages use BreadcrumbList matching their visible breadcrumbs. Ratings, review counts, fake credentials, fake images, SearchResultsPage schema, and unsupported claims are prohibited.
 
 ## 17. Testing strategy
 
-Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. The Sprint 13 suite contains 173 tests across 21 files, including topic eligibility, relationship, static-route, sitemap, metadata, and exclusion invariants.
+Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. The Sprint 14 suite contains 190 tests across 22 files, including search query boundaries, URL encoding, repeated-parameter handling, live-route integrity, deterministic ranking, sitemap, SearchAction, and public-content exclusion invariants.
 
 ## 18. Accessibility principles
 
