@@ -1,6 +1,7 @@
 export * from "./content-registry"
 export * from "./content-types"
 export * from "./content-utils"
+export * from "./cluster-relations"
 export * from "./editorial-search"
 export * from "./editorial-search-query"
 export * from "./reading-time"

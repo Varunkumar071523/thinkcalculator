@@ -10,15 +10,17 @@ The roadmap is phased by capability and exit criteria, not arbitrary dates. Curr
 - Dependencies: Next.js application toolchain and version-controlled content.
 - Out of scope: live deployment and ongoing content expansion.
 
-## Phase 2 — Topic Authority — In progress
+## Phase 2 — Topic Authority — Complete
 
 - Objective: connect calculators with a useful, navigable learning layer.
-- Deliverables: Glossary Engine (complete), topic/category hubs (complete), editorial search (complete), expanded internal links, and focused content clusters.
-- Exit criteria: every public glossary and hub route has substantive content, metadata, schema where accurate, tests, and sitemap coverage; search has a stable public route before any SearchAction is added.
+- Deliverables: Glossary Engine, topic/category hubs, editorial search, expanded reciprocal internal links, and focused content clusters.
+- Exit criteria: met in Sprint 15. Public glossary and hub routes have substantive content, metadata, accurate schema, tests, sitemap coverage, linked learning paths, and reciprocal contextual navigation; the stable search route backs the existing SearchAction.
 - Dependencies: current editorial taxonomy and registry conventions; editorial review capacity.
 - Out of scope: mass-generated articles, CMS migration, and personalised recommendations.
 
-## Phase 3 — Calculator Expansion
+Continued publication within the existing engines is ongoing editorial work, not an unfinished Phase 2 platform capability. Savings stays non-public until its canonical registries contain the same substantive mix required of Loans and Investing.
+
+## Phase 3 — Calculator Expansion — Next
 
 - Objective: broaden practical finance and business coverage without weakening validation quality.
 - Deliverables: candidates include CAGR, PPF, GST, gratuity, step-up SIP, SWP, inflation, retirement, income tax, and HRA calculators.

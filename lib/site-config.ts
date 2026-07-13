@@ -35,6 +35,8 @@ export const mainNavigation: SiteLink[] = [
   { title: "Glossary", href: "/glossary" },
 ]
 
+export const calculatorSearchPath = "/calculators" as const
+
 export const categories: SiteCategory[] = [
   {
     title: "Finance",

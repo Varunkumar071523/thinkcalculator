@@ -40,7 +40,7 @@ The Glossary Engine stores typed terms in `features/content/glossary-registry.ts
 
 ## Topic hubs
 
-Topic hubs connect existing published resources into a useful learning path; they are not category archives or title-only lists. Curate stable resource IDs only where the taxonomy cannot safely derive the relationship, and always resolve public titles, descriptions, and paths from their canonical registries. A public hub needs a meaningful overview, clear start-here guidance, unique metadata, and at least one live calculator, blog, guide, and glossary term. Draft, unresolved, unpublished, and sparse definitions must remain outside public lookup, static parameters, navigation, and sitemap.
+Topic hubs connect existing published resources into a useful learning path; they are not category archives or title-only lists. Curate stable resource IDs only where the taxonomy cannot safely derive the relationship, and always resolve public titles, descriptions, and paths from their canonical registries. Start-here steps must name unique live member IDs and render as a semantic linked sequence. A public hub needs a meaningful overview, clear start-here guidance, unique metadata, and at least one live calculator, blog, guide, and glossary term. Draft, unresolved, unpublished, and sparse definitions must remain outside public lookup, static parameters, navigation, and sitemap.
 
 ## Editorial search
 
@@ -51,6 +51,9 @@ The public `/search?q={query}` experience derives documents from canonical publi
 - Link only to live routes and published editorial content; never use `href="#"`.
 - Use `next/link` for internal application links and safe `rel` attributes for external links.
 - Prefer contextual, meaningful text over repeated exact-match phrases.
+- Treat eligible topic definitions as the canonical source of cluster membership. Every public member must link back to its hub through the shared cluster resolver rather than a copied relationship list.
+- Preserve valid authored related links in their declared order, then use deterministic topic-derived links in the topic definition's curated member order to fill useful missing resource types. Remove self-links and duplicate canonical paths, and keep the final set intentionally small.
+- Resolve titles, descriptions, publication status, and canonical paths from the calculator, editorial, and glossary registries; do not duplicate those values in cluster components.
 - Do not expose category or tag links until stable non-empty routes exist.
 - Drafts must remain outside public lists, relations, static params, and sitemap.
 
@@ -111,6 +114,7 @@ AI output is a draft, not evidence. A plausible statement without a verified sou
 - [ ] Metadata, canonical, publication status, and dates are accurate.
 - [ ] Headings, lists, callouts, tables, FAQs, and disclaimers are useful and accessible.
 - [ ] All calculator and editorial links resolve to live published routes.
+- [ ] Eligible cluster members link reciprocally to their topic hub, and each learning-path destination is live, unique, and ordered intentionally.
 - [ ] Draft exclusion and structured data are correct.
 - [ ] Mobile table overflow, keyboard focus, and heading order are checked.
 

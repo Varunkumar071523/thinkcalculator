@@ -5,7 +5,7 @@ import { MobileNavigation } from "@/components/layout/mobile-navigation"
 import { SiteContainer } from "@/components/layout/site-container"
 import { BrandLogo } from "@/components/shared/brand-logo"
 import { Button } from "@/components/ui/button"
-import { mainNavigation } from "@/lib/site-config"
+import { calculatorSearchPath, mainNavigation } from "@/lib/site-config"
 
 export function SiteHeader() {
   return (
@@ -20,7 +20,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-1">
-          <Button className="hidden sm:inline-flex" variant="outline" nativeButton={false} render={<Link href="/calculators" />}>
+          <Button className="hidden sm:inline-flex" variant="outline" nativeButton={false} render={<Link href={calculatorSearchPath} />}>
             <Search aria-hidden="true" /> Search
           </Button>
           <div className="lg:hidden"><MobileNavigation /></div>
