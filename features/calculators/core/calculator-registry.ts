@@ -9,6 +9,7 @@ import { lumpsumCalculatorDefinition } from "@/features/calculators/lumpsum/lump
 import { fdCalculatorDefinition } from "@/features/calculators/fd/fd-definition"
 import { rdCalculatorDefinition } from "@/features/calculators/rd/rd-definition"
 import { cagrCalculatorDefinition } from "@/features/calculators/cagr/cagr-definition"
+import { ppfCalculatorDefinition } from "@/features/calculators/ppf/ppf-definition"
 
 export const demoCalculatorDefinition = {
   id: "framework-demo",
@@ -126,6 +127,7 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   fdCalculatorDefinition,
   rdCalculatorDefinition,
   cagrCalculatorDefinition,
+  ppfCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(

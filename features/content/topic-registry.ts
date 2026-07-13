@@ -45,7 +45,7 @@ export const topicRegistry: readonly TopicDefinition[] = [
     description: "Deposit and savings calculations.",
     metadata: { title: "Savings Learning Hub", description: "A future learning hub for savings calculators and educational resources." },
     overview: ["This candidate remains private until it has a useful mix of reviewed learning resources."],
-    startHere: [], calculatorIds: ["fd-calculator", "rd-calculator"], editorialIds: [], glossaryIds: [],
+    startHere: [], calculatorIds: ["fd-calculator", "rd-calculator", "ppf-calculator"], editorialIds: [], glossaryIds: ["glossary-ppf"],
   },
   {
     id: "topic-borrowing-basics", slug: "borrowing-basics", name: "Borrowing Basics", canonicalPath: "/topics/borrowing-basics", status: "draft",

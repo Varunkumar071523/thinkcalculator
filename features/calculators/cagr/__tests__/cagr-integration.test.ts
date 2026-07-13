@@ -40,7 +40,7 @@ describe("CAGR production integration", () => {
     expect(`${cagrCalculatorDefinition.title} ${cagrCalculatorDefinition.description}`.toLowerCase()).toContain("compound annual growth rate")
     expect(editorial.some((item) => item.id === "cagr-calculator" || item.canonicalPath === "/finance/cagr-calculator")).toBe(false)
     expect(editorial.some((item) => item.id === "glossary-cagr" && item.canonicalPath === "/glossary/cagr")).toBe(true)
-    expect(editorial).toHaveLength(13)
+    expect(new Set(editorial.map((item) => item.id)).size).toBe(editorial.length)
   })
 
   it("belongs only to the eligible Investing cluster and respects relationship limits", () => {

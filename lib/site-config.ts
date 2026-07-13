@@ -72,6 +72,7 @@ export const popularCalculators: CalculatorSummary[] = [
   { title: "FD Calculator", href: "/finance/fd-calculator", description: "Estimate fixed-deposit maturity value and interest.", category: "Finance", icon: IndianRupee },
   { title: "RD Calculator", href: "/finance/rd-calculator", description: "Estimate recurring-deposit maturity value and interest.", category: "Finance", icon: PiggyBank },
   { title: "CAGR Calculator", href: "/finance/cagr-calculator", description: "Calculate annualised compound growth between two values.", category: "Finance", icon: TrendingUp },
+  { title: "PPF Calculator", href: "/finance/ppf-calculator", description: "Estimate PPF maturity under a constant-rate assumption.", category: "Finance", icon: Landmark },
 ]
 
 export const footerGroups: FooterGroup[] = [

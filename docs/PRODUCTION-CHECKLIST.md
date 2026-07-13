@@ -11,7 +11,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 2. Tests
 
-- [x] `npm run test` passes: 270 tests in 27 files after Sprint 16 review hardening.
+- [x] `npm run test` passes: 351 tests across 31 files after final Sprint 17 review hardening.
 - [x] Core calculations, URL state, schedules, registries, content exclusions, cluster reciprocity, learning-path integrity, search/sitemap boundaries, and production configuration have automated coverage.
 - [ ] Re-run the full suite on the release commit in CI or the deployment environment.
 
@@ -26,10 +26,10 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 - [x] Current public routes build as static or SSG output.
 - [x] Four editorial routes are generated from published registry items.
-- [x] Seven glossary term routes are generated from published registry items.
+- [x] Eight glossary term routes are generated from published registry items.
 - [x] Two substantive topic routes are generated from eligible published definitions; draft and sparse topics are excluded.
 - [x] `/search` keeps a static page shell and derives results client-side from a small public registry projection behind Suspense.
-- [x] The production build generates 43 static/SSG pages in the Sprint 16 baseline, including the CAGR calculator and CAGR glossary term.
+- [x] The Sprint 17 production build generates 45 static/SSG pages, including `/finance/ppf-calculator` and `/glossary/ppf` exactly once.
 - [x] Invalid and draft editorial slugs return not found.
 - [x] Eligible calculator, editorial, and glossary cluster members expose reciprocal hub navigation; sparse, unresolved, draft, and non-member resources do not render a false cluster section.
 - [x] Public topic learning paths are ordered, linked to live unique destinations, keyboard reachable, and free of nested interactive controls.
@@ -87,7 +87,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 12. Calculator validation
 
-- [x] Six production calculators have unit tests and worked examples.
+- [x] Seven production calculators have unit tests and worked examples.
 - [x] Validation is separate from pure calculation logic.
 - [ ] Cross-check representative scenarios against independent trusted calculations.
 - [ ] Verify rounding, extremes, invalid input, and provider-specific caveats manually.
@@ -150,6 +150,6 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 24. Post-launch smoke tests
 
-- [ ] Check homepage, navigation, calculator indexes, all six calculators, Blog, Guides, editorial search states, representative articles, 404, robots, sitemap, manifest, icons, and social image.
+- [ ] Check homepage, navigation, calculator indexes, all seven calculators, Blog, Guides, editorial search states, representative articles, 404, robots, sitemap, manifest, icons, and social image.
 - [ ] Run a representative calculation, share/reopen its URL, copy, print, and inspect schedules/charts.
 - [ ] Check mobile/desktop accessibility, metadata, schema, headers, analytics, logs, and monitoring.

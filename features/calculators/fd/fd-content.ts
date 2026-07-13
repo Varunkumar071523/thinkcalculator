@@ -15,7 +15,7 @@ export const fdRelatedCalculators: readonly RelatedCalculator[] = [
   { slug: "rd", title: "RD Calculator", description: "Explore tools for recurring deposits.", href: "/calculators", category: "Finance" },
   { slug: "sip-calculator", title: "SIP Calculator", description: "Estimate the future value of monthly SIP contributions.", href: "/finance/sip-calculator", category: "Finance" },
   { slug: "lumpsum-calculator", title: "Lumpsum Calculator", description: "Estimate the future value of a one-time investment.", href: "/finance/lumpsum-calculator", category: "Finance" },
-  { slug: "ppf", title: "PPF Calculator", description: "Explore tools for long-term PPF savings.", href: "/calculators", category: "Finance" },
+  { slug: "ppf-calculator", title: "PPF Calculator", description: "Estimate annual PPF contributions under a constant-rate assumption.", href: "/finance/ppf-calculator", category: "Finance" },
 ]
 
 const exampleResult = calculateFD({

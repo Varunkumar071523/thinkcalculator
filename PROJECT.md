@@ -5,14 +5,14 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 ## Current status
 
 - Phase: Phase 3 Calculator Expansion in progress.
-- Milestone: Sprint 16 CAGR Calculator complete.
+- Milestone: Sprint 17 PPF Calculator complete.
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI (Base/Nova), and Vitest.
 - Architecture: static rendering where practical, Server Components by default, typed version-controlled registries, and no Version 1 database.
-- Verification baseline: 270 automated tests passing across 27 test files; lint and the 43-page production build pass.
+- Verification baseline: 351 automated tests pass across 31 test files; lint and the 45-page production build pass.
 
 ## Completed capabilities
 
-- Six production finance calculators: EMI, SIP, Lumpsum, FD, RD, and CAGR.
+- Seven production finance calculators: EMI, SIP, Lumpsum, FD, RD, CAGR, and PPF.
 - Typed validation and pure calculation functions separated from UI.
 - Calculator discovery and calculator-only homepage search.
 - Validated shareable query URLs, copyable results, browser Print / Save as PDF, accessible charts, and schedules.
@@ -20,7 +20,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - SEO metadata helpers, canonical URLs, sitemap, robots, factual structured data, manifest, icons, and social-image routes.
 - Production headers, custom not-found/error experiences, and accessibility-oriented navigation.
 - Typed Blog and Guide engine with four published items and one draft excluded from routes, lists, related content, and sitemap.
-- Typed Glossary Engine with seven substantive published terms, one excluded draft, static routes, DefinedTerm schema, internal links, and sitemap coverage.
+- Typed Glossary Engine with eight substantive published terms, one excluded draft, static routes, DefinedTerm schema, internal links, and sitemap coverage.
 - Typed Topic Hub engine with public `/topics/loans` and `/topics/investing` clusters, curated stable-ID relationships, substantive eligibility checks, static routes, breadcrumb schema, and sitemap coverage.
 - Registry-derived reciprocal cluster navigation on eligible calculator, editorial, and glossary pages, with authored-link precedence, deterministic type-balanced fallbacks, canonical-path deduplication, and linked ordered hub learning paths.
 - Static `/search` shell with a focused Suspense-wrapped Client Component, registry-derived public editorial documents, deterministic literal matching, clean canonical metadata, sitemap coverage, and a factual WebSite SearchAction.
@@ -30,6 +30,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - Production deployment, DNS, HTTPS, analytics, webmaster tools, backups, rollback, and live browser validation remain unverified.
 - Editorial search intentionally excludes calculators; homepage search remains calculator-only and `/search` does not provide typo correction, stemming, or fuzzy matching.
 - A savings hub is intentionally withheld until published editorial and glossary coverage makes it substantive rather than calculator-only.
+- PPF uses a simplified beginning-of-year annual contribution model. Actual monthly balance eligibility, future notified rates, account events, taxes, and account-office processing are outside the projection.
 - Financial results are estimates; provider rules, taxes, fees, market movement, and rounding may differ.
 - Google-hosted Geist fonts require network access during a clean production build.
 - Current editorial content is intentionally small and maintained directly in TypeScript.
@@ -42,7 +43,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 
 ## Next phase
 
-Continue Phase 3 Calculator Expansion by selecting the next calculator against formula stability, source quality, maintenance cost, and user value. CAGR is the first completed Phase 3 calculator. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
+Continue Phase 3 Calculator Expansion by selecting the next calculator against formula stability, source quality, maintenance cost, and user value. CAGR and PPF are complete. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
 
 ## Validation
 
