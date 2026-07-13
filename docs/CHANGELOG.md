@@ -9,6 +9,7 @@ This changelog summarises project milestones. No semantic version or release dat
 - Documentation freeze and current operational status.
 - Architecture guide and phased roadmap.
 - Contribution guide, editorial handbook, production checklist, and architecture decision log.
+- Static Topic Hub engine with `/topics`, Loans and Investing hubs, hybrid stable-ID relationships, public eligibility validation, breadcrumb schema, and sitemap coverage.
 
 ## Milestone: Platform Foundation
 

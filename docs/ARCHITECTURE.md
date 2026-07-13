@@ -24,6 +24,8 @@ calculator registry     editorial registry    glossary registry
 pure calculations       structured sections   defined terms
 validation + URL state  taxonomy + relations  examples + relations
         \                     |                    /
+       topic registry resolves stable IDs
+                    |
          Next.js App Router pages
            |              |
      Server Components  small Client Components
@@ -61,6 +63,7 @@ Server Components are the default. A Client Component is used only when browser 
 - Blogs: `/blog/[slug]`; guides: `/guides/[slug]`.
 - Indexes: `/calculators`, `/finance`, `/blog`, and `/guides`.
 - Glossary: `/glossary` and `/glossary/[slug]`.
+- Topics: `/topics` and `/topics/[slug]`.
 - Calculator routes remain query-canonical: shareable input state may use a query string, while canonical metadata always identifies the clean path without query parameters.
 - Missing, draft, or wrong-type editorial slugs return not found and are omitted from static parameters.
 
@@ -94,17 +97,19 @@ Calculators and editorial items are registry-based and version-controlled so a c
 
 The glossary follows the same pattern through a separate typed registry. Published terms provide a plain definition, substantive structured sections, calculation context, examples, and relations to live calculators and editorial pages. Dynamic glossary segments use static parameters with `dynamicParams = false`; drafts are excluded from routes and sitemap. Visible term pages use factual `DefinedTerm` structured data linked to the public glossary set.
 
+Topic definitions curate relationships with stable calculator, editorial, and glossary IDs while resolving display data and canonical paths from the owning registries. A topic is public only when it is published, has a meaningful overview and three-step learning path, resolves every reference to published content, and contains at least one calculator, blog, guide, and glossary term. This keeps draft, unresolved, and sparse topics out of lookup, static parameters, navigation, and sitemap. The initial public hubs are Loans and Investing; Savings remains registered only as a non-public eligibility case because its current public mix is calculator-only.
+
 ## 15. SEO architecture
 
-`lib/seo.ts` centralises canonical URL, page, calculator, editorial, Open Graph, and Twitter metadata. Root metadata supplies the site defaults. `app/sitemap.ts` combines stable routes, published calculators, and published editorial entries; `app/robots.ts` exposes crawl rules. There is no `SearchAction` because no stable public search route exists.
+`lib/seo.ts` centralises canonical URL, page, calculator, editorial, Open Graph, and Twitter metadata. Root metadata supplies the site defaults. `app/sitemap.ts` combines stable routes, published calculators, published editorial and glossary entries, and public substantive topics; `app/robots.ts` exposes crawl rules. There is no `SearchAction` because no stable public search route exists.
 
 ## 16. Structured data
 
-Only visible, factual data is encoded. The root uses Organization and WebSite data. Editorial pages use BlogPosting or Article and useful FAQ data. Calculator and breadcrumb schema is used where supported by visible content. Ratings, review counts, fake credentials, fake images, and unsupported claims are prohibited.
+Only visible, factual data is encoded. The root uses Organization and WebSite data. Editorial pages use BlogPosting or Article and useful FAQ data. Calculator and breadcrumb schema is used where supported by visible content; topic pages use BreadcrumbList matching their visible breadcrumbs. Ratings, review counts, fake credentials, fake images, and unsupported claims are prohibited.
 
 ## 17. Testing strategy
 
-Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. The current freeze baseline is 153 passing tests across 19 files.
+Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. The Sprint 13 suite contains 173 tests across 21 files, including topic eligibility, relationship, static-route, sitemap, metadata, and exclusion invariants.
 
 ## 18. Accessibility principles
 

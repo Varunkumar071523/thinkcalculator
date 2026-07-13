@@ -1,6 +1,6 @@
 # ThinkCalculator Editorial Handbook
 
-This guide applies to calculator knowledge content, blogs, guides, and the planned glossary. Editorial entries are typed and version-controlled; implementation details are in [ARCHITECTURE.md](ARCHITECTURE.md).
+This guide applies to calculator knowledge content, blogs, guides, glossary terms, and topic hubs. Editorial entries are typed and version-controlled; implementation details are in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Principles, audience, and tone
 
@@ -37,6 +37,10 @@ Guides help a reader perform or interpret a task. Use an ordered flow, explain i
 ## Glossary
 
 The Glossary Engine stores typed terms in `features/content/glossary-registry.ts`. Every published term needs a plain-language definition, relevant context, calculation relationship where applicable, an example, live calculator/editorial links, and unique metadata. Keep new terms as drafts until reviewed. Do not publish thin synonym pages or fabricate authority signals.
+
+## Topic hubs
+
+Topic hubs connect existing published resources into a useful learning path; they are not category archives or title-only lists. Curate stable resource IDs only where the taxonomy cannot safely derive the relationship, and always resolve public titles, descriptions, and paths from their canonical registries. A public hub needs a meaningful overview, clear start-here guidance, unique metadata, and at least one live calculator, blog, guide, and glossary term. Draft, unresolved, unpublished, and sparse definitions must remain outside public lookup, static parameters, navigation, and sitemap.
 
 ## Internal links
 
