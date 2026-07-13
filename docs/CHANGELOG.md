@@ -6,6 +6,11 @@ This changelog summarises project milestones. No semantic version or release dat
 
 ### Added
 
+- Sprint 18 GST Calculator at `/business/gst-calculator` with pure add/remove arithmetic, strict plain-decimal amount and rate validation, 0% to 100% custom rates, centralized 0%, 5%, 12%, 18%, and 28% presets, user-selected intra-State CGST plus SGST/UTGST or inter-State IGST presentation, accessible breakdown, copy/share, and print support.
+- Centralized official source records checked on 13 July 2026, visible rate-classification and place-of-supply limitations, substantive knowledge content, worked examples, FAQs, compliance exclusions, and a published `/glossary/gst` DefinedTerm page.
+- Registry-derived Business directory and GST discovery across `/calculators`, `/business`, homepage calculator search, and sitemap, while editorial `/search` continues to exclude calculators and includes the GST glossary term. No sparse Business topic hub was published.
+- Focused calculation, validation, URL-state, preset/source, registry, glossary, topic, search, SEO, and sitemap tests. The verified Sprint 18 baseline is 395 tests across 35 files, passing lint, and a 47-page static/SSG production build.
+
 - Sprint 17 PPF Calculator at `/finance/ppf-calculator` with pure annual recurrence, beginning-of-year contribution timing, strict ₹500–₹1,50,000 and ₹50-multiple validation, editable assumed rate, 15–40 year five-year durations, annual schedule, accessible composition chart, URL sharing, copy, and print support.
 - Centralized PPF reference-rate metadata with official NSI effective basis, checked date, source, verification limitation, and maintenance procedure; substantive official-source knowledge content and qualified tax/account disclaimers.
 - Published `/glossary/ppf`, PPF calculator discovery and relations, Savings membership without hub publication, calculator/editorial search separation, sitemap coverage, and focused calculation, validation, URL-state, registry, content, and regression tests.

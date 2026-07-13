@@ -64,7 +64,7 @@ Server Components are the default. A Client Component is used only when browser 
 
 ## 7. Routing conventions
 
-- Calculators: `/finance/[calculator-name]-calculator`.
+- Calculators: category-owned static routes such as `/finance/[calculator-name]-calculator` and `/business/[calculator-name]-calculator`.
 - Blogs: `/blog/[slug]`; guides: `/guides/[slug]`.
 - Indexes: `/calculators`, `/finance`, `/blog`, and `/guides`.
 - Glossary: `/glossary` and `/glossary/[slug]`.
@@ -88,6 +88,8 @@ Each production calculator parses only recognised query keys, validates and norm
 The CAGR module applies `((ending / beginning)^(1 / years) - 1) × 100` to two endpoints. Beginning value must be positive, ending value may be zero for a complete loss, and the period accepts 0.01 to 100 years with at most two decimal places. Form and URL text accept plain decimal notation without whitespace, currency symbols, group separators, or exponent notation. Combination validation includes the percentage conversion so every accepted calculation has finite structured output; mathematically overflowing combinations are rejected rather than clamped. Its result keeps CAGR, absolute gain/loss, total return, growth multiple, and the validated inputs as unformatted numbers. Complete loss is exactly -100%; invalid or incomplete URL state falls back as a whole, while complete valid shared state restores the calculation. The UI deliberately compares the two known endpoints instead of inventing a historical projection and uses compact scientific percentage formatting only when a finite result would otherwise be too wide.
 
 The PPF module applies an annual recurrence: add the validated annual contribution to the opening balance, apply the editable assumed annual rate without intermediate rounding, and carry the closing balance forward. Contributions are modeled at the beginning of each projection year and assumed eligible for a full year's interest. The official rule instead uses the lowest balance between the close of the fifth day and month-end; it is disclosed but not simulated. Contributions are whole rupees from ₹500 to ₹1,50,000 in multiples of ₹50; rates are plain decimals from 0.1% to 15% with at most two decimal places; durations are restricted to 15 years and five-year steps through 40. These are projection durations: official closure is after fifteen years from the end of the financial year in which the account was opened, and extensions are subject to the scheme's application procedure. `ppf-rate-config.ts` is the single source for the 7.1% reference default, effective basis, checked date, source, verification limitation, and maintenance procedure. Source records were checked on 13 July 2026. The accessible Department of Economic Affairs notification published on 30 March 2026 is recorded without inferring a rate from its non-text-verifiable table. URL state requires one complete valid `contribution`, `rate`, and `years` set and keeps canonical metadata query-free.
+
+The GST module supports `add` and `remove` modes. Add mode treats the amount as the exclusive taxable value and applies `GST = E × r / 100`; remove mode treats it as inclusive and derives `E = I / (1 + r / 100)`. The user selects either intra-State arithmetic, which divides total GST equally into CGST and SGST/UTGST, or inter-State arithmetic, which assigns it to IGST. The module does not infer place of supply. Amount and rate text use strict plain-decimal parsing with two-decimal limits; URL state requires one complete valid `amount`, `rate`, `mode`, and `supply` set. `gst-rate-config.ts` centralizes the 0%, 5%, 12%, 18%, and 28% arithmetic presets, custom-rate limits, source records, checked date, and applicability warning. Pure calculations retain full precision and presentation alone formats currency.
 
 ## 11. Schedules and charts
 
@@ -123,7 +125,7 @@ Only visible, factual data is encoded. The root uses Organization and WebSite da
 
 ## 17. Testing strategy
 
-Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. Sprint 17 adds PPF recurrence, contribution/rate/duration boundaries, schedule reconciliation, immutability, finite-output, strict numeric-text, URL-state, official-reference, glossary, Savings eligibility, discovery, search-separation, and sitemap invariants.
+Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. Sprint 18 adds GST addition/removal, reversibility, tax-head and invoice reconciliation, strict amount/rate parsing, complete URL state, centralized presets and source records, Business discovery, GST glossary/search separation, topic ineligibility, and sitemap invariants.
 
 ## 18. Accessibility principles
 

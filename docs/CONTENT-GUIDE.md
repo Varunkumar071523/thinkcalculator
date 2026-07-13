@@ -30,6 +30,8 @@ For CAGR content, describe a smoothed annualised endpoint rate rather than yearl
 
 For PPF content, cite primary Government of India sources for scheme rules. Describe 7.1% as an editable reference default with its verified effective basis, not as a guaranteed or unqualified current rate. Keep the beginning-of-year annual projection distinct from the official monthly lowest-balance rule, and do not imply that extension eligibility, withdrawals, loans, missed deposits, revival, closure, tax outcomes, or account-office processing are modeled.
 
+For GST content, distinguish exclusive and inclusive arithmetic from legal rate classification. Describe 5%, 12%, 18%, and 28% only as common presets represented in official schedules, and 0% only as a calculation option. Require the user to select supply type; do not infer place of supply. Disclose that cess, reverse charge, input tax credit, composition levy, TDS/TCS, discounts, valuation adjustments, invoice rounding, filing, penalties, and compliance are excluded.
+
 ## Blogs
 
 Blogs explain a concept or comparison. Use four to seven coherent structured sections where the subject warrants them, a practical example, a callout or table when useful, relevant calculators, related published content, and only genuinely useful FAQs.
