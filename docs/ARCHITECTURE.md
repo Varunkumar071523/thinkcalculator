@@ -85,6 +85,8 @@ A typical module contains `*-types.ts`, `*-schema.ts`, `calculate-*.ts`, optiona
 
 Each production calculator parses only recognised query keys, validates and normalises values, and serialises valid state. Invalid or incomplete values fall back safely. Sharing copies a query-bearing URL, but SEO canonical URLs exclude the query because inputs do not define separate indexable documents.
 
+The CAGR module applies `((ending / beginning)^(1 / years) - 1) × 100` to two endpoints. Beginning value must be positive, ending value may be zero for a complete loss, and the period accepts 0.01 to 100 years with at most two decimal places. Form and URL text accept plain decimal notation without whitespace, currency symbols, group separators, or exponent notation. Combination validation includes the percentage conversion so every accepted calculation has finite structured output; mathematically overflowing combinations are rejected rather than clamped. Its result keeps CAGR, absolute gain/loss, total return, growth multiple, and the validated inputs as unformatted numbers. Complete loss is exactly -100%; invalid or incomplete URL state falls back as a whole, while complete valid shared state restores the calculation. The UI deliberately compares the two known endpoints instead of inventing a historical projection and uses compact scientific percentage formatting only when a finite result would otherwise be too wide.
+
 ## 11. Schedules and charts
 
 Schedule functions are pure and tested separately from headline calculations. Tables expose detailed rows semantically and contain horizontal overflow. Charts use lightweight CSS/SVG/HTML presentation rather than an external chart library, include textual values, and never rely on colour alone.
@@ -119,7 +121,7 @@ Only visible, factual data is encoded. The root uses Organization and WebSite da
 
 ## 17. Testing strategy
 
-Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. The Sprint 15 suite contains 207 tests across 23 files, including reciprocal public-cluster coverage, canonical-path and draft exclusion, authored precedence, deterministic related-link selection, linked learning-path integrity, unchanged search/sitemap scopes, and the earlier search and production invariants.
+Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. The Sprint 16 suite contains 270 tests across 27 files, including CAGR growth, decline, complete-loss, fractional-period, overflow, numeric-text, presentation, and URL-state boundaries; reciprocal public-cluster coverage; canonical-path and draft exclusion; deterministic related-link selection; linked learning-path integrity; and search, sitemap, and production invariants.
 
 ## 18. Accessibility principles
 

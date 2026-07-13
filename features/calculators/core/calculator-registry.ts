@@ -8,6 +8,7 @@ import { sipCalculatorDefinition } from "@/features/calculators/sip/sip-definiti
 import { lumpsumCalculatorDefinition } from "@/features/calculators/lumpsum/lumpsum-definition"
 import { fdCalculatorDefinition } from "@/features/calculators/fd/fd-definition"
 import { rdCalculatorDefinition } from "@/features/calculators/rd/rd-definition"
+import { cagrCalculatorDefinition } from "@/features/calculators/cagr/cagr-definition"
 
 export const demoCalculatorDefinition = {
   id: "framework-demo",
@@ -124,6 +125,7 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   lumpsumCalculatorDefinition,
   fdCalculatorDefinition,
   rdCalculatorDefinition,
+  cagrCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(

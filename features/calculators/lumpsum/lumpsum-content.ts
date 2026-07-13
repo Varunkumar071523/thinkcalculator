@@ -14,7 +14,7 @@ export const lumpsumFAQs: readonly CalculatorFAQ[] = [
 export const lumpsumRelatedCalculators: readonly RelatedCalculator[] = [
   { slug: "sip-calculator", title: "SIP Calculator", description: "Estimate the future value of monthly SIP contributions.", href: "/finance/sip-calculator", category: "Finance" },
   { slug: "step-up-sip", title: "Step-up SIP Calculator", description: "Explore tools for contributions that increase over time.", href: "/calculators", category: "Finance" },
-  { slug: "cagr", title: "CAGR Calculator", description: "Explore tools for annualised investment growth.", href: "/calculators", category: "Finance" },
+  { slug: "cagr-calculator", title: "CAGR Calculator", description: "Calculate annualised growth between two values.", href: "/finance/cagr-calculator", category: "Finance" },
   { slug: "retirement", title: "Retirement Calculator", description: "Explore tools for long-term retirement planning.", href: "/calculators", category: "Finance" },
 ]
 

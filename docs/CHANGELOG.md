@@ -6,6 +6,9 @@ This changelog summarises project milestones. No semantic version or release dat
 
 ### Added
 
+- Sprint 16 CAGR Calculator with typed endpoint inputs/results, fractional-year validation, pure compound annual growth logic, negative and complete-loss handling, shareable URL state, copy/print actions, worked example, FAQs, and accessible endpoint comparison.
+- Published CAGR glossary term, Investing topic membership, reciprocal calculator links, registry-driven sitemap/search discovery, and calculator-directory/homepage integration.
+- Sprint 16 calculation, validation, URL-state, registry, content, and production checks, including finite-output and strict numeric-text hardening, bringing the verified baseline to 270 tests across 27 files and 43 static/SSG pages.
 - Documentation freeze and current operational status.
 - Architecture guide and phased roadmap.
 - Contribution guide, editorial handbook, production checklist, and architecture decision log.

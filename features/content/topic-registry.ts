@@ -25,7 +25,7 @@ export const topicRegistry: readonly TopicDefinition[] = [
   {
     id: "topic-investing", slug: "investing", name: "Investing", canonicalPath: "/topics/investing", status: "published",
     description: "Explore how contribution timing, duration, and assumed returns affect investment projections.",
-    metadata: { title: "Investing: SIP and Lumpsum Learning Hub", description: "Use SIP and lumpsum calculators with clear guides, articles, and glossary terms about contributions, compounding, duration, and projection limits.", keywords: ["SIP calculator guide", "lumpsum investing", "investment projections"] },
+    metadata: { title: "Investing: SIP, Lumpsum, and CAGR Learning Hub", description: "Use SIP, lumpsum, and CAGR calculators with clear guides, articles, and glossary terms about contributions, compounding, annualised growth, and projection limits.", keywords: ["SIP calculator guide", "lumpsum investing", "CAGR calculator", "investment projections"] },
     overview: [
       "Investment calculators show scenarios, not forecasts. A SIP models regular contributions, while a lumpsum calculation starts with one amount; both depend heavily on the return and duration assumptions entered.",
       "Use this hub to choose the matching contribution pattern, separate money invested from estimated growth, and understand why real market outcomes can vary or be negative.",
@@ -36,9 +36,9 @@ export const topicRegistry: readonly TopicDefinition[] = [
       { title: "Follow the practical guide", description: "Learn how contribution, duration, and return assumptions shape a SIP estimate.", resourceId: "guide-estimate-sip" },
       { title: "Build a transparent scenario", description: "Use the SIP Calculator and treat the assumed return as an illustration rather than a prediction.", resourceId: "sip-calculator" },
     ],
-    calculatorIds: ["sip-calculator", "lumpsum-calculator"],
+    calculatorIds: ["sip-calculator", "lumpsum-calculator", "cagr-calculator"],
     editorialIds: ["blog-sip-vs-lumpsum", "guide-estimate-sip"],
-    glossaryIds: ["glossary-sip", "glossary-compounding", "glossary-principal", "glossary-tenure"],
+    glossaryIds: ["glossary-sip", "glossary-compounding", "glossary-cagr", "glossary-principal", "glossary-tenure"],
   },
   {
     id: "topic-savings", slug: "savings", name: "Savings", canonicalPath: "/topics/savings", status: "published",

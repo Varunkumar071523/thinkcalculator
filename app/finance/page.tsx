@@ -48,6 +48,11 @@ const rdCalculator = {
   description: "Estimate recurring deposit maturity amount and interest earned.", category: "Finance", icon: PiggyBank,
 }
 
+const cagrCalculator = {
+  title: "CAGR Calculator", href: "/finance/cagr-calculator",
+  description: "Calculate annualised compound growth between beginning and ending values.", category: "Finance", icon: TrendingUp,
+}
+
 export default function FinancePage() {
   return (
     <SiteContainer className="py-12 sm:py-20">
@@ -56,9 +61,9 @@ export default function FinancePage() {
         <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">Finance calculators</h1>
         <p className="mt-5 text-lg leading-8 text-muted-foreground">Plan loans, investments, savings, and taxes with tools designed around practical financial decisions in India.</p>
       </header>
-      <section className="mt-12" aria-labelledby="loan-calculators-heading">
-        <h2 id="loan-calculators-heading" className="text-2xl font-semibold tracking-tight">Loan calculators</h2>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /><CalculatorCard calculator={sipCalculator} /><CalculatorCard calculator={lumpsumCalculator} /><CalculatorCard calculator={fdCalculator} /><CalculatorCard calculator={rdCalculator} /></div>
+      <section className="mt-12" aria-labelledby="available-finance-calculators-heading">
+        <h2 id="available-finance-calculators-heading" className="text-2xl font-semibold tracking-tight">Available finance calculators</h2>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CalculatorCard calculator={emiCalculator} /><CalculatorCard calculator={sipCalculator} /><CalculatorCard calculator={lumpsumCalculator} /><CalculatorCard calculator={cagrCalculator} /><CalculatorCard calculator={fdCalculator} /><CalculatorCard calculator={rdCalculator} /></div>
       </section>
     </SiteContainer>
   )

@@ -41,6 +41,12 @@ const availableCalculators = [{
   description: "Estimate recurring deposit maturity amount and interest earned.",
   category: "Finance",
   icon: PiggyBank,
+}, {
+  title: "CAGR Calculator",
+  href: "/finance/cagr-calculator",
+  description: "Calculate annualised compound growth, total return, and gain or loss.",
+  category: "Finance",
+  icon: TrendingUp,
 }]
 
 export default function CalculatorsPage() {
