@@ -18,12 +18,12 @@ ThinkCalculator is a mobile-first, SEO-oriented calculator and educational-conte
 
 ```text
 Version-controlled definitions and content
-        |                     |
-calculator registry     editorial registry
-        |                     |
-pure calculations       structured sections
-validation + URL state  taxonomy + relations
-        \                     /
+        |                     |                    |
+calculator registry     editorial registry    glossary registry
+        |                     |                    |
+pure calculations       structured sections   defined terms
+validation + URL state  taxonomy + relations  examples + relations
+        \                     |                    /
          Next.js App Router pages
            |              |
      Server Components  small Client Components
@@ -50,7 +50,7 @@ Server Components are the default. A Client Component is used only when browser 
 - `components/layout/` and `components/shared/`: navigation and reusable site presentation.
 - `components/calculators/`, `components/content/`, `components/editorial/`: domain presentation primitives.
 - `features/calculators/`: calculator logic, schema, state, content, components, and tests.
-- `features/content/`: taxonomy, editorial registry, reading time, lookup utilities, and tests.
+- `features/content/`: taxonomy, editorial and glossary registries, reading time, lookup utilities, and tests.
 - `lib/`: SEO, URL, formatting, site configuration, and production configuration.
 - `types/`: shared calculator, site, knowledge-content, and editorial models.
 - `docs/`: operational and engineering documentation.
@@ -60,6 +60,7 @@ Server Components are the default. A Client Component is used only when browser 
 - Calculators: `/finance/[calculator-name]-calculator`.
 - Blogs: `/blog/[slug]`; guides: `/guides/[slug]`.
 - Indexes: `/calculators`, `/finance`, `/blog`, and `/guides`.
+- Glossary: `/glossary` and `/glossary/[slug]`.
 - Calculator routes remain query-canonical: shareable input state may use a query string, while canonical metadata always identifies the clean path without query parameters.
 - Missing, draft, or wrong-type editorial slugs return not found and are omitted from static parameters.
 
@@ -90,6 +91,8 @@ Calculator pages use typed, version-controlled knowledge content: sections, call
 ## 14. Content registry architecture
 
 Calculators and editorial items are registry-based and version-controlled so a code review can inspect facts, links, metadata, status, and presentation together. A Version 1 database would add migrations, runtime availability, security, backups, and administration without serving a current persistence requirement. Drafts remain in source for review but are excluded from public lists, relations, sitemap input, static parameters, and indexable metadata.
+
+The glossary follows the same pattern through a separate typed registry. Published terms provide a plain definition, substantive structured sections, calculation context, examples, and relations to live calculators and editorial pages. Dynamic glossary segments use static parameters with `dynamicParams = false`; drafts are excluded from routes and sitemap. Visible term pages use factual `DefinedTerm` structured data linked to the public glossary set.
 
 ## 15. SEO architecture
 

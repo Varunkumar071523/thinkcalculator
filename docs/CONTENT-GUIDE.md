@@ -36,7 +36,7 @@ Guides help a reader perform or interpret a task. Use an ordered flow, explain i
 
 ## Glossary
 
-The Glossary Engine is planned, not implemented. A future term should have a plain-language definition, relevant context, calculation relationship where applicable, examples, live calculator/editorial links, and unique metadata. Do not publish thin synonym pages or fabricate authority signals.
+The Glossary Engine stores typed terms in `features/content/glossary-registry.ts`. Every published term needs a plain-language definition, relevant context, calculation relationship where applicable, an example, live calculator/editorial links, and unique metadata. Keep new terms as drafts until reviewed. Do not publish thin synonym pages or fabricate authority signals.
 
 ## Internal links
 
