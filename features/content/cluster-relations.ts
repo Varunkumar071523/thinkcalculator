@@ -44,7 +44,7 @@ export function resolveClusterNavigation(
   const publicResources = getPublicResourceLinks()
   const current = publicResources.find((item) => item.id === resourceId)
   const memberships = getPublicClusterMemberships(resourceId)
-  if (!current || memberships.length === 0) return undefined
+  if (!current) return undefined
   const currentType = current.type
 
   const resourcesByPath = new Map(publicResources.map((item) => [item.canonicalPath, item]))
@@ -58,6 +58,8 @@ export function resolveClusterNavigation(
     seenPaths.add(resolved.canonicalPath)
     related.push({ ...resolved, source: "authored" })
   }
+
+  if (memberships.length === 0) return related.length > 0 ? { topics: [], related } : undefined
 
   const derivedIds = memberships.flatMap(getTopicMemberIds)
   const derivedPriority = new Map<string, number>()

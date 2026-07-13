@@ -8,8 +8,9 @@ import { sipCalculatorDefinition, sipKnowledgeContent } from "@/features/calcula
 import { cagrCalculatorDefinition, cagrKnowledgeContent } from "@/features/calculators/cagr"
 import { ppfCalculatorDefinition, ppfKnowledgeContent } from "@/features/calculators/ppf"
 import { gstCalculatorDefinition, gstKnowledgeContent } from "@/features/calculators/gst"
+import { gratuityCalculatorDefinition, gratuityKnowledgeContent } from "@/features/calculators/gratuity"
 
-const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator"])
+const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity"])
 const calculators = [
   { definition: emiCalculatorDefinition, content: emiKnowledgeContent },
   { definition: sipCalculatorDefinition, content: sipKnowledgeContent },
@@ -19,11 +20,12 @@ const calculators = [
   { definition: cagrCalculatorDefinition, content: cagrKnowledgeContent },
   { definition: ppfCalculatorDefinition, content: ppfKnowledgeContent },
   { definition: gstCalculatorDefinition, content: gstKnowledgeContent },
+  { definition: gratuityCalculatorDefinition, content: gratuityKnowledgeContent },
 ]
 
 describe("calculator knowledge content", () => {
   it("is present and structurally complete for every production calculator", () => {
-    expect(calculators).toHaveLength(8)
+    expect(calculators).toHaveLength(9)
     for (const { content } of calculators) {
       expect(content.title.trim()).not.toBe("")
       expect(content.description.trim()).not.toBe("")
@@ -51,7 +53,7 @@ describe("calculator knowledge content", () => {
     }
   })
 
-  it("links only to existing production calculator routes", () => {
+  it("links only to existing production calculator or learning routes", () => {
     for (const { content } of calculators) for (const link of content.relatedLinks) {
       expect(link.href).not.toBe("#")
       expect(productionRoutes.has(link.href)).toBe(true)

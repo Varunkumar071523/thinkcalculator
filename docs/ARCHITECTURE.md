@@ -91,6 +91,8 @@ The PPF module applies an annual recurrence: add the validated annual contributi
 
 The GST module supports `add` and `remove` modes. Add mode treats the amount as the exclusive taxable value and applies `GST = E × r / 100`; remove mode treats it as inclusive and derives `E = I / (1 + r / 100)`. The user selects either intra-State arithmetic, which divides total GST equally into CGST and SGST/UTGST, or inter-State arithmetic, which assigns it to IGST. The module does not infer place of supply. Amount and rate text use strict plain-decimal parsing with two-decimal limits; URL state requires one complete valid `amount`, `rate`, `mode`, and `supply` set. `gst-rate-config.ts` centralizes the 0%, 5%, 12%, 18%, and 28% arithmetic presets, custom-rate limits, source records, checked date, and applicability warning. Pure calculations retain full precision and presentation alone formats currency.
 
+The Gratuity module applies the standard monthly rated employee method under the current Code on Social Security, 2020 framework: `eligible monthly wages × 15 / 26 × counted service years`, followed by the centralized statutory ceiling. Counted service adds one year only when additional completed months are greater than six; exactly six does not increment the year. Validation accepts positive finite eligible wages, 0–60 whole completed years, and 0–11 whole additional months. Complete URL state uses `wages`, `years`, and `months`; incomplete or invalid state falls back as a whole. `gratuity-regulatory-config.ts` centralizes the current ₹20 lakh ceiling, ordinary five-year reference threshold, review date, and primary official sources. The UI provides an informational ordinary-service warning but deliberately does not decide legal eligibility, coverage, continuous service, special categories, exceptional events, better terms, exemptions, or forfeiture.
+
 ## 11. Schedules and charts
 
 Schedule functions are pure and tested separately from headline calculations. Tables expose detailed rows semantically and contain horizontal overflow. Charts use lightweight CSS/SVG/HTML presentation rather than an external chart library, include textual values, and never rely on colour alone.
@@ -125,7 +127,7 @@ Only visible, factual data is encoded. The root uses Organization and WebSite da
 
 ## 17. Testing strategy
 
-Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. Sprint 18 adds GST addition/removal, reversibility, tax-head and invoice reconciliation, strict amount/rate parsing, complete URL state, centralized presets and source records, Business discovery, GST glossary/search separation, topic ineligibility, and sitemap invariants.
+Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. Sprint 19 adds gratuity service boundaries, ceiling behavior, precision and mutation checks, strict wage/service parsing, complete URL state, current source records, worked-example consistency, Finance discovery, glossary publication, metadata, and sitemap invariants. The verified baseline is 433 tests across 39 files.
 
 ## 18. Accessibility principles
 

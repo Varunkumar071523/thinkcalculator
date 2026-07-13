@@ -3,6 +3,7 @@ import {
   Calculator,
   GraduationCap,
   HeartPulse,
+  HandCoins,
   IndianRupee,
   Landmark,
   PiggyBank,
@@ -73,6 +74,7 @@ export const popularCalculators: CalculatorSummary[] = [
   { title: "RD Calculator", href: "/finance/rd-calculator", description: "Estimate recurring-deposit maturity value and interest.", category: "Finance", icon: PiggyBank },
   { title: "CAGR Calculator", href: "/finance/cagr-calculator", description: "Calculate annualised compound growth between two values.", category: "Finance", icon: TrendingUp },
   { title: "PPF Calculator", href: "/finance/ppf-calculator", description: "Estimate PPF maturity under a constant-rate assumption.", category: "Finance", icon: Landmark },
+  { title: "Gratuity Calculator", href: "/finance/gratuity-calculator", description: "Estimate standard statutory gratuity from eligible wages and completed service.", category: "Finance", icon: HandCoins },
 ]
 
 export const footerGroups: FooterGroup[] = [

@@ -19,6 +19,7 @@ export const ppfRelatedCalculators: readonly RelatedCalculator[] = [
   { slug: "fd-calculator", title: "FD Calculator", description: "Project one lump-sum deposit using a chosen compounding convention.", href: "/finance/fd-calculator", category: "Finance" },
   { slug: "rd-calculator", title: "RD Calculator", description: "Project regular monthly deposits under an assumed bank-deposit rate.", href: "/finance/rd-calculator", category: "Finance" },
   { slug: "cagr-calculator", title: "CAGR Calculator", description: "Measure annualised growth between two known endpoint values.", href: "/finance/cagr-calculator", category: "Finance" },
+  { slug: "gratuity-calculator", title: "Gratuity Calculator", description: "Estimate a standard employment-benefit amount before planning how it may fit into longer-term savings.", href: "/finance/gratuity-calculator", category: "Finance" },
 ]
 
 export function createPPFResultText(input: PPFInput, result: PPFResult): string {
