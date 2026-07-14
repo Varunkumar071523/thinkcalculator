@@ -1,0 +1,10 @@
+import { describe,expect,it } from "vitest"
+import { parseAndValidateStepUpSIPForm,parseStepUpSIPNumericText,validateStepUpSIPInput } from "../step-up-sip-schema"
+const valid={initialMonthlyInvestment:10_000,stepUpMode:"percentage" as const,annualStepUpValue:10,expectedAnnualReturn:12,durationYears:10}
+describe("Step-up SIP validation",()=>{
+  it("strictly parses plain decimals",()=>{for(const value of ["0","0.01",".5","1000","7.50"])expect(parseStepUpSIPNumericText(value)).toBe(Number(value));for(const value of [""," "," 10","10 ","1,000","₹1000","+10","-10","1e3","1.",".","NaN","Infinity"])expect(parseStepUpSIPNumericText(value)).toBeNull()})
+  it("accepts both modes and zero",()=>{expect(validateStepUpSIPInput({...valid,annualStepUpValue:0}).success).toBe(true);expect(validateStepUpSIPInput({...valid,stepUpMode:"fixed",annualStepUpValue:1000}).success).toBe(true)})
+  it.each([{initialMonthlyInvestment:0},{initialMonthlyInvestment:10_000_001},{annualStepUpValue:-1},{annualStepUpValue:101},{expectedAnnualReturn:-1},{expectedAnnualReturn:51},{durationYears:1.5},{durationYears:0},{durationYears:51}])("rejects invalid input %o",change=>expect(validateStepUpSIPInput({...valid,...change}).success).toBe(false))
+  it("rejects invalid mode, non-finite values, and unsafe growth",()=>{expect(validateStepUpSIPInput({...valid,stepUpMode:"other" as never}).success).toBe(false);expect(validateStepUpSIPInput({...valid,annualStepUpValue:Infinity}).success).toBe(false);expect(validateStepUpSIPInput({...valid,annualStepUpValue:100,durationYears:50}).success).toBe(false)})
+  it("rejects malformed form text without losing field-specific errors",()=>{const result=parseAndValidateStepUpSIPForm({initialMonthlyInvestment:"1e3",stepUpMode:"fixed",annualStepUpValue:" ",expectedAnnualReturn:"12 ",durationYears:"1e1"});expect(result.success).toBe(false);if(!result.success)expect(Object.keys(result.errors).sort()).toEqual(["annualStepUpValue","durationYears","expectedAnnualReturn","initialMonthlyInvestment"])})
+})

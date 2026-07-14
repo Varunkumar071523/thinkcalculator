@@ -1,6 +1,8 @@
 # ThinkCalculator
 
-ThinkCalculator is an India-focused platform for transparent finance and business calculators with educational content. The current platform includes EMI, SIP, Lumpsum, FD, RD, CAGR, PPF, GST, and Gratuity calculators plus statically generated Blog, Guide, Glossary, Topic Hub, and editorial-search experiences.
+ThinkCalculator is an India-focused platform for transparent finance and business calculators with educational content. The current platform includes EMI, SIP, Step-up SIP, Lumpsum, FD, RD, CAGR, PPF, GST, and Gratuity calculators plus statically generated Blog, Guide, Glossary, Topic Hub, and editorial-search experiences.
+
+The Step-up SIP calculator at `/finance/step-up-sip-calculator` increases the monthly contribution after each completed block of 12 contributions using either a percentage or fixed rupee amount. It follows the regular SIP calculator's beginning-of-month timing and monthly return conversion, compares the result with a constant SIP, and treats the return as an educational assumption rather than a forecast.
 
 The PPF calculator at `/finance/ppf-calculator` uses an editable constant-rate annual projection, beginning-of-year contribution timing, official deposit limits, five-year extension options, shareable URL state, and an annual schedule. Its 7.1% reference default is centrally documented against the NSI scheme text for deposits and balances on or after 1 April 2020; it is not presented as a current-rate claim or guaranteed outcome. The official source records were checked on 13 July 2026; the accessible Department of Economic Affairs notification published on 30 March 2026 is recorded without inferring a rate from its non-text-verifiable table.
 

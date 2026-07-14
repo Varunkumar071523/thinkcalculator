@@ -11,25 +11,25 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 2. Tests
 
-- [x] `npm run test` passes: 433 tests across 39 files after Sprint 19 Gratuity integration and final review.
+- [x] `npm run test` passes: 474 tests across 43 files after Sprint 20 Step-up SIP integration and independent review.
 - [x] Core calculations, URL state, schedules, registries, content exclusions, cluster reciprocity, learning-path integrity, search/sitemap boundaries, and production configuration have automated coverage.
 - [ ] Re-run the full suite on the release commit in CI or the deployment environment.
 
 ## 3. Lint and build
 
-- [x] `npm run lint` passes for the current Sprint 19 source baseline.
-- [x] `npm run build` passes for the current Sprint 19 source baseline.
-- [x] `git diff --check` passes for the current Sprint 19 source baseline.
+- [x] `npm run lint` passes for the current Sprint 20 source baseline.
+- [x] `npm run build` passes for the current Sprint 20 source baseline.
+- [x] `git diff --check` passes for the current Sprint 20 source baseline.
 - [ ] Repeat all checks for the release commit with production configuration.
 
 ## 4. Static-route verification
 
 - [x] Current public routes build as static or SSG output.
 - [x] Four editorial routes are generated from published registry items.
-- [x] Ten glossary term routes are generated from published registry items.
+- [x] Eleven glossary term routes are generated from published registry items.
 - [x] Two substantive topic routes are generated from eligible published definitions; draft and sparse topics are excluded.
 - [x] `/search` keeps a static page shell and derives results client-side from a small public registry projection behind Suspense.
-- [x] The Sprint 19 production build generates 49 static/SSG pages, including `/finance/gratuity-calculator` and `/glossary/gratuity` exactly once.
+- [x] The Sprint 20 production build generates 51 static/SSG pages, including `/finance/step-up-sip-calculator` and `/glossary/step-up-sip` exactly once.
 - [x] Invalid and draft editorial slugs return not found.
 - [x] Eligible calculator, editorial, and glossary cluster members expose reciprocal hub navigation; sparse, unresolved, draft, and non-member resources do not render a false cluster section.
 - [x] Public topic learning paths are ordered, linked to live unique destinations, keyboard reachable, and free of nested interactive controls.
@@ -87,7 +87,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 12. Calculator validation
 
-- [x] Nine production calculators have unit tests and worked examples.
+- [x] Ten production calculators have unit tests and worked examples.
 - [x] Validation is separate from pure calculation logic.
 - [ ] Cross-check representative scenarios against independent trusted calculations.
 - [ ] Verify rounding, extremes, invalid input, and provider-specific caveats manually.

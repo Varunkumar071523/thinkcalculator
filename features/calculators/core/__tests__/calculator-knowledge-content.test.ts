@@ -9,8 +9,9 @@ import { cagrCalculatorDefinition, cagrKnowledgeContent } from "@/features/calcu
 import { ppfCalculatorDefinition, ppfKnowledgeContent } from "@/features/calculators/ppf"
 import { gstCalculatorDefinition, gstKnowledgeContent } from "@/features/calculators/gst"
 import { gratuityCalculatorDefinition, gratuityKnowledgeContent } from "@/features/calculators/gratuity"
+import { stepUpSIPCalculatorDefinition, stepUpSIPKnowledgeContent } from "@/features/calculators/step-up-sip"
 
-const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity"])
+const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/step-up-sip-calculator", "/glossary/step-up-sip", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity"])
 const calculators = [
   { definition: emiCalculatorDefinition, content: emiKnowledgeContent },
   { definition: sipCalculatorDefinition, content: sipKnowledgeContent },
@@ -21,11 +22,12 @@ const calculators = [
   { definition: ppfCalculatorDefinition, content: ppfKnowledgeContent },
   { definition: gstCalculatorDefinition, content: gstKnowledgeContent },
   { definition: gratuityCalculatorDefinition, content: gratuityKnowledgeContent },
+  { definition: stepUpSIPCalculatorDefinition, content: stepUpSIPKnowledgeContent },
 ]
 
 describe("calculator knowledge content", () => {
   it("is present and structurally complete for every production calculator", () => {
-    expect(calculators).toHaveLength(9)
+    expect(calculators).toHaveLength(10)
     for (const { content } of calculators) {
       expect(content.title.trim()).not.toBe("")
       expect(content.description.trim()).not.toBe("")
