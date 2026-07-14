@@ -5,14 +5,14 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 ## Current status
 
 - Phase: Phase 3 Calculator Expansion in progress.
-- Milestone: Sprint 20 Step-up SIP Calculator complete.
+- Milestone: Sprint 21 SWP Calculator complete.
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI (Base/Nova), and Vitest.
 - Architecture: static rendering where practical, Server Components by default, typed version-controlled registries, and no Version 1 database.
-- Verification baseline: 474 automated tests pass across 43 test files; lint and the 51-page production build pass.
+- Verification baseline: 515 automated tests pass across 47 test files; lint and the 53-page production build pass.
 
 ## Completed capabilities
 
-- Ten production calculators: nine Finance tools (EMI, SIP, Step-up SIP, Lumpsum, FD, RD, CAGR, PPF, and Gratuity) plus the Business GST Calculator.
+- Eleven production calculators: ten Finance tools (EMI, SIP, Step-up SIP, SWP, Lumpsum, FD, RD, CAGR, PPF, and Gratuity) plus the Business GST Calculator.
 - Typed validation and pure calculation functions separated from UI.
 - Calculator discovery and calculator-only homepage search.
 - Validated shareable query URLs, copyable results, browser Print / Save as PDF, accessible charts, and schedules.
@@ -34,6 +34,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - PPF uses a simplified beginning-of-year annual contribution model. Actual monthly balance eligibility, future notified rates, account events, taxes, and account-office processing are outside the projection.
 - GST presets are arithmetic shortcuts rather than rate-classification answers. The calculator relies on the user to select rate and supply type and excludes place-of-supply determination, cess, invoice rules, credits, returns, filing, and compliance.
 - Gratuity is scoped to the standard monthly rated employee amount under the Code on Social Security, 2020. The user must supply the eligible last-drawn wage basis; coverage, continuous service, fixed-term, death, disablement, working-journalist, piece-rated, seasonal, better-contract, exemption, forfeiture, and dispute questions remain outside the numerical model.
+- SWP is a deterministic, product-agnostic balance projection. Its "until balance is exhausted" mode is capped at 100 years rather than iterating indefinitely; taxation of withdrawals, mutual fund exit loads, STT, and other product-specific or statutory rules are outside the model.
 - Financial results are estimates; provider rules, taxes, fees, market movement, and rounding may differ.
 - Google-hosted Geist fonts require network access during a clean production build.
 - Current editorial content is intentionally small and maintained directly in TypeScript.
@@ -46,7 +47,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 
 ## Next phase
 
-Continue Phase 3 Calculator Expansion by selecting the next calculator against formula stability, source quality, maintenance cost, and user value. CAGR, PPF, GST, Gratuity, and Step-up SIP are complete; SWP, inflation, retirement, income tax, and HRA remain candidates. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
+Continue Phase 3 Calculator Expansion by selecting the next calculator against formula stability, source quality, maintenance cost, and user value. CAGR, PPF, GST, Gratuity, Step-up SIP, and SWP are complete; inflation, retirement, income tax, and HRA remain candidates. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
 
 ## Validation
 

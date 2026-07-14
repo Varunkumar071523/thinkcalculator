@@ -10,8 +10,9 @@ import { ppfCalculatorDefinition, ppfKnowledgeContent } from "@/features/calcula
 import { gstCalculatorDefinition, gstKnowledgeContent } from "@/features/calculators/gst"
 import { gratuityCalculatorDefinition, gratuityKnowledgeContent } from "@/features/calculators/gratuity"
 import { stepUpSIPCalculatorDefinition, stepUpSIPKnowledgeContent } from "@/features/calculators/step-up-sip"
+import { swpCalculatorDefinition, swpKnowledgeContent } from "@/features/calculators/swp"
 
-const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/step-up-sip-calculator", "/glossary/step-up-sip", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity"])
+const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/step-up-sip-calculator", "/glossary/step-up-sip", "/finance/swp-calculator", "/glossary/swp", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity"])
 const calculators = [
   { definition: emiCalculatorDefinition, content: emiKnowledgeContent },
   { definition: sipCalculatorDefinition, content: sipKnowledgeContent },
@@ -23,11 +24,12 @@ const calculators = [
   { definition: gstCalculatorDefinition, content: gstKnowledgeContent },
   { definition: gratuityCalculatorDefinition, content: gratuityKnowledgeContent },
   { definition: stepUpSIPCalculatorDefinition, content: stepUpSIPKnowledgeContent },
+  { definition: swpCalculatorDefinition, content: swpKnowledgeContent },
 ]
 
 describe("calculator knowledge content", () => {
   it("is present and structurally complete for every production calculator", () => {
-    expect(calculators).toHaveLength(10)
+    expect(calculators).toHaveLength(11)
     for (const { content } of calculators) {
       expect(content.title.trim()).not.toBe("")
       expect(content.description.trim()).not.toBe("")

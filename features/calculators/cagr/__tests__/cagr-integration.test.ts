@@ -75,8 +75,8 @@ describe("CAGR production integration", () => {
     ])
 
     const investing = getPublicTopicBySlug("investing")!
-    expect(investing.calculators.map((item) => item.id)).toEqual(["sip-calculator", "step-up-sip-calculator", "lumpsum-calculator", "cagr-calculator"])
-    expect(investing.glossaryTerms.map((item) => item.id)).toEqual(["glossary-sip", "glossary-step-up-sip", "glossary-compounding", "glossary-cagr", "glossary-principal", "glossary-tenure"])
+    expect(investing.calculators.map((item) => item.id)).toEqual(["sip-calculator", "step-up-sip-calculator", "swp-calculator", "lumpsum-calculator", "cagr-calculator"])
+    expect(investing.glossaryTerms.map((item) => item.id)).toEqual(["glossary-sip", "glossary-step-up-sip", "glossary-swp", "glossary-compounding", "glossary-cagr", "glossary-principal", "glossary-tenure"])
     expect(getTopicLearningPath(investing).map((step) => step.destination.id)).toEqual([
       "blog-sip-vs-lumpsum", "glossary-sip", "guide-estimate-sip", "sip-calculator",
     ])

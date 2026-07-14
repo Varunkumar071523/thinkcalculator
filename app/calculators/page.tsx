@@ -23,6 +23,7 @@ const iconBySlug = {
   "ppf-calculator": Landmark,
   "gst-calculator": ReceiptIndianRupee,
   "gratuity-calculator": HandCoins,
+  "swp-calculator": WalletCards,
 } as const
 
 export const availableCalculators: CalculatorSummary[] = calculatorRegistry

@@ -1,6 +1,8 @@
 # ThinkCalculator
 
-ThinkCalculator is an India-focused platform for transparent finance and business calculators with educational content. The current platform includes EMI, SIP, Step-up SIP, Lumpsum, FD, RD, CAGR, PPF, GST, and Gratuity calculators plus statically generated Blog, Guide, Glossary, Topic Hub, and editorial-search experiences.
+ThinkCalculator is an India-focused platform for transparent finance and business calculators with educational content. The current platform includes EMI, SIP, Step-up SIP, SWP, Lumpsum, FD, RD, CAGR, PPF, GST, and Gratuity calculators plus statically generated Blog, Guide, Glossary, Topic Hub, and editorial-search experiences.
+
+The SWP calculator at `/finance/swp-calculator` projects a fixed monthly withdrawal against an existing lumpsum, either for a fixed duration or until the balance is exhausted. Each month's withdrawal is taken from the opening balance before that month's assumed growth is applied to the remainder, the final withdrawal is reduced rather than overdrawn when the balance runs short, and "until exhausted" runs are capped at 100 years instead of iterating indefinitely. It excludes taxation of withdrawals and any product-specific or statutory withdrawal rules.
 
 The Step-up SIP calculator at `/finance/step-up-sip-calculator` increases the monthly contribution after each completed block of 12 contributions using either a percentage or fixed rupee amount. It follows the regular SIP calculator's beginning-of-month timing and monthly return conversion, compares the result with a constant SIP, and treats the return as an educational assumption rather than a forecast.
 

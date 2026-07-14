@@ -6,6 +6,9 @@ This changelog summarises project milestones. No semantic version or release dat
 
 ### Added
 
+- Sprint 21 SWP Calculator at `/finance/swp-calculator`, with fixed-duration and until-balance-is-exhausted modes, beginning-of-month withdraw-then-grow timing, a partial final withdrawal when the balance runs short, and a documented 100-year simulation cap for the until-exhausted mode instead of an unbounded loop.
+- Published `/glossary/swp`, Investing topic integration, discovery, metadata, structured data, and sitemap coverage. Coverage includes a reconciliation invariant (total withdrawn plus remaining balance minus initial investment equals total growth), an independent closed-form cross-check, zero-return, fast-exhaustion, exact-boundary-exhaustion, perpetual/capped, and long-duration finite-result cases. The verified baseline is 515 tests across 47 files, passing lint, and a 53-page static/SSG production build.
+
 - Sprint 20 Step-up SIP Calculator at `/finance/step-up-sip-calculator`, with percentage and fixed annual increases, beginning-of-month calculation, yearly schedule, regular SIP comparison, validated URL sharing, copy, reset, and print support.
 - Published `/glossary/step-up-sip`, Investing topic integration, discovery, metadata, structured data, and sitemap coverage. Independent review added strict numeric/URL parsing, exact zero-step parity, complete copy/print comparison context, safe mode switching, reciprocal SIP linking, and stronger regression coverage. The verified baseline is 474 tests across 43 files, passing lint, and a 51-page static/SSG production build.
 
