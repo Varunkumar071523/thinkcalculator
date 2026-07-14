@@ -127,7 +127,7 @@ Only visible, factual data is encoded. The root uses Organization and WebSite da
 
 ## 17. Testing strategy
 
-Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. Sprint 19 adds gratuity service boundaries, ceiling behavior, precision and mutation checks, strict wage/service parsing, complete URL state, current source records, worked-example consistency, Finance discovery, glossary publication, metadata, and sitemap invariants. The verified baseline is 433 tests across 39 files.
+Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. Sprint 20 adds Step-up SIP annual-boundary, percentage/fixed mode, regular-SIP parity, strict numeric parsing, schedule, URL-state, worked-example, discovery, glossary, metadata, and sitemap invariants. The calculator follows the SIP beginning-of-month convention: each contribution is added before monthly growth, using annual return divided by 12 and 100.
 
 ## 18. Accessibility principles
 

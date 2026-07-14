@@ -23,7 +23,7 @@ Continued publication within the existing engines is ongoing editorial work, not
 ## Phase 3 — Calculator Expansion — In Progress
 
 - Objective: broaden practical finance and business coverage without weakening validation quality.
-- Deliverables: CAGR completed in Sprint 16, PPF completed in Sprint 17, GST completed in Sprint 18, and Gratuity completed in Sprint 19; remaining candidates include step-up SIP, SWP, inflation, retirement, income tax, and HRA calculators.
+- Deliverables: CAGR completed in Sprint 16, PPF completed in Sprint 17, GST completed in Sprint 18, Gratuity completed in Sprint 19, and Step-up SIP completed in Sprint 20; remaining candidates include SWP, inflation, retirement, income tax, and HRA calculators.
 - Exit criteria: each selected calculator has typed inputs/results, pure logic, validation, tests, content, SEO, accessibility, and related links.
 - Dependencies: verified formulas and reliable official sources for regulatory rules.
 - Out of scope: launching every candidate at once or publishing unstable tax logic without a maintenance plan.

@@ -6,6 +6,9 @@ This changelog summarises project milestones. No semantic version or release dat
 
 ### Added
 
+- Sprint 20 Step-up SIP Calculator at `/finance/step-up-sip-calculator`, with percentage and fixed annual increases, beginning-of-month calculation, yearly schedule, regular SIP comparison, validated URL sharing, copy, reset, and print support.
+- Published `/glossary/step-up-sip`, Investing topic integration, discovery, metadata, structured data, and sitemap coverage. Independent review added strict numeric/URL parsing, exact zero-step parity, complete copy/print comparison context, safe mode switching, reciprocal SIP linking, and stronger regression coverage. The verified baseline is 474 tests across 43 files, passing lint, and a 51-page static/SSG production build.
+
 - Sprint 19 Gratuity Calculator at `/finance/gratuity-calculator` with pure standard monthly rated employee logic, strict eligible-wage and whole-service validation, explicit exactly-six-versus-seven-month handling, a centralized ₹20 lakh ceiling, visible pre-ceiling and capped results, qualified ordinary-service warning, complete shareable URL state, copy, and print support.
 - Current Code on Social Security, 2020 source records reviewed on 13 July 2026, including the 21 November 2025 commencement position, Social Security (Central) Rules, 2026, section 2(88) wage basis and 50% rule, 15/26 formula, service fraction, transition FAQ, ordinary eligibility and exceptions, the saved 2018 ceiling notification with current Ministry confirmation, and explicit exclusions from the numerical model.
 - Published `/glossary/gratuity`, calculator and Finance-directory discovery, homepage calculator search, related calculators, metadata, factual structured data, sitemap coverage, substantive knowledge content, and bidirectional calculator/glossary links.

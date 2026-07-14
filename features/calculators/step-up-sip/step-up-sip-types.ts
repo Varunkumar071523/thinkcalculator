@@ -1,0 +1,7 @@
+export type StepUpMode = "percentage" | "fixed"
+export type StepUpSIPInput = { readonly initialMonthlyInvestment:number; readonly stepUpMode:StepUpMode; readonly annualStepUpValue:number; readonly expectedAnnualReturn:number; readonly durationYears:number }
+export type StepUpSIPScheduleRow = { readonly year:number; readonly monthlyContributionAtStart:number; readonly monthlyContributionAtEnd:number; readonly annualContribution:number; readonly cumulativeInvestment:number; readonly estimatedYearEndValue:number; readonly estimatedGainToDate:number; readonly stepUpApplied:boolean }
+export type StepUpSIPResult = { readonly totalInvested:number; readonly estimatedReturns:number; readonly estimatedMaturityValue:number; readonly finalMonthlyInvestment:number; readonly totalContributions:number; readonly totalStepUpsApplied:number; readonly regularSipTotalInvested:number; readonly regularSipEstimatedReturns:number; readonly regularSipMaturityValue:number; readonly additionalInvestment:number; readonly additionalEstimatedValue:number; readonly maturityValueDifference:number; readonly schedule:readonly StepUpSIPScheduleRow[] }
+export type StepUpSIPField = keyof StepUpSIPInput
+export type StepUpSIPValidationErrors = Partial<Record<StepUpSIPField,string>>
+export type StepUpSIPValidationResult = {readonly success:true;readonly data:StepUpSIPInput}|{readonly success:false;readonly errors:StepUpSIPValidationErrors}

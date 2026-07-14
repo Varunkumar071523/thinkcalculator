@@ -13,7 +13,7 @@ export const sipFAQs: readonly CalculatorFAQ[] = [
 
 export const sipRelatedCalculators: readonly RelatedCalculator[] = [
   { slug: "lumpsum", title: "Lumpsum Calculator", description: "Explore tools for estimating a one-time investment.", href: "/calculators", category: "Finance" },
-  { slug: "step-up-sip", title: "Step-up SIP Calculator", description: "Explore tools for investments that increase over time.", href: "/calculators", category: "Finance" },
+  { slug: "step-up-sip-calculator", title: "Step-up SIP Calculator", description: "Estimate monthly contributions that increase after each completed year.", href: "/finance/step-up-sip-calculator", category: "Finance" },
   { slug: "cagr-calculator", title: "CAGR Calculator", description: "Calculate annualised growth between two values.", href: "/finance/cagr-calculator", category: "Finance" },
   { slug: "retirement", title: "Retirement Calculator", description: "Explore tools for long-term retirement planning.", href: "/calculators", category: "Finance" },
 ]

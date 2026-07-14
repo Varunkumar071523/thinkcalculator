@@ -5,14 +5,14 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 ## Current status
 
 - Phase: Phase 3 Calculator Expansion in progress.
-- Milestone: Sprint 19 Gratuity Calculator complete.
+- Milestone: Sprint 20 Step-up SIP Calculator complete.
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI (Base/Nova), and Vitest.
 - Architecture: static rendering where practical, Server Components by default, typed version-controlled registries, and no Version 1 database.
-- Verification baseline: 433 automated tests pass across 39 test files; lint and the 49-page production build pass.
+- Verification baseline: 474 automated tests pass across 43 test files; lint and the 51-page production build pass.
 
 ## Completed capabilities
 
-- Nine production calculators: eight Finance tools (EMI, SIP, Lumpsum, FD, RD, CAGR, PPF, and Gratuity) plus the Business GST Calculator.
+- Ten production calculators: nine Finance tools (EMI, SIP, Step-up SIP, Lumpsum, FD, RD, CAGR, PPF, and Gratuity) plus the Business GST Calculator.
 - Typed validation and pure calculation functions separated from UI.
 - Calculator discovery and calculator-only homepage search.
 - Validated shareable query URLs, copyable results, browser Print / Save as PDF, accessible charts, and schedules.
@@ -46,7 +46,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 
 ## Next phase
 
-Continue Phase 3 Calculator Expansion by selecting the next calculator against formula stability, source quality, maintenance cost, and user value. CAGR, PPF, GST, and Gratuity are complete; step-up SIP, SWP, inflation, retirement, income tax, and HRA remain candidates. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
+Continue Phase 3 Calculator Expansion by selecting the next calculator against formula stability, source quality, maintenance cost, and user value. CAGR, PPF, GST, Gratuity, and Step-up SIP are complete; SWP, inflation, retirement, income tax, and HRA remain candidates. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
 
 ## Validation
 
