@@ -5,14 +5,14 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 ## Current status
 
 - Phase: Phase 3 Calculator Expansion in progress.
-- Milestone: Sprint 22 Inflation Calculator complete.
+- Milestone: Sprint 23 Retirement Corpus Calculator complete.
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI (Base/Nova), and Vitest.
 - Architecture: static rendering where practical, Server Components by default, typed version-controlled registries, and no Version 1 database.
-- Verification baseline: 564 automated tests pass across 51 test files; lint and the 55-page production build pass.
+- Verification baseline: 628 automated tests pass across 55 test files; lint and the 57-page production build pass.
 
 ## Completed capabilities
 
-- Twelve production calculators: eleven Finance tools (EMI, SIP, Step-up SIP, SWP, Inflation, Lumpsum, FD, RD, CAGR, PPF, and Gratuity) plus the Business GST Calculator.
+- Thirteen production calculators: twelve Finance tools (EMI, SIP, Step-up SIP, SWP, Inflation, Retirement Corpus, Lumpsum, FD, RD, CAGR, PPF, and Gratuity) plus the Business GST Calculator.
 - Typed validation and pure calculation functions separated from UI.
 - Calculator discovery and calculator-only homepage search.
 - Validated shareable query URLs, copyable results, browser Print / Save as PDF, accessible charts, and schedules.
@@ -35,7 +35,8 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - GST presets are arithmetic shortcuts rather than rate-classification answers. The calculator relies on the user to select rate and supply type and excludes place-of-supply determination, cess, invoice rules, credits, returns, filing, and compliance.
 - Gratuity is scoped to the standard monthly rated employee amount under the Code on Social Security, 2020. The user must supply the eligible last-drawn wage basis; coverage, continuous service, fixed-term, death, disablement, working-journalist, piece-rated, seasonal, better-contract, exemption, forfeiture, and dispute questions remain outside the numerical model.
 - SWP is a deterministic, product-agnostic balance projection. Its "until balance is exhausted" mode is capped at 100 years rather than iterating indefinitely; taxation of withdrawals, mutual fund exit loads, STT, and other product-specific or statutory rules are outside the model.
-- Inflation uses a single constant assumed annual rate supplied by the user. It does not look up real-time or historical Consumer Price Index data, does not implement the Cost Inflation Index or any other statutory tax-indexation rule, and has no tie-in to a Retirement Corpus calculator (not yet built).
+- Inflation uses a single constant assumed annual rate supplied by the user. It does not look up real-time or historical Consumer Price Index data and does not implement the Cost Inflation Index or any other statutory tax-indexation rule.
+- Retirement Corpus is a deterministic, constant-rate illustrative projection connecting an accumulation phase to an inflation-adjusted-withdrawal retirement phase. It does not model sequence-of-returns risk, healthcare or long-term-care costs, taxation of contributions or withdrawals, or Social-Security-equivalent government pension income, and it is not a retirement plan or financial advice.
 - Financial results are estimates; provider rules, taxes, fees, market movement, and rounding may differ.
 - Google-hosted Geist fonts require network access during a clean production build.
 - Current editorial content is intentionally small and maintained directly in TypeScript.
@@ -48,7 +49,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 
 ## Next phase
 
-Continue Phase 3 Calculator Expansion by selecting the next calculator against formula stability, source quality, maintenance cost, and user value. CAGR, PPF, GST, Gratuity, Step-up SIP, SWP, and Inflation are complete; retirement, income tax, and HRA remain candidates. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
+Continue Phase 3 Calculator Expansion by selecting the next calculator against formula stability, source quality, maintenance cost, and user value. CAGR, PPF, GST, Gratuity, Step-up SIP, SWP, Inflation, and Retirement Corpus are complete; income tax and HRA remain candidates. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
 
 ## Validation
 

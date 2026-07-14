@@ -15,6 +15,7 @@ import { gratuityCalculatorDefinition } from "@/features/calculators/gratuity/gr
 import { stepUpSIPCalculatorDefinition } from "@/features/calculators/step-up-sip/step-up-sip-definition"
 import { swpCalculatorDefinition } from "@/features/calculators/swp/swp-definition"
 import { inflationCalculatorDefinition } from "@/features/calculators/inflation/inflation-definition"
+import { retirementCalculatorDefinition } from "@/features/calculators/retirement-corpus/retirement-definition"
 
 export const demoCalculatorDefinition = {
   id: "framework-demo",
@@ -138,6 +139,7 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   stepUpSIPCalculatorDefinition,
   swpCalculatorDefinition,
   inflationCalculatorDefinition,
+  retirementCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(
