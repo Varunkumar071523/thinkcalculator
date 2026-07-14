@@ -127,7 +127,7 @@ Only visible, factual data is encoded. The root uses Organization and WebSite da
 
 ## 17. Testing strategy
 
-Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. Sprint 20 adds Step-up SIP annual-boundary, percentage/fixed mode, regular-SIP parity, strict numeric parsing, schedule, URL-state, worked-example, discovery, glossary, metadata, and sitemap invariants. The calculator follows the SIP beginning-of-month convention: each contribution is added before monthly growth, using annual return divided by 12 and 100.
+Vitest covers calculations, validation boundaries, URL state, schedules, registries, content integrity, search derivation/ranking, production configuration, and draft/link exclusions. Tests avoid snapshots in favour of explicit behaviour and invariant checks. Sprint 21 adds SWP withdraw-then-grow timing, partial final-withdrawal, exact-boundary and fast-exhaustion depletion, a documented 100-year "until exhausted" safety cap, a reconciliation invariant (total withdrawn plus remaining balance minus initial investment equals total growth), an independent closed-form cross-check, strict numeric/URL parsing, schedule, worked-example, discovery, glossary, metadata, and sitemap invariants. The calculator withdraws each month's amount from the opening balance before that month's growth is applied to the remainder, using annual return divided by 12 and 100.
 
 ## 18. Accessibility principles
 

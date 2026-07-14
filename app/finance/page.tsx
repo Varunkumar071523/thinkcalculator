@@ -22,6 +22,7 @@ const iconBySlug = {
   "cagr-calculator": LineChart,
   "ppf-calculator": Landmark,
   "gratuity-calculator": HandCoins,
+  "swp-calculator": WalletCards,
 } as const
 
 export const financeCalculators: CalculatorSummary[] = calculatorRegistry

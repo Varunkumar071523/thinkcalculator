@@ -13,6 +13,7 @@ import { ppfCalculatorDefinition } from "@/features/calculators/ppf/ppf-definiti
 import { gstCalculatorDefinition } from "@/features/calculators/gst/gst-definition"
 import { gratuityCalculatorDefinition } from "@/features/calculators/gratuity/gratuity-definition"
 import { stepUpSIPCalculatorDefinition } from "@/features/calculators/step-up-sip/step-up-sip-definition"
+import { swpCalculatorDefinition } from "@/features/calculators/swp/swp-definition"
 
 export const demoCalculatorDefinition = {
   id: "framework-demo",
@@ -134,6 +135,7 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   gstCalculatorDefinition,
   gratuityCalculatorDefinition,
   stepUpSIPCalculatorDefinition,
+  swpCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(
