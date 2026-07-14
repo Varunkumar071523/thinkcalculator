@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { BarChart3, HandCoins, IndianRupee, Landmark, LineChart, PiggyBank, WalletCards } from "lucide-react"
+import { BarChart3, HandCoins, IndianRupee, Landmark, LineChart, PiggyBank, TrendingUp, WalletCards } from "lucide-react"
 
 import { SiteContainer } from "@/components/layout/site-container"
 import { CalculatorCard } from "@/components/shared/calculator-card"
@@ -23,6 +23,7 @@ const iconBySlug = {
   "ppf-calculator": Landmark,
   "gratuity-calculator": HandCoins,
   "swp-calculator": WalletCards,
+  "inflation-calculator": TrendingUp,
 } as const
 
 export const financeCalculators: CalculatorSummary[] = calculatorRegistry

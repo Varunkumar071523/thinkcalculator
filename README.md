@@ -1,6 +1,8 @@
 # ThinkCalculator
 
-ThinkCalculator is an India-focused platform for transparent finance and business calculators with educational content. The current platform includes EMI, SIP, Step-up SIP, SWP, Lumpsum, FD, RD, CAGR, PPF, GST, and Gratuity calculators plus statically generated Blog, Guide, Glossary, Topic Hub, and editorial-search experiences.
+ThinkCalculator is an India-focused platform for transparent finance and business calculators with educational content. The current platform includes EMI, SIP, Step-up SIP, SWP, Inflation, Lumpsum, FD, RD, CAGR, PPF, GST, and Gratuity calculators plus statically generated Blog, Guide, Glossary, Topic Hub, and editorial-search experiences.
+
+The Inflation calculator at `/finance/inflation-calculator` has two modes: future cost, which compounds a current amount forward by an assumed annual inflation rate, and present value / purchasing power, which discounts a future amount back to what it is worth today. Both modes compound annually, consistent with CAGR and PPF, and correctly handle a negative rate (deflation) and 0% inflation without special-casing. It excludes real-time or historical CPI data, the statutory Cost Inflation Index, and any tie-in to a Retirement Corpus calculator.
 
 The SWP calculator at `/finance/swp-calculator` projects a fixed monthly withdrawal against an existing lumpsum, either for a fixed duration or until the balance is exhausted. Each month's withdrawal is taken from the opening balance before that month's assumed growth is applied to the remainder, the final withdrawal is reduced rather than overdrawn when the balance runs short, and "until exhausted" runs are capped at 100 years instead of iterating indefinitely. It excludes taxation of withdrawals and any product-specific or statutory withdrawal rules.
 

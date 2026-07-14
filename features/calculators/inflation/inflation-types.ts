@@ -1,0 +1,9 @@
+export type InflationMode = "futureCost" | "presentValue"
+export type InflationInput = { readonly mode:InflationMode; readonly amount:number; readonly annualInflationRate:number; readonly years:number }
+export type InflationScheduleRow = { readonly year:number; readonly cumulativeFactor:number; readonly equivalentValue:number }
+export type InflationFutureCostResult = { readonly mode:"futureCost"; readonly currentAmount:number; readonly futureValue:number; readonly totalInflationImpact:number; readonly inflationMultiple:number; readonly schedule:readonly InflationScheduleRow[] }
+export type InflationPresentValueResult = { readonly mode:"presentValue"; readonly futureAmount:number; readonly presentValue:number; readonly purchasingPowerChange:number; readonly purchasingPowerChangePercentage:number; readonly discountMultiple:number; readonly schedule:readonly InflationScheduleRow[] }
+export type InflationResult = InflationFutureCostResult | InflationPresentValueResult
+export type InflationField = keyof InflationInput
+export type InflationValidationErrors = Partial<Record<InflationField,string>>
+export type InflationValidationResult = {readonly success:true;readonly data:InflationInput}|{readonly success:false;readonly errors:InflationValidationErrors}

@@ -6,6 +6,9 @@ This changelog summarises project milestones. No semantic version or release dat
 
 ### Added
 
+- Sprint 22 Inflation Calculator at `/finance/inflation-calculator`, with future-cost and present-value/purchasing-power modes, annual compounding consistent with CAGR and PPF, correctly-behaving deflation (negative rate) and 0% inflation without special-case branching, and a documented -10%/50% rate range with a safe-calculation-range rejection for extreme future-cost combinations.
+- Published `/glossary/inflation`, Investing topic integration, discovery, metadata, structured data, and sitemap coverage. Coverage includes an independent closed-form cross-check (a repeated-multiplication implementation separate from the `Math.pow` production code), a future-cost/present-value round-trip identity, zero-inflation, deflation, very-high-inflation stress, 1-year, and long-duration (50-year) cases. The verified baseline is 564 tests across 51 files, passing lint, and a 55-page static/SSG production build.
+
 - Sprint 21 SWP Calculator at `/finance/swp-calculator`, with fixed-duration and until-balance-is-exhausted modes, beginning-of-month withdraw-then-grow timing, a partial final withdrawal when the balance runs short, and a documented 100-year simulation cap for the until-exhausted mode instead of an unbounded loop.
 - Published `/glossary/swp`, Investing topic integration, discovery, metadata, structured data, and sitemap coverage. Coverage includes a reconciliation invariant (total withdrawn plus remaining balance minus initial investment equals total growth), an independent closed-form cross-check, zero-return, fast-exhaustion, exact-boundary-exhaustion, perpetual/capped, and long-duration finite-result cases. The verified baseline is 515 tests across 47 files, passing lint, and a 53-page static/SSG production build.
 

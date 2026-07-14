@@ -36,9 +36,9 @@ export const topicRegistry: readonly TopicDefinition[] = [
       { title: "Follow the practical guide", description: "Learn how contribution, duration, and return assumptions shape a SIP estimate.", resourceId: "guide-estimate-sip" },
       { title: "Build a transparent scenario", description: "Use the SIP Calculator and treat the assumed return as an illustration rather than a prediction.", resourceId: "sip-calculator" },
     ],
-    calculatorIds: ["sip-calculator", "step-up-sip-calculator", "swp-calculator", "lumpsum-calculator", "cagr-calculator"],
+    calculatorIds: ["sip-calculator", "step-up-sip-calculator", "swp-calculator", "lumpsum-calculator", "cagr-calculator", "inflation-calculator"],
     editorialIds: ["blog-sip-vs-lumpsum", "guide-estimate-sip"],
-    glossaryIds: ["glossary-sip", "glossary-step-up-sip", "glossary-swp", "glossary-compounding", "glossary-cagr", "glossary-principal", "glossary-tenure"],
+    glossaryIds: ["glossary-sip", "glossary-step-up-sip", "glossary-swp", "glossary-compounding", "glossary-cagr", "glossary-principal", "glossary-tenure", "glossary-inflation"],
   },
   {
     id: "topic-savings", slug: "savings", name: "Savings", canonicalPath: "/topics/savings", status: "published",

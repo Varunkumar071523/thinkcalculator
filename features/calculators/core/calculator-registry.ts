@@ -14,6 +14,7 @@ import { gstCalculatorDefinition } from "@/features/calculators/gst/gst-definiti
 import { gratuityCalculatorDefinition } from "@/features/calculators/gratuity/gratuity-definition"
 import { stepUpSIPCalculatorDefinition } from "@/features/calculators/step-up-sip/step-up-sip-definition"
 import { swpCalculatorDefinition } from "@/features/calculators/swp/swp-definition"
+import { inflationCalculatorDefinition } from "@/features/calculators/inflation/inflation-definition"
 
 export const demoCalculatorDefinition = {
   id: "framework-demo",
@@ -136,6 +137,7 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   gratuityCalculatorDefinition,
   stepUpSIPCalculatorDefinition,
   swpCalculatorDefinition,
+  inflationCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(

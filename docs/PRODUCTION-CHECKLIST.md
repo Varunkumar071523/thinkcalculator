@@ -11,25 +11,25 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 2. Tests
 
-- [x] `npm run test` passes: 515 tests across 47 files after Sprint 21 SWP integration and independent review.
+- [x] `npm run test` passes: 564 tests across 51 files after Sprint 22 Inflation integration and independent review.
 - [x] Core calculations, URL state, schedules, registries, content exclusions, cluster reciprocity, learning-path integrity, search/sitemap boundaries, and production configuration have automated coverage.
 - [ ] Re-run the full suite on the release commit in CI or the deployment environment.
 
 ## 3. Lint and build
 
-- [x] `npm run lint` passes for the current Sprint 21 source baseline.
-- [x] `npm run build` passes for the current Sprint 21 source baseline.
-- [x] `git diff --check` passes for the current Sprint 21 source baseline.
+- [x] `npm run lint` passes for the current Sprint 22 source baseline.
+- [x] `npm run build` passes for the current Sprint 22 source baseline.
+- [x] `git diff --check` passes for the current Sprint 22 source baseline.
 - [ ] Repeat all checks for the release commit with production configuration.
 
 ## 4. Static-route verification
 
 - [x] Current public routes build as static or SSG output.
 - [x] Four editorial routes are generated from published registry items.
-- [x] Twelve glossary term routes are generated from published registry items.
+- [x] Thirteen glossary term routes are generated from published registry items.
 - [x] Two substantive topic routes are generated from eligible published definitions; draft and sparse topics are excluded.
 - [x] `/search` keeps a static page shell and derives results client-side from a small public registry projection behind Suspense.
-- [x] The Sprint 21 production build generates 53 static/SSG pages, including `/finance/swp-calculator` and `/glossary/swp` exactly once.
+- [x] The Sprint 22 production build generates 55 static/SSG pages, including `/finance/inflation-calculator` and `/glossary/inflation` exactly once.
 - [x] Invalid and draft editorial slugs return not found.
 - [x] Eligible calculator, editorial, and glossary cluster members expose reciprocal hub navigation; sparse, unresolved, draft, and non-member resources do not render a false cluster section.
 - [x] Public topic learning paths are ordered, linked to live unique destinations, keyboard reachable, and free of nested interactive controls.
@@ -87,7 +87,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 12. Calculator validation
 
-- [x] Eleven production calculators have unit tests and worked examples.
+- [x] Twelve production calculators have unit tests and worked examples.
 - [x] Validation is separate from pure calculation logic.
 - [ ] Cross-check representative scenarios against independent trusted calculations.
 - [ ] Verify rounding, extremes, invalid input, and provider-specific caveats manually.
