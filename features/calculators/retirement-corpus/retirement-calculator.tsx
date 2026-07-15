@@ -170,17 +170,24 @@ export function RetirementCalculator() {
         />
       </> : null}
     </div>
-    {calculation ? <>
-      <section className="col-span-full">
-        <h2 className="text-2xl font-semibold">Accumulation schedule</h2>
-        <p className="mt-3 text-muted-foreground">Each year&apos;s contribution is added before that year&apos;s growth is applied. Displayed currency is rounded; calculations retain precision.</p>
-        <div className="mt-6"><DataTable caption="Retirement Corpus accumulation-phase yearly schedule, from current age to retirement age" rows={calculation.result.accumulationSchedule} columns={accumulationColumns} /></div>
-      </section>
-      <section className="col-span-full">
-        <h2 className="text-2xl font-semibold">Retirement withdrawal schedule</h2>
-        <p className="mt-3 text-muted-foreground">Each year&apos;s withdrawals are taken before that year&apos;s growth is applied to the remaining balance, and the monthly withdrawal amount grows with assumed inflation each year. Displayed currency is rounded; calculations retain precision.</p>
-        <div className="mt-6"><DataTable caption="Retirement Corpus retirement-phase yearly withdrawal schedule, from retirement age to life expectancy" rows={calculation.result.decumulationSchedule} columns={decumulationColumns} /></div>
-      </section>
-    </> : null}
+    {calculation ? (
+      // Both schedules share ONE data-calculation-experience wrapper rather than one each: the print
+      // stylesheet (app/globals.css) absolutely positions every [data-calculation-experience] element
+      // at the same fixed offset below the summary, so two independently tagged sections would print
+      // stacked on top of each other. Nesting them inside a single tagged container lets them stack
+      // normally within it instead.
+      <div className="col-span-full space-y-16 sm:space-y-20" data-calculation-experience aria-label="Accumulation and retirement withdrawal schedules">
+        <section>
+          <h2 className="text-2xl font-semibold">Accumulation schedule</h2>
+          <p className="mt-3 text-muted-foreground">Each year&apos;s contribution is added before that year&apos;s growth is applied. Displayed currency is rounded; calculations retain precision.</p>
+          <div className="mt-6"><DataTable caption="Retirement Corpus accumulation-phase yearly schedule, from current age to retirement age" rows={calculation.result.accumulationSchedule} columns={accumulationColumns} /></div>
+        </section>
+        <section>
+          <h2 className="text-2xl font-semibold">Retirement withdrawal schedule</h2>
+          <p className="mt-3 text-muted-foreground">Each year&apos;s withdrawals are taken before that year&apos;s growth is applied to the remaining balance, and the monthly withdrawal amount grows with assumed inflation each year. Displayed currency is rounded; calculations retain precision.</p>
+          <div className="mt-6"><DataTable caption="Retirement Corpus retirement-phase yearly withdrawal schedule, from retirement age to life expectancy" rows={calculation.result.decumulationSchedule} columns={decumulationColumns} /></div>
+        </section>
+      </div>
+    ) : null}
   </>
 }

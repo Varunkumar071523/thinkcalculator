@@ -60,15 +60,27 @@
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  /* Sprint 31: darkened from oklch(0.556 0 0) (#737373, 4.27:1 on the lightest tinted
+     backgrounds this token appears on, e.g. bg-muted/30 and bg-primary/5) to meet the WCAG AA
+     4.5:1 text-contrast minimum with a small safety margin. Verified against real rendered
+     contrast via tests/e2e/a11y.spec.ts, not computed by hand. */
+  --muted-foreground: oklch(0.45 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
+  /* Sprint 31: chart-1/chart-2 are the two segment colors of SimpleDonutChart (used on 7
+     calculators). The old values (0.87, 0.556) gave chart-1 only ~1.5:1 against the white card
+     background it renders on — well under the 3:1 WCAG 1.4.11 non-text-contrast minimum for a
+     graphical object, so that ring segment was nearly invisible. Grayscale can't hit 3:1 against
+     white on BOTH segments while also keeping them ~3:1 apart from each other unless one is fairly
+     dark, so chart-2 moved down accordingly. Verified: chart-1 vs white 3.64:1, chart-2 vs white
+     13.64:1, chart-1 vs chart-2 3.74:1. chart-3/4/5 are unused (no chart currently renders more
+     than 2 segments) and are left as-is. */
+  --chart-1: oklch(0.62 0 0);
+  --chart-2: oklch(0.30 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);

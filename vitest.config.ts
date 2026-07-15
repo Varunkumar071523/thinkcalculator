@@ -10,5 +10,9 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // tests/e2e/ holds Playwright specs (own test runner, own "test"/"expect" API from
+    // @playwright/test) — excluded so Vitest's default *.spec.ts glob doesn't also try to execute
+    // them. See playwright.config.ts for that suite.
+    exclude: ["**/node_modules/**", "tests/e2e/**"],
   },
 })
