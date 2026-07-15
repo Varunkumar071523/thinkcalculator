@@ -1,14 +1,6 @@
-import Link from "next/link"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-
-const links = [
-  ["Blog", "/blog"],
-  ["Guides", "/guides"],
-  ["Glossary", "/glossary"],
-  ["Topics", "/topics"],
-] as const
+import { ResourceDirectory } from "@/components/search/resource-directory"
 
 export function ResourceSearchFallback() {
   return (
@@ -20,9 +12,7 @@ export function ResourceSearchFallback() {
           <Button type="submit">Search resources</Button>
         </div>
       </form>
-      <nav className="mt-8 flex flex-wrap gap-x-5 gap-y-2" aria-label="Learning resource collections">
-        {links.map(([title, href]) => <Link key={href} href={href} className="font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{title}</Link>)}
-      </nav>
+      <ResourceDirectory />
     </div>
   )
 }
