@@ -11,15 +11,16 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 2. Tests
 
-- [x] `npm run test` passes: 564 tests across 51 files after Sprint 22 Inflation integration and independent review.
+- [x] `npm run test` passes: 628 Vitest tests across 55 files, plus a 264-test Playwright suite (accessibility, keyboard/focus, zoom/reflow, print, reduced motion) across Chromium, Firefox, and WebKit, after Sprint 31 Browser/Accessibility/Print QA and its follow-up independent review.
 - [x] Core calculations, URL state, schedules, registries, content exclusions, cluster reciprocity, learning-path integrity, search/sitemap boundaries, and production configuration have automated coverage.
+- [x] Every published static route has automated axe-core WCAG 2.1 A/AA coverage (`tests/e2e/a11y.spec.ts`, run via `npm run test` or `npm run test:e2e`).
 - [ ] Re-run the full suite on the release commit in CI or the deployment environment.
 
 ## 3. Lint and build
 
-- [x] `npm run lint` passes for the current Sprint 22 source baseline.
-- [x] `npm run build` passes for the current Sprint 22 source baseline.
-- [x] `git diff --check` passes for the current Sprint 22 source baseline.
+- [x] `npm run lint` passes for the current Sprint 31 source baseline.
+- [x] `npm run build` passes for the current Sprint 31 source baseline.
+- [x] `git diff --check` passes for the current Sprint 31 source baseline.
 - [ ] Repeat all checks for the release commit with production configuration.
 
 ## 4. Static-route verification
@@ -70,20 +71,26 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 ## 9. Accessibility
 
 - [x] Semantic landmarks, skip link, visible focus styles, labels, and accessible tables are implemented.
-- [x] Charts have textual values and do not depend on colour alone.
-- [ ] Complete keyboard-only and screen-reader testing on representative live pages.
-- [ ] Verify zoom, reflow, contrast, status announcements, and reduced motion.
+- [x] Charts have textual values (`aria-label` + adjacent legend text) and do not depend on colour alone; `SimpleDonutChart`'s two segment colours were also verified against WCAG 1.4.11 non-text-contrast (both ≥3:1 against the card background and against each other) as part of Sprint 31, since axe-core cannot judge graphical-object contrast automatically.
+- [x] Automated keyboard-reachability and visible-focus-indicator coverage exists for 5 representative calculators (EMI, SWP, Inflation, Step-up SIP, Retirement Corpus) plus the mobile navigation Sheet's focus trap/return (`tests/e2e/keyboard.spec.ts`), across Chromium, Firefox, and WebKit.
+- [x] Automated WCAG 2.1 A/AA axe-core coverage exists for every published static route (`tests/e2e/a11y.spec.ts`); Sprint 31 found and fixed one `aria-allowed-attr` violation (invalid `aria-expanded`/`aria-controls` on the homepage search `input[type=search]`), one `definition-list` structure violation (`/glossary`), and one systemic `color-contrast` violation (`--muted-foreground` token, 23 occurrences across nearly every page).
+- [x] Automated zoom/reflow coverage exists at a 320px viewport (WCAG 1.4.10) and a 640×800 (200%-zoom-equivalent) viewport for 12 representative pages (`tests/e2e/reflow.spec.ts`); no page-level horizontal scroll found.
+- [x] Automated `prefers-reduced-motion: reduce` coverage exists (`tests/e2e/reduced-motion.spec.ts`), verifying the global CSS override actually collapses transition/animation duration on real rendered elements (the mobile navigation Sheet and a homepage interactive link) across Chromium, Firefox, and WebKit. The codebase has no JS-driven animation library, so this CSS-level check covers every animation in the app.
+- [ ] A real screen-reader pass (VoiceOver, NVDA, or JAWS) on representative live pages — axe-core and manual DOM/ARIA review (result `aria-live` regions, `aria-describedby` error association, `aria-hidden` decorative icons) give strong signal but are not a substitute for a human with a real screen reader.
 
 ## 10. Browser testing
 
-- [ ] Test current Chrome, Firefox, Safari, and Edge, including search submission, refresh, and back/forward navigation.
-- [ ] Verify navigation, forms, sharing, clipboard, schedules, errors, and editorial anchors.
+- [x] Automated coverage across Chromium, Firefox, and Playwright's WebKit engine exists for accessibility, keyboard/focus, zoom/reflow, and print output (`tests/e2e/`, run via `npm run test`).
+- [x] Codebase audited for known cross-browser risk patterns (Sprint 31): `backdrop-filter` is correctly `-webkit-`-prefixed and `@supports`-gated by the Tailwind v4/Lightning CSS build; `oklch()`/`oklab()` theme colours are automatically downleveled with `lab()`/hex fallbacks by the same build (both verified in the actual built CSS, not assumed); no `100vh`/viewport-unit iOS-Safari risk found (unused in this codebase); `Array.prototype.findLast` (used in two client-side calculation modules, SWP and Retirement Corpus) requires Safari 15.4+/Chrome 97+/Firefox 104+, all released 2022 — low risk but flagged since an unsupported browser would hard-crash rather than degrade; `navigator.clipboard.writeText` already has a try/catch fallback message.
+- [ ] Test current Chrome, Firefox, Safari (real, on macOS), and Edge, including search submission, refresh, and back/forward navigation. Playwright's WebKit engine is not Safari and does not substitute for this.
+- [ ] Verify navigation, forms, sharing, clipboard, schedules, errors, and editorial anchors on real Safari specifically (clipboard-write and native `type="number"`/`type="search"` rendering are the most likely points of divergence).
 
 ## 11. Mobile testing
 
 - [x] Layouts are implemented mobile-first with contained table overflow.
-- [ ] Test representative physical iOS and Android devices.
-- [ ] Confirm no page-level horizontal scrolling or obscured controls.
+- [x] Automated mobile-viewport coverage exists (375px for the mobile navigation Sheet, 320px for WCAG reflow across 12 representative pages) — see `tests/e2e/keyboard.spec.ts` and `tests/e2e/reflow.spec.ts`.
+- [x] Confirmed via automated testing: no page-level horizontal scrolling at 320px or at a 200%-zoom-equivalent viewport on any of the 12 representative pages checked.
+- [ ] Test representative physical iOS and Android devices. Viewport emulation confirms layout/reflow logic but cannot verify real touch-target sizing, on-device font rendering, native control chrome (date/number inputs, select dropdowns), or OS-level accessibility settings interaction.
 
 ## 12. Calculator validation
 
@@ -95,7 +102,10 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 ## 13. Print testing
 
 - [x] Browser Print / Save as PDF actions are implemented; no PDF generator is required.
-- [ ] Print each calculator in supported browsers and inspect clipping, page breaks, charts, and schedules.
+- [x] Automated print-media-emulation coverage exists for 5 representative calculators (EMI, SWP, Inflation, Step-up SIP, Retirement Corpus) across Chromium, Firefox, and WebKit (`tests/e2e/print.spec.ts`): navigation/footer/the input form are confirmed hidden, the print summary is confirmed visible with a non-dark background, and every schedule table is confirmed visible and non-overlapping.
+- [x] Sprint 31 found and fixed a real print regression: SWP, Inflation, Step-up SIP, and Retirement Corpus's schedule tables were completely missing from print output (silently `visibility: hidden`, not just unstyled) because they lacked the `data-calculation-experience` marker the print stylesheet requires — only EMI/SIP/FD/RD/Lumpsum/PPF had it. Retirement Corpus's two schedules (accumulation and retirement) are wrapped in a single `data-calculation-experience` container rather than two, since the print stylesheet absolutely-positions every such element at the same fixed offset and two independent instances would have overlapped.
+- [x] A follow-up independent review confirmed the fix at the source level across all 13 calculators, not sampled: every calculator using the shared `DataTable` schedule component (EMI, SIP, Lumpsum, FD, RD, PPF, SWP, Inflation, Step-up SIP, Retirement Corpus — 10 total) carries exactly the `data-calculation-experience` marker it needs, and the 3 calculators with no schedule (CAGR, GST, Gratuity) correctly carry none.
+- [ ] Print each calculator in a real browser (not emulated) and inspect actual paper/PDF pagination, page breaks across multiple pages for long schedules, and printer-specific rendering.
 
 ## 14. Security headers
 

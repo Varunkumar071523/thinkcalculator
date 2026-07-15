@@ -41,8 +41,6 @@ export function CalculatorSearch({ calculators }: { calculators: readonly Search
           placeholder="Search EMI, SIP, GST, deposits…"
           className="h-14 rounded-xl bg-background pr-12 pl-12 text-base shadow-sm"
           autoComplete="off"
-          aria-controls={`${inputId}-results`}
-          aria-expanded={normalizedQuery.length > 0}
         />
         {query ? (
           <Button type="button" variant="ghost" size="icon" className="absolute top-1/2 right-2 -translate-y-1/2" onClick={() => setQuery("")} aria-label="Clear calculator search">
