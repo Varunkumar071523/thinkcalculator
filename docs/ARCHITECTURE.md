@@ -147,7 +147,7 @@ Use short-lived feature, fix, or documentation branches, focused conventional co
 
 ## 22. Deployment assumptions
 
-The intended production domain is `https://thinkcalculator.in` on the existing Hostinger environment. The runtime must support the built Next.js application and configured headers. Clean builds require access to fetch Geist fonts. HTTPS, DNS, caching, analytics, backups, rollback, and monitoring must be verified in the target environment using the [production checklist](PRODUCTION-CHECKLIST.md).
+The intended production domain is `https://thinkcalculator.in` on the existing Hostinger environment, which runs no Node.js process. Sprint 34 confirmed the site builds entirely as static/SSG output and engineered a static-export (`output: 'export'`) build producing a plain `out/` directory for Apache/LiteSpeed to serve directly, with `public/.htaccess` replacing `next.config.ts`'s `headers()` as the production security-header enforcement mechanism — see [decision 23](DECISIONS.md) and [DEPLOYMENT.md](DEPLOYMENT.md) for the full audit and upload process. Clean builds require access to fetch Geist fonts. HTTPS, DNS, caching, analytics, backups, rollback, and monitoring must be verified in the target environment using the [production checklist](PRODUCTION-CHECKLIST.md).
 
 ## 23. Deferred architecture decisions
 

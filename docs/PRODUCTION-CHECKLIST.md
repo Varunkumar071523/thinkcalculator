@@ -120,8 +120,9 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 16. Hosting
 
-- [ ] Confirm the Hostinger environment supports the built Next.js application and headers.
-- [ ] Verify Node/runtime version, build/start commands, caching, logs, resource limits, and restart behaviour.
+- [x] Sprint 34 confirmed Hostinger shared hosting runs no Node.js process (Apache/LiteSpeed static-file serving only) and engineered a static-export (`output: 'export'`) build path instead of assuming a Node runtime. See decision 23 and [DEPLOYMENT.md](DEPLOYMENT.md) for the full compatibility audit, `.htaccess` header replication, and upload process.
+- [ ] Perform the actual Hostinger upload and verify the live route table and representative responses (Sprint 35).
+- [ ] Confirm live response headers, extensionless-icon MIME types, and the custom 404 page against the real Apache/LiteSpeed instance — the `.htaccess` syntax was verified against documented Apache directive patterns only; no Apache/LiteSpeed instance was available to test against directly in Sprint 34's environment.
 
 ## 17. Environment variables
 
@@ -176,3 +177,17 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 - [ ] Noted and accepted as a disclosed design tradeoff of query-parameter shareable state (decision 11): "Copy share link" encodes entered calculator values in the URL in plain text, so anyone who opens a shared link can see those values. Not currently disclosed to users. Open item: decide whether/how to disclose this in-product or in the privacy policy.
 - [ ] Open item: decide whether the privacy policy should reference India's Digital Personal Data Protection Act (DPDPA), 2023.
 - [ ] Open item: decide whether to invest in CSP nonce infrastructure (currently deferred — see decision 18).
+
+## 26. Sprint 34 — Hostinger static-export deployment engineering
+
+- [x] Confirmed by grep: no middleware, no ISR/`revalidate`, no Server Actions, and no `redirects()`/`rewrites()` anywhere in the codebase. `headers()` in `next.config.ts` is the only static-export-incompatible feature in use, and going inert under export is confirmed as Next.js's documented by-design behaviour, not a bug.
+- [x] `output: 'export'` build (`npm run build:export`) produces all 57 routes, matching the non-export build's route count; the normal `next build` (non-export) was re-verified to still pass unaffected.
+- [x] `app/icon.tsx`, `app/apple-icon.tsx`, `app/opengraph-image.tsx`, `app/manifest.ts`, `app/robots.ts`, and `app/sitemap.ts` needed `export const dynamic = "force-static"` to build under export; verified the actual generated `out/` files (real PNGs via `file(1)`, complete manifest/robots/sitemap content) rather than assuming compatibility.
+- [x] Verified every `generateStaticParams` route (`blog/[slug]`, `glossary/[slug]`, `guides/[slug]`, `topics/[slug]`) pre-renders real server-rendered HTML with actual page content for every published path, not a client-only shell.
+- [x] `public/.htaccess` added, replicating all six Sprint 33 security headers via `mod_headers`, a `ForceType image/png` fix for the three extensionless `next/og` icon routes, and `ErrorDocument 404` for the custom not-found page; confirmed it passes through into `out/.htaccess` via Next's normal `public/` copy step. Apache/LiteSpeed syntax could not be tested against a live instance in this sprint's environment (none available) — flagged above in section 16 for verification after the first live upload.
+- [x] `trailingSlash: true` (export-mode only) chosen so clean folder+`index.html` URLs work with Apache's default directory handling without requiring `mod_rewrite`; reasoning recorded in decision 23 and DEPLOYMENT.md.
+- [x] Local smoke test of the served `out/` directory (plain static server, not `next start`): homepage, calculator interactivity/hydration, all four dynamic-slug types, and true click-driven navigation all verified working via a headless-browser script; a true (non-fallback) static server confirmed a real 404 for unmatched routes.
+- [x] Found and documented a non-blocking limitation: Next's client-router segment-prefetch requests a payload path that doesn't match the static-export output path, producing benign console 404s on hover/viewport-prefetched links; verified actual navigation is unaffected. Not fixed in this sprint (see decision 23).
+- [ ] The permanent Playwright suite was not run against the static export — `playwright.config.ts` depends on `next start`, incompatible with export's `out/` output. See DEPLOYMENT.md for what a future sprint needs to add (a static-file-server webServer profile with faithful directory-index/404 behaviour) to make this possible.
+- [x] `docs/DEPLOYMENT.md` added: build instructions, the full compatibility audit, `.htaccess` contents and reasoning, trailing-slash reasoning, smoke-test results, and both hPanel File Manager and FTP/SFTP upload steps.
+- [x] An inert, opt-in GitHub Actions workflow (`.github/workflows/deploy-hostinger.yml`) was drafted for FTP deployment to Hostinger; its only active trigger today is manual (`workflow_dispatch`), with a guard job that fails closed until the repository owner adds FTP secrets, and a `push: branches: [main]` trigger left commented out for the owner to enable later if automatic on-push deploys are wanted — not wired to run automatically.

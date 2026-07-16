@@ -1,0 +1,72 @@
+# OPTIONAL, FOR PROJECT-OWNER REVIEW — NOT ENABLED.
+#
+# Builds the static export (see docs/DEPLOYMENT.md) and uploads it to Hostinger's public_html
+# over FTPS. Drafted in Sprint 34 as a convenience for future automated deploys; it is NOT wired
+# to run automatically. Two things must happen before it can do anything:
+#
+#   1. Add three repository secrets (Settings -> Secrets and variables -> Actions):
+#        FTP_HOST     - from hPanel -> Files -> FTP Accounts
+#        FTP_USERNAME - same location
+#        FTP_PASSWORD - same location (or set a new one there)
+#   2. Change the trigger below from `workflow_dispatch` (manual-only) to `push: branches: [main]`
+#      once you actually want every push to main to deploy automatically.
+#
+# Until both of those happen, this workflow only runs when someone manually triggers it from the
+# Actions tab, and the guard job below fails fast with an explanatory message instead of silently
+# attempting (and failing) an FTP connection.
+name: Deploy to Hostinger (optional, not yet enabled)
+
+on:
+  workflow_dispatch: {}
+  # Uncomment below (and consider removing workflow_dispatch) once FTP secrets are configured and
+  # you want automatic deploys on every push to main:
+  # push:
+  #   branches: [main]
+
+jobs:
+  guard:
+    name: Check FTP secrets are configured
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - name: Check required secrets
+        id: check
+        run: |
+          if [ -z "${{ secrets.FTP_HOST }}" ] || [ -z "${{ secrets.FTP_USERNAME }}" ] || [ -z "${{ secrets.FTP_PASSWORD }}" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::error::FTP_HOST, FTP_USERNAME, and FTP_PASSWORD repository secrets are not all set. See the comment at the top of this workflow file for where to find them in hPanel. Deployment skipped."
+            exit 1
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+  build-and-deploy:
+    name: Build static export and deploy
+    needs: guard
+    if: needs.guard.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        run: npm run build:export
+
+      - name: Deploy out/ to Hostinger via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./out/
+          server-dir: ./public_html/

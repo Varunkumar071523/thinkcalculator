@@ -1,0 +1,29 @@
+# Apache/LiteSpeed configuration for the static export served on Hostinger shared hosting.
+#
+# next.config.ts's headers() function only runs inside a live Next.js server process. Static
+# export (`output: 'export'`, see docs/DEPLOYMENT.md) has no such process — Apache serves the
+# out/ files directly — so this file is the actual production enforcement mechanism for the
+# security headers documented in lib/production-config.ts (Sprint 33 security/privacy audit).
+# Every directive below mirrors that configuration line for line; keep the two in sync.
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
+
+# app/icon.tsx, app/apple-icon.tsx, and app/opengraph-image.tsx render PNGs via next/og, and Next
+# names their static-export output after the route (`icon`, `apple-icon`, `opengraph-image`) with
+# no file extension. Apache's default MIME handling keys off the extension, so without this the
+# files would be served as application/octet-stream instead of image/png.
+<IfModule mod_mime.c>
+  <FilesMatch "^(icon|apple-icon|opengraph-image)$">
+    ForceType image/png
+  </FilesMatch>
+</IfModule>
+
+# Custom 404 page: app/not-found.tsx exports as out/404.html (see docs/DEPLOYMENT.md).
+ErrorDocument 404 /404.html
