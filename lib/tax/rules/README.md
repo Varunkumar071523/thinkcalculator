@@ -29,21 +29,57 @@ Figures below reflect the provisions announced in the Union Budget 2025
 | Sec 80D caps (₹25,000 / ₹50,000) | Sec 80D |
 | Sec 24(b) home loan interest cap (₹2,00,000) | Sec 24(b), self-occupied property |
 
-## ⚠️ TODO: verify before trusting this ruleset, and before adding a new FY
+## Verification (Sprint 25, 2026-07-16)
 
-These figures were drafted from public Budget 2025 summaries and general
-knowledge of the provisions cited above, **not** transcribed line-by-line
-from the Finance Act, 2025 bare text or a CBDT circular. Before this
-ruleset is relied on for a real calculator (Sprint 25) or a new financial
-year is added:
+Every figure in `fy2025-26.ts` has been cross-checked against the Income
+Tax Department's own AY 2026-27 guidance pages (which state the rates as
+currently administered, i.e. post-Finance Act 2025) rather than relying
+solely on Budget-speech summaries. Confirmed sources:
 
-1. Cross-check every number in `fy2025-26.ts` against the enacted Finance
-   Act text (not just the Budget speech or press summaries).
-2. Confirm the AY/FY mapping and effective dates.
-3. When a new Budget changes any of these figures, add a new
-   `fyYYYY-YY.ts` file and register it in `index.ts` — do not mutate a
-   past year's file. Aim to do this by ~April of the new financial year,
-   before users start estimating that year's tax.
+- [incometax.gov.in — Salaried Individuals, AY 2026-27](https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-1) —
+  new-regime and below-60 old-regime slabs, surcharge table (including the
+  new-regime 25% cap vs old-regime 37% top tier above ₹5Cr), the
+  Health & Education Cess (4%, both regimes), and both regimes' Sec 87A
+  rebate cap/threshold, stated together on one official page.
+- [incometax.gov.in — Senior/Super Senior Citizens, AY 2026-27](https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-2) —
+  confirms the `60to80` (nil up to ₹3,00,000) and `80plus` (nil up to
+  ₹5,00,000, no 5% slab) old-regime slabs.
+
+All of the following matched the code exactly, with no discrepancies found:
+
+- New regime slabs (₹4L/8L/12L/16L/20L/24L breakpoints, 0/5/10/15/20/25/30%)
+- Old regime slabs for all three age bands
+- Standard deduction: ₹75,000 (new regime), ₹50,000 (old regime) — the
+  Finance (No. 2) Act 2024 proviso to Sec 16(ia) that set the new-regime
+  figure carries forward unchanged into FY 2025-26/AY 2026-27
+- Sec 87A rebate: new regime threshold ₹12,00,000 / cap ₹60,000; old
+  regime threshold ₹5,00,000 / cap ₹12,500; marginal relief behaviour for
+  both, as described in the engine
+- Surcharge tiers and rates for both regimes, including the new-regime
+  25%-cap / no-37%-tier rule
+- Cess rate: 4%, both regimes
+
+`section80C` (₹1,50,000), `section80D` (₹25,000 / ₹50,000), and
+`homeLoanInterestSection24b` (₹2,00,000) were confirmed as **unchanged**
+by Budget 2025 / Finance Act 2025 — these are long-standing figures (80C
+unchanged since 2014) and multiple independent 2025-26 tax-guide sources
+agree no revision was made. No official incometax.gov.in page states
+these three caps as plainly as the slab/rebate/surcharge table above, so
+confidence here rests on the absence of any reported change rather than
+a single primary-source citation — flagged here rather than presented as
+equally certain.
+
+One adjacent, non-blocking note: the "Income Tax Act, 2025" renumbers
+sections (e.g. 80C → 123) effective **1 April 2026**, i.e. FY 2026-27 /
+AY 2027-28. It has no effect on this FY 2025-26 ruleset; keep it in mind
+when a `fy2026-27.ts` file is eventually added, since the section
+numbers in that file's comments will need to change, not just the
+figures.
+
+When a new Budget changes any of these figures, add a new `fyYYYY-YY.ts`
+file and register it in `index.ts` — do not mutate a past year's file.
+Aim to do this by ~April of the new financial year, before users start
+estimating that year's tax.
 
 ## Known simplifications (documented, not bugs)
 

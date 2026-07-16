@@ -12,6 +12,7 @@ import { cagrCalculatorDefinition } from "@/features/calculators/cagr/cagr-defin
 import { ppfCalculatorDefinition } from "@/features/calculators/ppf/ppf-definition"
 import { gstCalculatorDefinition } from "@/features/calculators/gst/gst-definition"
 import { gratuityCalculatorDefinition } from "@/features/calculators/gratuity/gratuity-definition"
+import { incomeTaxCalculatorDefinition } from "@/features/calculators/income-tax/income-tax-definition"
 import { stepUpSIPCalculatorDefinition } from "@/features/calculators/step-up-sip/step-up-sip-definition"
 import { swpCalculatorDefinition } from "@/features/calculators/swp/swp-definition"
 import { inflationCalculatorDefinition } from "@/features/calculators/inflation/inflation-definition"
@@ -136,6 +137,7 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   ppfCalculatorDefinition,
   gstCalculatorDefinition,
   gratuityCalculatorDefinition,
+  incomeTaxCalculatorDefinition,
   stepUpSIPCalculatorDefinition,
   swpCalculatorDefinition,
   inflationCalculatorDefinition,

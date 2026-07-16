@@ -42,7 +42,7 @@ export function CalculatorResultCard({
 }: CalculatorResultCardProps) {
   if (items.length === 0) {
     return (
-      <Card className="h-fit bg-muted/30">
+      <Card className="h-fit bg-muted/30" data-testid="calculator-result-card">
         <CardContent className="flex min-h-64 flex-col items-center justify-center text-center">
           <span className="flex size-12 items-center justify-center rounded-xl bg-background ring-1 ring-foreground/10">
             <Calculator className="size-5 text-muted-foreground" aria-hidden="true" />
@@ -58,7 +58,7 @@ export function CalculatorResultCard({
   const secondaryItems = items.filter((item) => item.id !== primaryItem.id)
 
   return (
-    <Card className="h-fit" aria-live="polite">
+    <Card className="h-fit" aria-live="polite" data-testid="calculator-result-card">
       <CardHeader><CardTitle className="text-xl">{title}</CardTitle></CardHeader>
       <CardContent>
         <div className="rounded-xl bg-primary p-5 text-primary-foreground">
