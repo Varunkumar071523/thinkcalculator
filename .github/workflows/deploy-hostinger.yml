@@ -65,5 +65,5 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
-          local-dir: ./out/
-          server-dir: ./public_html/
+          local-dir: ./out/          
+          server-dir: /domains/thinkcalculator.in/public_html/
