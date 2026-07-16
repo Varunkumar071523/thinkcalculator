@@ -6,6 +6,28 @@
 # security headers documented in lib/production-config.ts (Sprint 33 security/privacy audit).
 # Every directive below mirrors that configuration line for line; keep the two in sync.
 
+# Canonical host + forced HTTPS (Sprint 35).
+#
+# thinkcalculator.in (non-www) is the single canonical form — see lib/site-config.ts, which is
+# the one place the domain is configured, and DECISIONS.md/DEPLOYMENT.md for the reasoning.
+#
+# Both conditions are combined into ONE RewriteRule so a request that is both http:// and www
+# (the worst case) redirects straight to the canonical https://thinkcalculator.in URL in a single
+# 301 hop, not two chained redirects (http://www -> https://www -> https://non-www).
+#
+# %{HTTPS} off only becomes true once SSL is actually issued and activated for the domain in
+# hPanel (a manual step — see docs/LAUNCH-CHECKLIST.md). Until then this half of the condition is
+# permanently true (the site is only ever served over plain HTTP), so every request already
+# redirects "to HTTPS" in the sense of rewriting the URL, but there is no certificate yet for a
+# browser to actually complete that request against. This rule is correct and ready; it cannot be
+# meaningfully exercised end-to-end in this environment before that manual step happens.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\.thinkcalculator\.in$ [NC,OR]
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://thinkcalculator.in%{REQUEST_URI} [R=301,L]
+</IfModule>
+
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"

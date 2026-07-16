@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
 import { formatIndianCurrency, formatIndianNumber } from "@/lib/formatters"
+import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
 import { calculateGratuity } from "./calculate-gratuity"
 import {
@@ -111,7 +112,7 @@ export function GratuityCalculator() {
     window.history.replaceState(null, "", "/finance/gratuity-calculator")
   }
 
-  const shareUrl = calculation ? buildGratuityCalculatorUrl(calculation.input, "https://thinkcalculator.in") : ""
+  const shareUrl = calculation ? buildGratuityCalculatorUrl(calculation.input, siteConfig.url) : ""
   const resultText = calculation ? createGratuityResultText(calculation.input, calculation.result) : ""
   const ordinaryServiceMet = calculation ? hasOrdinaryGratuityService(calculation.input) : false
 

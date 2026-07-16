@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
+import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
 import { calculatePPF } from "./calculate-ppf"
 import { createPPFPrintDisclaimer, createPPFResultText } from "./ppf-content"
@@ -53,7 +54,7 @@ export function PPFCalculator() {
     setErrors({}); setCalculation({ input: validation.data, result: calculatePPF(validation.data), date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()) }); window.history.replaceState(null, "", buildPPFCalculatorUrl(validation.data))
   }
   function reset() { setValues(toForm(PPF_DEFAULT_INPUT)); setErrors({}); setCalculation(null); window.history.replaceState(null, "", "/finance/ppf-calculator") }
-  const shareUrl = calculation ? buildPPFCalculatorUrl(calculation.input, "https://thinkcalculator.in") : ""
+  const shareUrl = calculation ? buildPPFCalculatorUrl(calculation.input, siteConfig.url) : ""
   const resultText = calculation ? createPPFResultText(calculation.input, calculation.result) : ""
   return <>
     <div data-calculator-form><CalculatorShell title="Estimate PPF maturity" description="Build an annual PPF projection with an editable constant rate and visible timing assumptions."><form className="space-y-5" onSubmit={submit} noValidate>

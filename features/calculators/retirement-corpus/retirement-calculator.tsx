@@ -7,6 +7,7 @@ import { DataTable, type DataTableColumn } from "@/components/calculators/data-t
 import { Button } from "@/components/ui/button"
 import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
+import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
 import { calculateRetirement } from "./calculate-retirement"
 import { parseAndValidateRetirementForm, RETIREMENT_LIMITS, type RetirementFormValues } from "./retirement-schema"
@@ -151,7 +152,7 @@ export function RetirementCalculator() {
     <div className="space-y-6">
       <CalculatorResultCard title="Retirement corpus estimate" items={calculation ? resultItems(calculation.result) : []} emptyTitle="Your projection will appear here" emptyDescription="Enter both phases, then calculate." />
       {calculation ? <>
-        <CalculatorActions resultText={copiedText} shareUrl={buildRetirementCalculatorUrl(calculation.input, "https://thinkcalculator.in")} />
+        <CalculatorActions resultText={copiedText} shareUrl={buildRetirementCalculatorUrl(calculation.input, siteConfig.url)} />
         <CalculationSummary
           title="ThinkCalculator Retirement Corpus Estimate"
           calculationDate={calculation.date}

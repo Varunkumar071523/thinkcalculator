@@ -1,6 +1,6 @@
 # Deployment (Hostinger static hosting)
 
-Sprint 34 scope: build and hosting engineering only. This document does not cover the live domain cutover, DNS, or HTTPS/certificate work — that is Sprint 35 (see [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) sections 15–16 and [ROADMAP.md](ROADMAP.md)).
+Sprint 34 scope was build and hosting engineering. Sprint 35 added the canonical-domain configuration, the HTTPS/canonical-host redirect chain in `public/.htaccess`, the smoke-test script, and GitHub Actions auto-deploy — all code/config/tooling. Neither sprint covers the manual hPanel steps themselves (connecting the domain, activating SSL, the first upload if not using GitHub Actions) — those remain for the project owner to perform; see [LAUNCH-CHECKLIST.md](LAUNCH-CHECKLIST.md) for the full ordered list and [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) sections 15–16.
 
 ## Why static export
 
@@ -132,16 +132,25 @@ Two supported paths — pick whichever you're comfortable with; both upload the 
 4. Upload the entire contents of `out/` into `public_html` (again, contents — not the folder itself), overwriting existing files.
 5. Confirm `.htaccess` uploaded correctly — some FTP clients hide dotfiles by default; enable "show hidden files" in the client if `.htaccess` doesn't appear in the local file listing.
 
-### What this sprint does **not** cover
+### What remains manual after Sprint 35
 
-Per Sprint 34's scope, none of the following were touched and remain for Sprint 35: pointing `thinkcalculator.in`'s DNS at Hostinger, issuing/renewing an SSL certificate, HTTP→HTTPS redirect behavior, and production smoke tests against the live domain. See [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) sections 15–16.
+Sprint 35 added the code/config side of launch: the canonical domain is configured throughout (see `lib/site-config.ts`), the HTTP→HTTPS and www→non-www redirect rules are written into `public/.htaccess`, and `scripts/smoke-test.mjs` is ready to verify a live deployment end-to-end. None of the following can be done from this repository or environment, and still require the project owner acting directly in hPanel: pointing `thinkcalculator.in`'s DNS at Hostinger, issuing/activating an SSL certificate, and confirming the redirect/header rules actually take effect once Apache is serving over HTTPS. See [LAUNCH-CHECKLIST.md](LAUNCH-CHECKLIST.md) for the exact ordered steps and [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) sections 15–16.
 
-## Optional: automated deployment via GitHub Actions
+## Automated deployment via GitHub Actions
 
-`.github/workflows/deploy-hostinger.yml` (added this sprint) can build the static export and deploy it to Hostinger over FTPS, but it is **intentionally inert today**: its only active trigger is a manual `workflow_dispatch` (runnable from the Actions tab on demand), not `push`, and a guard job fails the run closed with an explanatory message unless three secrets already exist. Two separate, deliberate steps are needed to fully enable it — this is a setup decision for the project owner, not something to enable automatically:
+`.github/workflows/deploy-hostinger.yml` builds the static export and deploys it to Hostinger over FTPS. As of Sprint 35 it runs automatically on every push to `main`, and can also be triggered manually from the Actions tab (`workflow_dispatch`). A guard job still fails the run closed with an explanatory message if the three FTP secrets below aren't configured yet — it does not silently attempt (and fail) an FTP connection, and it passes through harmlessly on every run once the secrets exist.
 
-1. Add three repository secrets:
-   - `FTP_HOST` — from hPanel → Files → FTP Accounts.
-   - `FTP_USERNAME` — same location.
-   - `FTP_PASSWORD` — same location (or set a new one there).
-2. If automatic deploys on every push to `main` are wanted (rather than only ever running it manually), edit the workflow's `on:` block to add a `push: branches: [main]` trigger, as its own top-of-file comment describes. The guard job itself does not need to be removed — once the secrets exist it passes through harmlessly on every run.
+### Adding the three required repository secrets
+
+The workflow needs `FTP_HOST`, `FTP_USERNAME`, and `FTP_PASSWORD` as GitHub **repository secrets** (never committed to the repo itself). To add them:
+
+1. In hPanel, go to **Files → FTP Accounts** to find the values:
+   - **Host** — the FTP server address shown there (often the domain itself or an `ftp.` subdomain).
+   - **Username** — the FTP account username shown there.
+   - **Password** — either the existing password (if you still have it) or use hPanel's "Change password" action on that FTP account to set a new one.
+2. On GitHub, open this repository in the browser and go to **Settings → Secrets and variables → Actions**.
+3. Click **New repository secret**, enter the name `FTP_HOST`, paste the hPanel host value, and save.
+4. Repeat step 3 for `FTP_USERNAME` and `FTP_PASSWORD`, using the matching hPanel values.
+5. Once all three exist, the next push to `main` (or a manual `workflow_dispatch` run from the Actions tab) will build and deploy automatically. Before that, every run still fails closed at the guard job with a clear `::error::` message naming the missing secrets — nothing is deployed and no FTP connection is attempted.
+
+This is one of the manual steps only the project owner can perform — see [LAUNCH-CHECKLIST.md](LAUNCH-CHECKLIST.md) for where it fits among the other launch steps.

@@ -1,6 +1,7 @@
 import { calculatePPF } from "./calculate-ppf"
 import { PPF_RATE_CONFIG } from "./ppf-rate-config"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
+import { siteConfig } from "@/lib/site-config"
 import type { CalculatorFAQ, CalculatorWorkedExample, RelatedCalculator } from "@/types/calculator"
 import type { PPFInput, PPFResult } from "./ppf-types"
 
@@ -37,7 +38,7 @@ export function createPPFResultText(input: PPFInput, result: PPFResult): string 
     `${PPF_RATE_CONFIG.defaultRate}% is a reference default for ${PPF_RATE_CONFIG.verifiedPeriod.toLowerCase()}, not a current-rate claim.`,
     "Actual PPF rates may change, and official interest uses the lowest balance between the close of the fifth day and month-end.",
     "Calculator:",
-    "https://thinkcalculator.in/finance/ppf-calculator",
+    `${siteConfig.url}/finance/ppf-calculator`,
   ].join("\n")
 }
 

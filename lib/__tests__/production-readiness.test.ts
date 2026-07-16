@@ -32,7 +32,7 @@ describe("production readiness configuration", () => {
   })
 
   it("allows crawling and points robots to the production sitemap", () => {
-    expect(robots()).toMatchObject({ sitemap: createCanonicalUrl("/sitemap.xml"), host: siteConfig.url, rules: { userAgent: "*", allow: "/" } })
+    expect(robots()).toMatchObject({ sitemap: createCanonicalUrl("/sitemap.xml"), host: new URL(siteConfig.url).host, rules: { userAgent: "*", allow: "/" } })
   })
 
   it("keeps published calculators indexable and the demo noindex", () => {

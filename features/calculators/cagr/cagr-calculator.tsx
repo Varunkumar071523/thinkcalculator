@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
 import { formatIndianCurrency, formatIndianNumber, formatPercentage } from "@/lib/formatters"
+import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
 import { calculateCAGR } from "./calculate-cagr"
 import { CAGR_LIMITS, parseAndValidateCAGRForm, type CAGRFormValues } from "./cagr-schema"
@@ -65,7 +66,7 @@ export function createCAGRResultText(input: CAGRInput, result: CAGRResult): stri
     `Growth multiple: ${formatIndianNumber(normaliseCAGRDisplayZero(result.growthMultiple))}×`,
     "",
     "Calculator:",
-    "https://thinkcalculator.in/finance/cagr-calculator",
+    `${siteConfig.url}/finance/cagr-calculator`,
   ].join("\n")
 }
 
@@ -122,7 +123,7 @@ export function CAGRCalculator() {
     window.history.replaceState(null, "", "/finance/cagr-calculator")
   }
 
-  const shareUrl = calculation ? buildCAGRCalculatorUrl(calculation.input, "https://thinkcalculator.in") : ""
+  const shareUrl = calculation ? buildCAGRCalculatorUrl(calculation.input, siteConfig.url) : ""
   const gainLossLabel = calculation ? getCAGRGainLossLabel(calculation.result) : "Absolute gain"
   const resultText = calculation ? createCAGRResultText(calculation.input, calculation.result) : ""
 

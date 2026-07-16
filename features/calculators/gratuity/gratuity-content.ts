@@ -1,4 +1,5 @@
 import { formatIndianCurrency, formatIndianNumber } from "@/lib/formatters"
+import { siteConfig } from "@/lib/site-config"
 import type { CalculatorFAQ, CalculatorWorkedExample, RelatedCalculator } from "@/types/calculator"
 import { calculateGratuity } from "./calculate-gratuity"
 import {
@@ -113,7 +114,7 @@ export function createGratuityResultText(input: GratuityInput, result: GratuityR
     "",
     `Regulatory sources reviewed ${GRATUITY_REGULATORY_REVIEW_DATE}. This is an educational standard-formula estimate, not a legal eligibility or employer determination.`,
     "Calculator:",
-    "https://thinkcalculator.in/finance/gratuity-calculator",
+    `${siteConfig.url}/finance/gratuity-calculator`,
   ].join("\n")
 }
 
