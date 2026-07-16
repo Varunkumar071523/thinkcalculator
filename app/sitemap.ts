@@ -4,6 +4,8 @@ import { calculatorRegistry } from "@/features/calculators/core/calculator-regis
 import { getPublicTopics, getPublishedContent, getPublishedGlossaryTerms } from "@/features/content"
 import { createCanonicalUrl } from "@/lib/seo"
 
+export const dynamic = "force-static"
+
 const staticRoutes = [
   { path: "/", changeFrequency: "weekly", priority: 1 },
   { path: "/finance", changeFrequency: "monthly", priority: 0.9 },
