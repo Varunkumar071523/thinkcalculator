@@ -13,8 +13,9 @@ import { stepUpSIPCalculatorDefinition, stepUpSIPKnowledgeContent } from "@/feat
 import { swpCalculatorDefinition, swpKnowledgeContent } from "@/features/calculators/swp"
 import { inflationCalculatorDefinition, inflationKnowledgeContent } from "@/features/calculators/inflation"
 import { retirementCalculatorDefinition, retirementKnowledgeContent } from "@/features/calculators/retirement-corpus"
+import { incomeTaxCalculatorDefinition, incomeTaxKnowledgeContent } from "@/features/calculators/income-tax"
 
-const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/step-up-sip-calculator", "/glossary/step-up-sip", "/finance/swp-calculator", "/glossary/swp", "/finance/inflation-calculator", "/glossary/inflation", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity", "/finance/retirement-corpus-calculator", "/glossary/retirement-corpus"])
+const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/step-up-sip-calculator", "/glossary/step-up-sip", "/finance/swp-calculator", "/glossary/swp", "/finance/inflation-calculator", "/glossary/inflation", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity", "/finance/retirement-corpus-calculator", "/glossary/retirement-corpus", "/finance/income-tax-calculator"])
 const calculators = [
   { definition: emiCalculatorDefinition, content: emiKnowledgeContent },
   { definition: sipCalculatorDefinition, content: sipKnowledgeContent },
@@ -29,11 +30,12 @@ const calculators = [
   { definition: swpCalculatorDefinition, content: swpKnowledgeContent },
   { definition: inflationCalculatorDefinition, content: inflationKnowledgeContent },
   { definition: retirementCalculatorDefinition, content: retirementKnowledgeContent },
+  { definition: incomeTaxCalculatorDefinition, content: incomeTaxKnowledgeContent },
 ]
 
 describe("calculator knowledge content", () => {
   it("is present and structurally complete for every production calculator", () => {
-    expect(calculators).toHaveLength(13)
+    expect(calculators).toHaveLength(14)
     for (const { content } of calculators) {
       expect(content.title.trim()).not.toBe("")
       expect(content.description.trim()).not.toBe("")
