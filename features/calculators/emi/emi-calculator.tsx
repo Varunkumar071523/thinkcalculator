@@ -18,6 +18,7 @@ import { EMI_LIMITS, parseAndValidateEMIForm, type EMIFormValues } from "@/featu
 import { buildEMICalculatorUrl, EMI_DEFAULT_INPUT, parseEMIUrlState } from "@/features/calculators/emi/emi-url-state"
 import type { AmortizationRow, EMIInput, EMIResult, EMIValidationErrors } from "@/features/calculators/emi/emi-types"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
+import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
 
 function toFormValues(input: EMIInput): EMIFormValues {
@@ -80,8 +81,8 @@ export function EMICalculator() {
   const result = calculation?.result ?? null
   const schedule = calculation ? calculateAmortizationSchedule(calculation.input, calculation.result) : []
   const tenureIsYears = values.tenureUnit === "years"
-  const shareUrl = calculation ? buildEMICalculatorUrl(calculation.input, "https://thinkcalculator.in") : ""
-  const resultText = calculation ? ["ThinkCalculator EMI Calculation", "", `Loan amount: ${formatIndianCurrency(calculation.input.principalAmount)}`, `Annual interest rate: ${formatPercentage(calculation.input.annualInterestRate)}`, `Loan tenure: ${calculation.input.tenure} ${calculation.input.tenureUnit}`, `Monthly EMI: ${formatIndianCurrency(result!.monthlyEMI)}`, `Total interest: ${formatIndianCurrency(result!.totalInterest)}`, `Total repayment: ${formatIndianCurrency(result!.totalPayment)}`, "", "Calculator:", "https://thinkcalculator.in/finance/emi-calculator"].join("\n") : ""
+  const shareUrl = calculation ? buildEMICalculatorUrl(calculation.input, siteConfig.url) : ""
+  const resultText = calculation ? ["ThinkCalculator EMI Calculation", "", `Loan amount: ${formatIndianCurrency(calculation.input.principalAmount)}`, `Annual interest rate: ${formatPercentage(calculation.input.annualInterestRate)}`, `Loan tenure: ${calculation.input.tenure} ${calculation.input.tenureUnit}`, `Monthly EMI: ${formatIndianCurrency(result!.monthlyEMI)}`, `Total interest: ${formatIndianCurrency(result!.totalInterest)}`, `Total repayment: ${formatIndianCurrency(result!.totalPayment)}`, "", "Calculator:", `${siteConfig.url}/finance/emi-calculator`].join("\n") : ""
 
   return (
     <>

@@ -11,7 +11,8 @@
     "test": "vitest run && next build && node scripts/run-e2e.mjs",
     "test:unit": "vitest run",
     "test:e2e": "next build && node scripts/run-e2e.mjs",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "smoke-test": "node scripts/smoke-test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

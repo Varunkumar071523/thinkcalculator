@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
+import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
 import { calculateGST } from "./calculate-gst"
 import { createGSTPrintDisclaimer, createGSTResultText, formatGSTCurrency, normaliseGSTDisplayZero } from "./gst-content"
@@ -80,7 +81,7 @@ export function GSTCalculator() {
   const amountLabel = values.calculationMode === "remove" ? "GST-inclusive amount" : "GST-exclusive taxable amount"
   const amountHelp = values.calculationMode === "remove" ? "Enter the total amount that already includes GST." : "Enter the taxable value before GST is added."
   const resultText = calculation ? createGSTResultText(calculation.input, calculation.result) : ""
-  const shareUrl = calculation ? buildGSTCalculatorUrl(calculation.input, "https://thinkcalculator.in") : ""
+  const shareUrl = calculation ? buildGSTCalculatorUrl(calculation.input, siteConfig.url) : ""
 
   return <>
     <div data-calculator-form><CalculatorShell title="Calculate GST" description="Add or remove an entered GST percentage and choose the tax-head arithmetic yourself."><form className="space-y-5" onSubmit={submit} noValidate>

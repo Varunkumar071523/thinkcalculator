@@ -1,27 +1,24 @@
-# OPTIONAL, FOR PROJECT-OWNER REVIEW — NOT ENABLED.
-#
 # Builds the static export (see docs/DEPLOYMENT.md) and uploads it to Hostinger's public_html
-# over FTPS. Drafted in Sprint 34 as a convenience for future automated deploys; it is NOT wired
-# to run automatically. Two things must happen before it can do anything:
+# over FTPS. Runs automatically on every push to main (enabled in Sprint 35), and can also be
+# triggered manually from the Actions tab via workflow_dispatch.
 #
-#   1. Add three repository secrets (Settings -> Secrets and variables -> Actions):
-#        FTP_HOST     - from hPanel -> Files -> FTP Accounts
-#        FTP_USERNAME - same location
-#        FTP_PASSWORD - same location (or set a new one there)
-#   2. Change the trigger below from `workflow_dispatch` (manual-only) to `push: branches: [main]`
-#      once you actually want every push to main to deploy automatically.
+# This still requires three repository secrets before it can do anything (Settings -> Secrets and
+# variables -> Actions):
+#   FTP_HOST     - from hPanel -> Files -> FTP Accounts
+#   FTP_USERNAME - same location
+#   FTP_PASSWORD - same location (or set a new one there)
+# See docs/DEPLOYMENT.md for exact steps and docs/LAUNCH-CHECKLIST.md for where this fits in the
+# overall launch sequence.
 #
-# Until both of those happen, this workflow only runs when someone manually triggers it from the
-# Actions tab, and the guard job below fails fast with an explanatory message instead of silently
-# attempting (and failing) an FTP connection.
-name: Deploy to Hostinger (optional, not yet enabled)
+# The guard job below fails the run closed with an explanatory message if any of those three
+# secrets are missing, instead of silently attempting (and failing) an FTP connection. It passes
+# through harmlessly on every run once the secrets exist.
+name: Deploy to Hostinger
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch: {}
-  # Uncomment below (and consider removing workflow_dispatch) once FTP secrets are configured and
-  # you want automatic deploys on every push to main:
-  # push:
-  #   branches: [main]
 
 jobs:
   guard:

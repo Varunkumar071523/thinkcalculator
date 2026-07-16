@@ -1,6 +1,7 @@
 import { calculateGST } from "./calculate-gst"
 import type { GSTInput, GSTResult } from "./gst-types"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
+import { siteConfig } from "@/lib/site-config"
 import type { CalculatorFAQ, CalculatorWorkedExample, RelatedCalculator } from "@/types/calculator"
 
 export const gstFAQs: readonly CalculatorFAQ[] = [
@@ -51,7 +52,7 @@ export function createGSTResultText(input: GSTInput, result: GSTResult): string 
     `SGST/UTGST: ${formatGSTCurrency(result.sgstUtgstAmount)}`,
     `IGST: ${formatGSTCurrency(result.igstAmount)}`, "",
     "The supply type and rate were selected by the user for arithmetic only. This is not an invoice-ready tax computation or tax/legal advice.", "", "Calculator:",
-    "https://thinkcalculator.in/business/gst-calculator",
+    `${siteConfig.url}/business/gst-calculator`,
   ].join("\n")
 }
 
