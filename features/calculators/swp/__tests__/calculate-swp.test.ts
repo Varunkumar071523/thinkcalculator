@@ -106,6 +106,15 @@ describe("calculateSWP",()=>{
     expect(monthly[0].growth).toBeCloseTo((input.initialInvestment-input.monthlyWithdrawal)*rate,10)
   })
 
+  it("computes finalWithdrawalAmount identically to Array.prototype.findLast, for a schedule with trailing zero-withdrawal rows after exhaustion",()=>{
+    const input:SWPInput={initialInvestment:120_000,monthlyWithdrawal:10_000,expectedAnnualReturn:0,withdrawalMode:"fixedDuration",durationYears:2}
+    const result=calculateSWP(input)
+    const monthly=generateSWPMonthlySchedule(input)
+    const expected=monthly.findLast((row)=>row.withdrawal>0)?.withdrawal ?? 0
+    expect(result.finalWithdrawalAmount).toBe(expected)
+    expect(result.finalWithdrawalAmount).toBe(10_000)
+  })
+
   it("rejects invalid input",()=>{
     expect(()=>calculateSWP({...base,initialInvestment:0})).toThrow(RangeError)
     expect(()=>calculateSWP({...base,withdrawalMode:"other" as never})).toThrow(RangeError)

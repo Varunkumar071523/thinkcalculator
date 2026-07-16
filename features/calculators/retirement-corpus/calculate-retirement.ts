@@ -1,3 +1,5 @@
+import { findLastMatching } from "@/utils/array"
+
 import { validateRetirementInput } from "./retirement-schema"
 import type {
   RetirementAccumulationScheduleRow,
@@ -166,7 +168,7 @@ export function calculateRetirement(input: RetirementInput): RetirementResult {
   const isExhausted = exhaustionMonth !== null
   const exhaustionYear = exhaustionMonth !== null ? Math.ceil(exhaustionMonth / 12) : null
   const exhaustionAge = exhaustionYear !== null ? input.retirementAge + exhaustionYear : null
-  const lastWithdrawalRow = monthlyDecumulation.findLast((row) => row.withdrawal > 0)
+  const lastWithdrawalRow = findLastMatching(monthlyDecumulation, (row) => row.withdrawal > 0)
   const finalMonthlyWithdrawal = lastWithdrawalRow ? lastWithdrawalRow.withdrawal : 0
   const decumulationSchedule = aggregateDecumulationYearlySchedule(monthlyDecumulation, input.retirementAge, exhaustionMonth)
   const firstYearMonthlyWithdrawal = monthlyDecumulation.length ? monthlyDecumulation[0].targetWithdrawal : input.desiredMonthlyWithdrawal
