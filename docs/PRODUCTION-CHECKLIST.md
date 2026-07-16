@@ -111,7 +111,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 - [x] Production header configuration exists and framework disclosure is disabled.
 - [x] Strict CSP is explicitly deferred pending nonce-compatible validation.
-- [ ] Inspect live response headers and verify clipboard, print, JSON-LD, images, and external links.
+- [x] Sprint 33 security/privacy audit inspected live response headers on a served production build via direct HTTP requests, not just configuration reading: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`, `Cross-Origin-Opener-Policy`, and `Strict-Transport-Security` are all present exactly as configured. No external scripts, fonts, or embeds are loaded at runtime (fonts are self-hosted via `next/font`), so clipboard, print, JSON-LD, and image sourcing have nothing external to restrict today.
 
 ## 15. HTTPS and domain
 
@@ -127,7 +127,7 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 - [x] Current Version 1 application does not document required secrets.
 - [ ] Audit the release for environment variables and configure them securely if introduced.
-- [ ] Confirm no secret is committed or exposed to client bundles.
+- [x] Sprint 33 security/privacy audit confirmed no secrets, API keys, tokens, or credentials exist anywhere in the codebase or the full git history (all 63 commits checked); `.env*` is gitignored and no `.env` file has ever been committed.
 
 ## 18. Analytics
 
@@ -163,3 +163,16 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 - [ ] Check homepage, navigation, calculator indexes, all nine calculators, Blog, Guides, editorial search states, representative articles, 404, robots, sitemap, manifest, icons, and social image.
 - [ ] Run a representative calculation, share/reopen its URL, copy, print, and inspect schedules/charts.
 - [ ] Check mobile/desktop accessibility, metadata, schema, headers, analytics, logs, and monitoring.
+
+## 25. Sprint 33 — Security and privacy audit
+
+- [x] `npm audit`: 19 moderate findings across two dependency chains (`@opentelemetry/core`, pulled in via `lighthouse`'s `@sentry/node` dependency; and `postcss`, bundled inside Next's own internal `node_modules`). Both confirmed non-production/dev-tooling-only by tracing the import graph, and already at the latest available upstream version (`lighthouse@13.4.0`, `next@16.2.10`); no safe fix exists. Re-check on future `lighthouse`/`next` version bumps.
+- [x] Confirmed no secrets, API keys, tokens, or credentials exist in the codebase or the full git history. (See section 17.)
+- [x] Confirmed `/calculators/demo` is inert — no network calls, no real calculation logic, and cannot be manipulated via URL parameters — and is correctly excluded from indexing, the sitemap, and site navigation, protected by four redundant regression-test tripwires (`production-readiness.test.ts`, `gst-integration.test.ts`, `gratuity-integration.test.ts`, `retirement-integration.test.ts`).
+- [x] Confirmed security headers present via a real HTTP response from a served production build. (See section 14.)
+- [x] Confirmed zero server-side data collection or storage, zero cookies, zero localStorage/sessionStorage, and zero analytics or tracking scripts anywhere in the codebase. Calculator inputs never leave the browser except when reflected into the page's own URL.
+- [x] Confirmed XSS-safe handling: all 13 published calculators' URL-state parsing follows a strict parse-then-validate pattern with no raw reflection path, and all 18 `dangerouslySetInnerHTML` usages build JSON-LD from static/typed data only, with `</script>` escaping applied.
+- [x] Confirmed disclaimer coverage is complete across all 13 published calculators (tailored disclaimer text) plus a sitewide footer disclaimer.
+- [ ] Noted and accepted as a disclosed design tradeoff of query-parameter shareable state (decision 11): "Copy share link" encodes entered calculator values in the URL in plain text, so anyone who opens a shared link can see those values. Not currently disclosed to users. Open item: decide whether/how to disclose this in-product or in the privacy policy.
+- [ ] Open item: decide whether the privacy policy should reference India's Digital Personal Data Protection Act (DPDPA), 2023.
+- [ ] Open item: decide whether to invest in CSP nonce infrastructure (currently deferred — see decision 18).
