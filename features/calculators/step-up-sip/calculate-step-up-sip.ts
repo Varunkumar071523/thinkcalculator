@@ -19,7 +19,7 @@ export function calculateStepUpSIP(input:StepUpSIPInput):StepUpSIPResult {
   }
   const regular=calculateSIP({monthlyInvestment:input.initialMonthlyInvestment,annualReturnRate:input.expectedAnnualReturn,duration:input.durationYears,durationUnit:"years"})
   const maturityValue=input.annualStepUpValue===0?regular.futureValue:value
-  if(input.annualStepUpValue===0){const last=schedule.at(-1)!;schedule[schedule.length-1]={...last,estimatedYearEndValue:maturityValue,estimatedGainToDate:maturityValue-invested}}
+  if(input.annualStepUpValue===0){const last=schedule[schedule.length-1];schedule[schedule.length-1]={...last,estimatedYearEndValue:maturityValue,estimatedGainToDate:maturityValue-invested}}
   const maturityDifference=zeroIfNegligible(maturityValue-regular.futureValue)
   const result={totalInvested:invested,estimatedReturns:maturityValue-invested,estimatedMaturityValue:maturityValue,finalMonthlyInvestment:contributionForMonth(input,months),totalContributions:months,totalStepUpsApplied:input.annualStepUpValue===0?0:input.durationYears-1,regularSipTotalInvested:regular.totalInvested,regularSipEstimatedReturns:regular.estimatedReturns,regularSipMaturityValue:regular.futureValue,additionalInvestment:invested-regular.totalInvested,additionalEstimatedValue:maturityDifference,maturityValueDifference:maturityDifference,schedule}
   if(!Object.values(result).filter(v=>typeof v==="number").every(Number.isFinite)) throw new RangeError("Step-up SIP calculation produced a non-finite result")

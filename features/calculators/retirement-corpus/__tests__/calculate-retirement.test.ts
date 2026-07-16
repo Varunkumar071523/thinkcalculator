@@ -174,6 +174,16 @@ describe("calculateRetirement — retirement (decumulation) phase", () => {
   })
 })
 
+describe("calculateRetirement — findLast replacement", () => {
+  it("computes finalMonthlyWithdrawal identically to Array.prototype.findLast, for a schedule with trailing zero-withdrawal rows after exhaustion", () => {
+    const scenario: RetirementInput = { ...base, currentSavings: 50_000, monthlyContribution: 500, desiredMonthlyWithdrawal: 8_000, expectedReturnPostRetirement: 4 }
+    const result = calculateRetirement(scenario)
+    const monthly = generateRetirementDecumulationMonthlySchedule(scenario, result.corpusAtRetirement)
+    const expected = monthly.findLast((row) => row.withdrawal > 0)?.withdrawal ?? 0
+    expect(result.finalMonthlyWithdrawal).toBe(expected)
+  })
+})
+
 describe("calculateRetirement — validation and safety", () => {
   it("rejects invalid input", () => {
     expect(() => calculateRetirement({ ...base, currentAge: 10 })).toThrow(RangeError)

@@ -29,10 +29,11 @@ export function CalculatorActions({ resultText, shareUrl }: CalculatorActionsPro
     <div className="calculator-actions" data-print-hide>
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" onClick={() => void copy(resultText, "Results copied.")}><Copy aria-hidden="true" /> Copy results</Button>
-        <Button type="button" variant="outline" onClick={() => void copy(shareUrl, "Share link copied.")}><LinkIcon aria-hidden="true" /> Copy share link</Button>
+        <Button type="button" variant="outline" aria-describedby="share-link-note" onClick={() => void copy(shareUrl, "Share link copied.")}><LinkIcon aria-hidden="true" /> Copy share link</Button>
         <Button type="button" variant="outline" onClick={() => window.print()}><Printer aria-hidden="true" /> Print</Button>
       </div>
-      <p className="mt-2 min-h-5 text-sm text-muted-foreground" aria-live="polite">{status ? <><Check className="mr-1 inline size-4" aria-hidden="true" />{status}</> : null}</p>
+      <p id="share-link-note" className="mt-2 text-xs text-muted-foreground">The share link includes the values you entered — anyone with the link can see them.</p>
+      <p className="mt-1 min-h-5 text-sm text-muted-foreground" aria-live="polite">{status ? <><Check className="mr-1 inline size-4" aria-hidden="true" />{status}</> : null}</p>
     </div>
   )
 }

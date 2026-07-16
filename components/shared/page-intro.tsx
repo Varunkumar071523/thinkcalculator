@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
@@ -10,7 +11,7 @@ type PageIntroProps = {
   title: string
   description: string
   sectionTitle?: string
-  sectionDescription?: string
+  sectionDescription?: ReactNode
 }
 
 export function PageIntro({ title, description, sectionTitle = "Tools are on the way", sectionDescription = "We are preparing clear, well-tested resources for this section. Explore the current calculator directory in the meantime." }: PageIntroProps) {
@@ -24,7 +25,7 @@ export function PageIntro({ title, description, sectionTitle = "Tools are on the
       <Card className="mt-10 max-w-3xl bg-muted/30 sm:mt-14">
         <CardHeader><CardTitle className="text-xl">{sectionTitle}</CardTitle></CardHeader>
         <CardContent>
-          <p className="leading-7 text-muted-foreground">{sectionDescription}</p>
+          <div className="space-y-3 leading-7 text-muted-foreground">{sectionDescription}</div>
           <Button className="mt-6" variant="outline" nativeButton={false} render={<Link href="/calculators" />}><ArrowLeft aria-hidden="true" /> Browse calculators</Button>
         </CardContent>
       </Card>

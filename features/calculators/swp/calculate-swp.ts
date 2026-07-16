@@ -1,3 +1,5 @@
+import { findLastMatching } from "@/utils/array"
+
 import { validateSWPInput } from "./swp-schema"
 import type { SWPInput, SWPMonthlyScheduleRow, SWPResult, SWPYearlyScheduleRow } from "./swp-types"
 
@@ -70,7 +72,7 @@ export function calculateSWP(input: SWPInput): SWPResult {
   const exhaustionRow = monthlyRows.find((row) => row.openingBalance > 0 && row.closingBalance === 0)
   const exhaustionMonth = exhaustionRow ? exhaustionRow.month : null
   const isExhausted = exhaustionMonth !== null
-  const lastWithdrawalRow = monthlyRows.findLast((row) => row.withdrawal > 0)
+  const lastWithdrawalRow = findLastMatching(monthlyRows, (row) => row.withdrawal > 0)
   const finalWithdrawalAmount = lastWithdrawalRow ? lastWithdrawalRow.withdrawal : 0
   const cappedAtMaxDuration = input.withdrawalMode === "untilExhausted" && !isExhausted && monthlyRows.length >= SWP_MAX_SIMULATION_MONTHS
   const schedule = aggregateSWPYearlySchedule(monthlyRows, exhaustionMonth)
