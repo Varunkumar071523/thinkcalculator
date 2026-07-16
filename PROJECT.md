@@ -4,8 +4,8 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 
 ## Current status
 
-- Phase: Phase 4 Public Launch in progress (Sprint 31 Browser/Accessibility/Print QA complete); Phase 3 Calculator Expansion remains available to resume.
-- Milestone: Sprint 31 Browser, Mobile, Accessibility, and Print QA complete.
+- Phase: Phase 4 Public Launch — **live in production**. `https://thinkcalculator.in` has served the full static export since Sprint 35's go-live in July 2026, independently verified against the real domain (see "Sprint 35 launch confirmation" below). Phase 3 Calculator Expansion remains available to resume.
+- Milestone: Sprint 35 domain/HTTPS launch confirmed live and independently verified in production (July 2026).
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI (Base/Nova), Vitest, and Playwright + axe-core for browser-level QA.
 - Architecture: static rendering where practical, Server Components by default, typed version-controlled registries, and no Version 1 database.
 - Verification baseline: 628 automated Vitest tests pass across 55 test files; a permanent 264-test Playwright suite (accessibility, keyboard/focus, zoom/reflow, print, reduced motion) passes across Chromium, Firefox, and WebKit; lint and the 57-page production build pass. `npm run test` runs both suites.
@@ -29,7 +29,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 
 ## Known limitations and risks
 
-- Production deployment, DNS, HTTPS, analytics, webmaster tools, backups, rollback, and live browser validation remain unverified.
+- Analytics, Search Console and Bing Webmaster Tools verification, backups, rollback rehearsal, monitoring, and real-device/real-browser/screen-reader validation remain unverified (see docs/PRODUCTION-CHECKLIST.md sections 10-11 and 18-23). Production deployment, DNS, and HTTPS are no longer on this list — Sprint 35 confirmed all three live and independently verified (see "Sprint 35 launch confirmation" below).
 - Editorial search intentionally excludes calculators; homepage search remains calculator-only and `/search` does not provide typo correction, stemming, or fuzzy matching.
 - A savings hub is intentionally withheld until published editorial and glossary coverage makes it substantive rather than calculator-only.
 - PPF uses a simplified beginning-of-year annual contribution model. Actual monthly balance eligibility, future notified rates, account events, taxes, and account-office processing are outside the projection.
@@ -43,6 +43,15 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - Google-hosted Geist fonts require network access during a clean production build.
 - Current editorial content is intentionally small and maintained directly in TypeScript.
 
+## Sprint 35 launch confirmation
+
+Sprint 35's domain, HTTPS, and launch-preparation code (`feature/sprint-35-domain-https-launch`) was merged and deployed; this section records that the result was independently verified against the real production domain, not just merged.
+
+- **Live status**: `https://thinkcalculator.in` is live in production as of July 2026, serving the full static export (13 calculators, 46 sitemap-indexed routes) over HTTPS.
+- **Smoke test**: `npm run smoke-test` (`scripts/smoke-test.mjs`) was run against the real production domain — not the local static export — and passed 12/12: HTTPS active, HTTP→HTTPS redirect, `www`→canonical redirect, all six Sprint 33 security headers present, the custom 404 page serving correctly, `sitemap.xml` and `robots.txt` correctly hosted, and a sample route from every content type (calculator, glossary, blog, topic hub) returning its correct title.
+- **Deployment issue found and fixed at go-live**: the GitHub Actions FTP deploy step's `server-dir` was initially set to the account-level `public_html/`, but Hostinger routes addon/attached domains under this hosting plan through the per-domain document root, `domains/thinkcalculator.in/public_html/`. The account-level path silently accepts uploads without erroring, so this would not have surfaced as a build or deploy failure — only as the live domain not reflecting the deploy. Fixed directly on `main` in commit `8536c62` ("Update server directory for deployment"). **This is a permanent gotcha for this hosting setup**: any future redeploy, migration, or new FTP-based workflow for this account must target the per-domain path, not the account-level one. See docs/PRODUCTION-CHECKLIST.md section 16.
+- **Cleanup**: the stray files uploaded to the incorrect account-level `public_html/` location during the initial deploy were identified and renamed to `public_html_unused/` — a reversible cleanup, not a deletion, in case anything there needs to be checked before the directory is removed for good.
+
 ## Deferred
 
 - Strict CSP pending a nonce-compatible design for Next.js scripts, JSON-LD, images, clipboard, and print.
@@ -51,7 +60,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 
 ## Next phase
 
-Sprint 31 closed the automatable half of Phase 4's QA exit criteria (accessibility, keyboard, zoom/reflow, and print, all now permanently regression-tested). What remains before Phase 4 can be considered fully closed is exactly what a sandboxed environment cannot perform: a real-device/real-browser pass (physical iOS/Android, real Safari) and a real screen-reader pass, plus the deployment-specific items in docs/PRODUCTION-CHECKLIST.md (Hostinger hosting, DNS/HTTPS, Search Console, analytics, backups, rollback). Phase 3 Calculator Expansion also remains available to resume in parallel: CAGR, PPF, GST, Gratuity, Step-up SIP, SWP, Inflation, and Retirement Corpus are complete; income tax and HRA remain candidates. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
+Sprint 31 closed the automatable half of Phase 4's QA exit criteria (accessibility, keyboard, zoom/reflow, and print, all now permanently regression-tested), and Sprint 35 closed the deployment half: Hostinger hosting, DNS, and HTTPS are live and independently verified in production (see "Sprint 35 launch confirmation" above). What remains before Phase 4 can be considered fully closed is exactly what a sandboxed environment cannot perform — a real-device/real-browser pass (physical iOS/Android, real Safari) and a real screen-reader pass — plus the still-open operational items in docs/PRODUCTION-CHECKLIST.md (Search Console, Bing Webmaster Tools, analytics, backups, rollback, monitoring). Phase 3 Calculator Expansion also remains available to resume in parallel: CAGR, PPF, GST, Gratuity, Step-up SIP, SWP, Inflation, and Retirement Corpus are complete; income tax and HRA remain candidates. See the [roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
 
 ## Validation
 

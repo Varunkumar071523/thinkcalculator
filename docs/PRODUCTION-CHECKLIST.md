@@ -115,14 +115,16 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 15. HTTPS and domain
 
-- [ ] Verify `https://thinkcalculator.in`, certificate chain, renewal, DNS, redirects, and preferred host.
-- [ ] Verify HTTP-to-HTTPS and alternate-host behaviour without loops.
+- [x] Sprint 35 confirmed `https://thinkcalculator.in` live in production: DNS resolves to Hostinger, an active certificate serves the domain, and the non-`www` host is the one serving as canonical. See section 27.
+- [x] Sprint 35 confirmed via `npm run smoke-test` against the real domain: HTTP redirects to HTTPS, and `www` redirects to the canonical non-`www` host, with no redirect loops. See section 27.
+- [ ] Certificate renewal has not yet been exercised (Hostinger's auto-issued certificates typically auto-renew, but a full renewal cycle has not occurred and been confirmed since go-live).
 
 ## 16. Hosting
 
 - [x] Sprint 34 confirmed Hostinger shared hosting runs no Node.js process (Apache/LiteSpeed static-file serving only) and engineered a static-export (`output: 'export'`) build path instead of assuming a Node runtime. See decision 23 and [DEPLOYMENT.md](DEPLOYMENT.md) for the full compatibility audit, `.htaccess` header replication, and upload process.
-- [ ] Perform the actual Hostinger upload and verify the live route table and representative responses (Sprint 35).
-- [ ] Confirm live response headers, extensionless-icon MIME types, and the custom 404 page against the real Apache/LiteSpeed instance — the `.htaccess` syntax was verified against documented Apache directive patterns only; no Apache/LiteSpeed instance was available to test against directly in Sprint 34's environment.
+- [x] Sprint 35 performed the actual Hostinger upload (via the GitHub Actions FTP workflow) and verified the live route table and representative responses against the real domain. See section 27.
+- [x] Sprint 35 confirmed live response headers, extensionless-icon MIME types, and the custom 404 page against the real Apache/LiteSpeed instance via `npm run smoke-test` run against `https://thinkcalculator.in` — the `.htaccess` directives verified in Sprint 34 against documented syntax only are now confirmed working on the real server.
+- [x] **Permanent hosting gotcha, found and fixed at go-live**: the FTP deploy workflow's `server-dir` must target the per-domain document root, `/domains/thinkcalculator.in/public_html/` — not the account-level `public_html/`. This Hostinger plan serves `thinkcalculator.in` as an addon/attached domain, and the account-level path accepts uploads without error while never actually serving them on the live domain, so the failure mode looks like a silent no-op rather than a build/deploy error. Initially misconfigured as `./public_html/`; fixed directly on `main` in commit `8536c62` ("Update server directory for deployment"). Any future redeploy, credential rotation, or migration to a different FTP workflow for this account must preserve the per-domain path. Stray files uploaded to the incorrect account-level location during the initial deploy were renamed to `public_html_unused/` (not deleted) as a reversible cleanup step.
 
 ## 17. Environment variables
 
@@ -161,9 +163,10 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 
 ## 24. Post-launch smoke tests
 
-- [ ] Check homepage, navigation, calculator indexes, all nine calculators, Blog, Guides, editorial search states, representative articles, 404, robots, sitemap, manifest, icons, and social image.
-- [ ] Run a representative calculation, share/reopen its URL, copy, print, and inspect schedules/charts.
-- [ ] Check mobile/desktop accessibility, metadata, schema, headers, analytics, logs, and monitoring.
+- [x] Sprint 35 ran `npm run smoke-test` against `https://thinkcalculator.in` and confirmed 12/12 automated checks pass: homepage 200, HTTPS active, HTTP→HTTPS redirect, `www`→canonical redirect, all six security headers present, custom 404 served, `sitemap.xml` and `robots.txt` correctly hosted, and one representative route per content type (calculator, glossary, blog, topic hub) returning its correct title. See section 27.
+- [ ] Manually check remaining homepage/navigation surfaces not covered by the automated smoke test: calculator indexes, all thirteen calculators, Blog, Guides, editorial search states, additional representative articles, manifest, icons, and social image.
+- [ ] Run a representative calculation, share/reopen its URL, copy, print, and inspect schedules/charts on the live domain.
+- [ ] Check mobile/desktop accessibility, metadata, schema, analytics, logs, and monitoring on the live domain (headers are already confirmed — see section 14 and above).
 
 ## 25. Sprint 33 — Security and privacy audit
 
@@ -191,3 +194,11 @@ Checked items are verified in the current source/build baseline. Deployment-spec
 - [ ] The permanent Playwright suite was not run against the static export — `playwright.config.ts` depends on `next start`, incompatible with export's `out/` output. See DEPLOYMENT.md for what a future sprint needs to add (a static-file-server webServer profile with faithful directory-index/404 behaviour) to make this possible.
 - [x] `docs/DEPLOYMENT.md` added: build instructions, the full compatibility audit, `.htaccess` contents and reasoning, trailing-slash reasoning, smoke-test results, and both hPanel File Manager and FTP/SFTP upload steps.
 - [x] An inert, opt-in GitHub Actions workflow (`.github/workflows/deploy-hostinger.yml`) was drafted for FTP deployment to Hostinger; its only active trigger today is manual (`workflow_dispatch`), with a guard job that fails closed until the repository owner adds FTP secrets, and a `push: branches: [main]` trigger left commented out for the owner to enable later if automatic on-push deploys are wanted — not wired to run automatically.
+
+## 27. Sprint 35 — Domain, HTTPS, launch, and independent production verification
+
+- [x] Canonical domain configuration, the HTTP→HTTPS and `www`→non-`www` redirect rules in `public/.htaccess`, `scripts/smoke-test.mjs`, and the GitHub Actions FTP deploy workflow's automatic `push: branches: [main]` trigger were all added and merged (`feature/sprint-35-domain-https-launch`).
+- [x] The project owner completed the manual hPanel steps this repository cannot perform: connecting `thinkcalculator.in`'s DNS to the Hostinger account, issuing and activating its SSL certificate, and adding the three FTP repository secrets. See [LAUNCH-CHECKLIST.md](LAUNCH-CHECKLIST.md).
+- [x] The first live deploy ran via the GitHub Actions workflow. It initially uploaded to the wrong location — the account-level `public_html/` rather than the per-domain `domains/thinkcalculator.in/public_html/` this Hostinger plan requires for addon/attached domains — which did not fail the build or the FTP transfer, so it was only caught by checking the live domain directly rather than by CI going red. Fixed on `main` in commit `8536c62`. See section 16 for the permanent gotcha this leaves for future redeploys, and the resulting stray `public_html_unused/` cleanup.
+- [x] After the fix, `npm run smoke-test` was run against `https://thinkcalculator.in` itself — not the local static export and not `localhost` — and passed all 12 checks: homepage 200, HTTPS active, HTTP→HTTPS redirect, `www`→canonical redirect, all six Sprint 33 security headers present and matching, the custom 404 page served for an unmatched route, `sitemap.xml` and `robots.txt` reachable and correctly hosted on the canonical domain, and one representative route per content type (calculator, glossary, blog, topic hub) returning 200 with its correct page-specific `<title>`.
+- [x] `thinkcalculator.in` is confirmed **live in production** as of July 2026, serving the full static export — 13 published calculators across 46 sitemap-indexed routes — over HTTPS on the canonical host. This closes the deployment/DNS/HTTPS portion of Phase 4 Public Launch; see [PROJECT.md](../PROJECT.md)'s "Sprint 35 launch confirmation" for the project-level summary and remaining open items (analytics, Search Console, Bing Webmaster Tools, backups, rollback, monitoring, and real-device/real-browser/screen-reader testing).
