@@ -169,3 +169,11 @@ Statuses reflect the current platform and may be revisited when their triggers o
 - Decision: Centralize common arithmetic presets and official source records, allow a custom rate, and require the user to select add/remove mode and intra/inter-State arithmetic. Do not determine a rate, place of supply, invoice compliance, credits, returns, or filing obligations.
 - Consequences: The tool can transparently add or remove an entered percentage and display tax heads without presenting legal or tax advice. Users must verify applicability externally.
 - Revisit trigger: A separately approved, source-maintained regulatory product with legal review and a defined update owner is proposed.
+
+## 22. Sprint 33 security and privacy audit accepted
+
+- Status: Accepted.
+- Context: Before further public-launch work, the codebase needed an independent security and privacy audit covering dependency vulnerabilities, secret exposure, the `/calculators/demo` route's production reachability, HTTP security headers, data-privacy posture, cookie/storage usage, and input-sanitization safety across all calculators — followed by an independent re-verification pass against live system behaviour rather than the audit's own prose.
+- Decision: Accept the audit's findings as the current security/privacy baseline. No code changes were required; every substantive claim was independently reproduced against real system behaviour (live HTTP responses, the full built HTML, complete git history, and exhaustive per-file review of every calculator's URL-state parsing and every `dangerouslySetInnerHTML` usage, not a sample). See docs/PRODUCTION-CHECKLIST.md section 25 for the itemized outcome.
+- Consequences: `npm audit`'s 19 moderate findings are confirmed non-production, already-latest-version, and non-fixable without a breaking change; documented for re-check on future `lighthouse`/`next` bumps rather than acted on now. Three items remain open for a product/legal decision, not a code fix: whether the privacy policy should reference India's DPDPA, 2023; whether/how to disclose that "Copy share link" (decision 11) encodes entered values in plain text in the URL; and whether to invest in CSP nonce infrastructure (decision 18).
+- Revisit trigger: Any of the three open items is resolved, or a future dependency/version bump changes the `npm audit` findings.
