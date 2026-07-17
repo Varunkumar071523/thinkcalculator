@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { CalculatorResultCard } from "@/features/calculators/core/calculator-result-card"
 import { CalculatorShell } from "@/features/calculators/core/calculator-shell"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { calculateAmortizationSchedule } from "@/features/calculators/emi/calculate-amortization"
 import { calculateEMI } from "@/features/calculators/emi/calculate-emi"
 import { EMI_LIMITS, parseAndValidateEMIForm, type EMIFormValues } from "@/features/calculators/emi/emi-schema"
@@ -51,14 +52,12 @@ export function EMICalculator() {
   const [errors, setErrors] = useState<EMIValidationErrors>({})
   const [calculation, setCalculation] = useState<{ input: EMIInput; result: EMIResult; date: string } | null>(null)
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setValues(toFormValues(parseEMIUrlState(new URLSearchParams(window.location.search))))
-    }, 0)
-    return () => window.clearTimeout(timer)
-  }, [])
+  const markInteracted = useCalculatorUrlRestore((search) => {
+    setValues(toFormValues(parseEMIUrlState(search)))
+  })
 
   function updateValue(field: keyof EMIFormValues, value: string) {
+    markInteracted()
     setValues((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
   }

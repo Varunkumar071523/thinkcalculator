@@ -33,15 +33,6 @@ test.describe("HRA exemption calculator", () => {
 
   test("non-metro city — percentage-of-salary limit is binding", async ({ page }) => {
     await page.goto("/finance/hra-calculator")
-    // HraCalculator restores form state from the URL in a mount effect deferred via
-    // setTimeout(0), which (re-)applies the default values when, as here, no share-link params
-    // are present. Under CPU-starved conditions that deferred callback can fire later than usual
-    // and land mid-way through this test's five sequential fills, silently reverting whichever
-    // field was already filled back to its default. A short settle wait here (this test is the
-    // only one in the suite that fills five fields in a row, so it's the one exposed to this)
-    // avoids that race without touching the shared mount-effect pattern every calculator uses.
-    await page.waitForTimeout(150)
-
     await page.locator("#basic-salary").fill("1000000")
     await page.locator("#da").fill("0")
     await page.locator("#hra-received").fill("600000")

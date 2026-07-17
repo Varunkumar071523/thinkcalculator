@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { AlertTriangle, CheckCircle2 } from "lucide-react"
 
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
@@ -9,6 +9,7 @@ import { CalculatorNumberInput } from "@/components/calculators/calculator-numbe
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { formatIndianCurrency, formatIndianNumber } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
@@ -63,24 +64,21 @@ export function GratuityCalculator() {
   const [errors, setErrors] = useState<GratuityValidationErrors>({})
   const [calculation, setCalculation] = useState<{ input: GratuityInput; result: GratuityResult; date: string } | null>(null)
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      const search = new URLSearchParams(window.location.search)
-      const parsed = parseGratuityUrlState(search)
-      const sharedInput = parseValidGratuityUrlState(search)
-      setValues(toFormValues(parsed))
-      if (sharedInput) {
-        setCalculation({
-          input: sharedInput,
-          result: calculateGratuity(sharedInput),
-          date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
-        })
-      }
-    }, 0)
-    return () => window.clearTimeout(timeout)
-  }, [])
+  const markInteracted = useCalculatorUrlRestore((search) => {
+    const parsed = parseGratuityUrlState(search)
+    const sharedInput = parseValidGratuityUrlState(search)
+    setValues(toFormValues(parsed))
+    if (sharedInput) {
+      setCalculation({
+        input: sharedInput,
+        result: calculateGratuity(sharedInput),
+        date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
+      })
+    }
+  })
 
   function update(field: keyof GratuityFormValues, value: string) {
+    markInteracted()
     setValues((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
     setCalculation(null)

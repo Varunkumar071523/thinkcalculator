@@ -1,7 +1,7 @@
 
 
 "use client"
-import { useEffect,useState,type FormEvent } from "react"
+import { useState,type FormEvent } from "react"
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
@@ -10,6 +10,7 @@ import { DataTable,type DataTableColumn } from "@/components/calculators/data-ta
 import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
 import { Button } from "@/components/ui/button";import { Card,CardContent } from "@/components/ui/card"
 import { CalculatorResultCard,CalculatorShell } from "@/features/calculators/core"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { calculateSIPSchedule } from "./calculate-sip-schedule";import { calculateSIP } from "./calculate-sip"
 import { parseAndValidateSIPForm,SIP_LIMITS,type SIPFormValues } from "./sip-schema"
 import { buildSIPCalculatorUrl,parseSIPUrlState,SIP_DEFAULT_INPUT } from "./sip-url-state"
@@ -19,8 +20,8 @@ const toForm=(i:SIPInput):SIPFormValues=>({monthlyInvestment:String(i.monthlyInv
 const items=(r:SIPResult):readonly CalculatorResultItem[]=>[{id:"future-value",label:"Estimated future value",value:r.futureValue,displayType:"currency",isPrimary:true},{id:"total-invested",label:"Total invested amount",value:r.totalInvested,displayType:"currency"},{id:"estimated-returns",label:"Estimated returns",value:r.estimatedReturns,displayType:"currency"}]
 const columns:readonly DataTableColumn<SIPScheduleRow>[]=[{header:"Period",cell:r=>r.periodNumber},{header:"Months elapsed",cell:r=>r.monthsElapsed},{header:"Invested amount",cell:r=>formatIndianCurrency(r.investedAmount)},{header:"Estimated returns",cell:r=>formatIndianCurrency(r.estimatedReturns)},{header:"Future value",cell:r=>formatIndianCurrency(r.futureValue)}]
 export function SIPCalculator(){const[values,setValues]=useState(()=>toForm(SIP_DEFAULT_INPUT));const[errors,setErrors]=useState<SIPValidationErrors>({});const[calculation,setCalculation]=useState<{input:SIPInput;result:SIPResult;date:string}|null>(null)
-useEffect(()=>{const timer=window.setTimeout(()=>setValues(toForm(parseSIPUrlState(new URLSearchParams(window.location.search)))),0);return()=>window.clearTimeout(timer)},[])
-function update(field:keyof SIPFormValues,value:string){setValues(c=>({...c,[field]:value}));setErrors(c=>({...c,[field]:undefined}))}
+const markInteracted=useCalculatorUrlRestore((search)=>setValues(toForm(parseSIPUrlState(search))))
+function update(field:keyof SIPFormValues,value:string){markInteracted();setValues(c=>({...c,[field]:value}));setErrors(c=>({...c,[field]:undefined}))}
 function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();const v=parseAndValidateSIPForm(values);if(!v.success){setErrors(v.errors);setCalculation(null);return}const result=calculateSIP(v.data);setErrors({});setCalculation({input:v.data,result,date:new Intl.DateTimeFormat("en-IN",{dateStyle:"long"}).format(new Date())});window.history.replaceState(null,"",buildSIPCalculatorUrl(v.data))}
 function reset(){setValues(toForm(SIP_DEFAULT_INPUT));setErrors({});setCalculation(null);window.history.replaceState(null,"","/finance/sip-calculator")}
 const c=calculation;const schedule=c?calculateSIPSchedule(c.input):[];const share=c?buildSIPCalculatorUrl(c.input,siteConfig.url):"";const text=c?["ThinkCalculator SIP Calculation","",`Monthly investment: ${formatIndianCurrency(c.input.monthlyInvestment)}`,`Expected annual return: ${formatPercentage(c.input.annualReturnRate)}`,`Investment duration: ${c.input.duration} ${c.input.durationUnit}`,`Total invested: ${formatIndianCurrency(c.result.totalInvested)}`,`Estimated returns: ${formatIndianCurrency(c.result.estimatedReturns)}`,`Estimated future value: ${formatIndianCurrency(c.result.futureValue)}`,"","Calculator:",`${siteConfig.url}/finance/sip-calculator`].join("\n"):""

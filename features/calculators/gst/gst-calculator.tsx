@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
@@ -9,6 +9,7 @@ import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
@@ -36,23 +37,21 @@ export function GSTCalculator() {
   const [values, setValues] = useState<GSTFormValues>(() => toForm(GST_DEFAULT_INPUT))
   const [errors, setErrors] = useState<GSTValidationErrors>({})
   const [calculation, setCalculation] = useState<{ input: GSTInput; result: GSTResult; date: string } | null>(null)
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      const search = new URLSearchParams(window.location.search)
-      const parsed = parseGSTUrlState(search)
-      const shared = parseValidGSTUrlState(search)
-      setValues(toForm(parsed))
-      if (shared) setCalculation({ input: shared, result: calculateGST(shared), date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()) })
-    }, 0)
-    return () => window.clearTimeout(timeout)
-  }, [])
+  const markInteracted = useCalculatorUrlRestore((search) => {
+    const parsed = parseGSTUrlState(search)
+    const shared = parseValidGSTUrlState(search)
+    setValues(toForm(parsed))
+    if (shared) setCalculation({ input: shared, result: calculateGST(shared), date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()) })
+  })
 
   function update(field: keyof GSTFormValues, value: string) {
+    markInteracted()
     setValues((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
     setCalculation(null)
   }
   function applyPreset(gstRate: number) {
+    markInteracted()
     const nextValues = { ...values, gstRate: String(gstRate) }
     setValues(nextValues)
     const validation = parseAndValidateGSTForm(nextValues)

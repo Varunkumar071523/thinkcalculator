@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
@@ -10,6 +10,7 @@ import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
@@ -37,17 +38,13 @@ export function PPFCalculator() {
   const [values, setValues] = useState(() => toForm(PPF_DEFAULT_INPUT))
   const [errors, setErrors] = useState<PPFValidationErrors>({})
   const [calculation, setCalculation] = useState<{ input: PPFInput; result: PPFResult; date: string } | null>(null)
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      const search = new URLSearchParams(window.location.search)
-      const parsed = parsePPFUrlState(search)
-      const shared = parseValidPPFUrlState(search)
-      setValues(toForm(parsed))
-      if (shared) setCalculation({ input: shared, result: calculatePPF(shared), date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()) })
-    }, 0)
-    return () => window.clearTimeout(timeout)
-  }, [])
-  function update(field: keyof PPFFormValues, value: string) { setValues((current) => ({ ...current, [field]: value })); setErrors((current) => ({ ...current, [field]: undefined })) }
+  const markInteracted = useCalculatorUrlRestore((search) => {
+    const parsed = parsePPFUrlState(search)
+    const shared = parseValidPPFUrlState(search)
+    setValues(toForm(parsed))
+    if (shared) setCalculation({ input: shared, result: calculatePPF(shared), date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()) })
+  })
+  function update(field: keyof PPFFormValues, value: string) { markInteracted(); setValues((current) => ({ ...current, [field]: value })); setErrors((current) => ({ ...current, [field]: undefined })) }
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const validation = parseAndValidatePPFForm(values)
     if (!validation.success) { setErrors(validation.errors); setCalculation(null); return }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import Link from "next/link"
 import { ArrowRight, X } from "lucide-react"
 
@@ -10,6 +10,7 @@ import { CalculatorNumberInput } from "@/components/calculators/calculator-numbe
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
 import { Button } from "@/components/ui/button"
 import { CalculatorShell } from "@/features/calculators/core/calculator-shell"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { formatIndianCurrency } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { computeHraExemption } from "@/lib/hra/engine"
@@ -47,24 +48,21 @@ export function HraCalculator() {
   const [calculation, setCalculation] = useState<{ input: HraCalcInput; result: HraCalcResult; date: string } | null>(null)
   const [metroNoticeDismissed, setMetroNoticeDismissed] = useState(false)
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const search = new URLSearchParams(window.location.search)
-      const parsed = parseHraUrlState(search)
-      const sharedInput = parseValidHraUrlState(search)
-      setValues(parsed)
-      if (sharedInput) {
-        setCalculation({
-          input: sharedInput,
-          result: computeHraExemption(sharedInput, HRA_FINANCIAL_YEAR),
-          date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
-        })
-      }
-    }, 0)
-    return () => window.clearTimeout(timer)
-  }, [])
+  const markInteracted = useCalculatorUrlRestore((search) => {
+    const parsed = parseHraUrlState(search)
+    const sharedInput = parseValidHraUrlState(search)
+    setValues(parsed)
+    if (sharedInput) {
+      setCalculation({
+        input: sharedInput,
+        result: computeHraExemption(sharedInput, HRA_FINANCIAL_YEAR),
+        date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
+      })
+    }
+  })
 
   function update(field: keyof HraFormValues, value: string) {
+    markInteracted()
     setValues((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
     setCalculation(null)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
@@ -8,6 +8,7 @@ import { CalculatorNumberInput } from "@/components/calculators/calculator-numbe
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { formatIndianCurrency, formatIndianNumber, formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
@@ -75,24 +76,21 @@ export function CAGRCalculator() {
   const [errors, setErrors] = useState<CAGRValidationErrors>({})
   const [calculation, setCalculation] = useState<{ input: CAGRInput; result: CAGRResult; date: string } | null>(null)
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      const search = new URLSearchParams(window.location.search)
-      const parsed = parseCAGRUrlState(search)
-      const sharedInput = parseValidCAGRUrlState(search)
-      setValues(toFormValues(parsed))
-      if (sharedInput) {
-        setCalculation({
-          input: sharedInput,
-          result: calculateCAGR(sharedInput),
-          date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
-        })
-      }
-    }, 0)
-    return () => window.clearTimeout(timeout)
-  }, [])
+  const markInteracted = useCalculatorUrlRestore((search) => {
+    const parsed = parseCAGRUrlState(search)
+    const sharedInput = parseValidCAGRUrlState(search)
+    setValues(toFormValues(parsed))
+    if (sharedInput) {
+      setCalculation({
+        input: sharedInput,
+        result: calculateCAGR(sharedInput),
+        date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
+      })
+    }
+  })
 
   function update(field: keyof CAGRFormValues, value: string) {
+    markInteracted()
     setValues((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
   }
