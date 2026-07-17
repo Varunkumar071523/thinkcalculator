@@ -85,7 +85,7 @@ export const incomeTaxKnowledgeContent = {
       content: [
         { type: "callout", variant: "important", title: "An estimate, not a filing", text: "This calculator applies regular slab-rate income only. Capital gains under Sections 111A/112/112A and other special-rate income, TDS already deducted, and advance tax instalments are not modelled." },
         { type: "list", style: "bullet", items: [
-          "HRA exemption is accepted as an already-calculated amount — the least-of-three-rules calculation itself is not built into this tool.",
+          "HRA exemption is accepted as an already-calculated amount — use the HRA Exemption Calculator to compute the least-of-three-rules amount and pass it in directly.",
           "Employer NPS (80CCD(2)) is accepted as an already-capped amount — the 14%-of-basic-salary cap needs a salary breakdown this tool does not collect.",
           "Section 24(b) always uses the self-occupied-property cap; a let-out property has no statutory cap under this section, which this tool does not distinguish.",
           "Section 80D uses only your own age band, not a separate higher allowance for senior-citizen parents' premiums.",
@@ -119,6 +119,7 @@ export const incomeTaxKnowledgeContent = {
     },
   ],
   relatedLinks: [
+    { title: "HRA Calculator", description: "Compute your HRA exemption before entering it above.", href: "/finance/hra-calculator" },
     { title: "PPF Calculator", description: "Explore a common Section 80C investment.", href: "/finance/ppf-calculator" },
     { title: "Gratuity Calculator", description: "Estimate gratuity income, generally exempt under Section 10(10).", href: "/finance/gratuity-calculator" },
     { title: "EMI Calculator", description: "Estimate loan payments relevant to Section 24(b) or 80C.", href: "/finance/emi-calculator" },

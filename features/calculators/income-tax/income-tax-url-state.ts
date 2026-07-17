@@ -130,3 +130,48 @@ export function serializeIncomeTaxUrlState(input: TaxCalcInput): URLSearchParams
 export function buildIncomeTaxCalculatorUrl(input: TaxCalcInput, origin?: string): string {
   return buildCalculatorUrl("/finance/income-tax-calculator", Object.fromEntries(serializeIncomeTaxUrlState(input)), origin)
 }
+
+/**
+ * Reads the `hraExemption` query param used by the HRA calculator's "Use
+ * this in the Income Tax Calculator" link
+ * (features/calculators/hra/hra-url-state.ts). Deliberately not imported
+ * from that module — every calculator links to another calculator's route
+ * as a plain string contract (see e.g. income-tax-content.ts's related-
+ * calculator hrefs), not by importing that calculator's feature module, so
+ * the two calculators stay independent. Returns `null` for a missing,
+ * non-numeric, or negative value so a malformed link is silently ignored
+ * rather than producing a bad pre-fill.
+ */
+export function parseHraExemptionPassThrough(search: SearchInput): number | null {
+  const amount = parseAmount(readOne(search, "hraExemption"))
+  return amount === null || amount < 0 ? null : amount
+}
+
+/**
+ * Applies an `hraExemption` pass-through, if present in `search`, on top of
+ * already-resolved form values: forces the old regime (see
+ * `parseHraExemptionPassThrough`'s doc comment — HRA exemption is old-
+ * regime-only) and overwrites only the `hraExemption` field within the old-
+ * regime deductions bucket, leaving every other field — including the new-
+ * regime deductions bucket — untouched. Returns the pass-through amount
+ * alongside the merged values so the caller can surface the arrival note.
+ * Pulled out of the calculator component so this merge can be unit-tested
+ * directly against `TaxCalcInput`'s discriminated union, rather than only
+ * through a rendered form.
+ */
+export function applyHraExemptionPassThrough(
+  values: IncomeTaxFormValues,
+  search: SearchInput,
+): { readonly values: IncomeTaxFormValues; readonly hraPassThroughAmount: number | null } {
+  const hraPassThroughAmount = parseHraExemptionPassThrough(search)
+  if (hraPassThroughAmount === null) return { values, hraPassThroughAmount: null }
+
+  return {
+    values: {
+      ...values,
+      regime: "old",
+      oldRegimeDeductions: { ...values.oldRegimeDeductions, hraExemption: String(hraPassThroughAmount) },
+    },
+    hraPassThroughAmount,
+  }
+}
