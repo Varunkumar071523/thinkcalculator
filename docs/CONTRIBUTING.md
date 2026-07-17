@@ -80,6 +80,8 @@ Every indexable page needs a unique title/description, canonical, H1, logical he
 
 Add focused tests for new behaviour, boundary conditions, registry invariants, URLs, and draft exclusions. Avoid snapshots. Fix regressions rather than weakening assertions. Manual browser checks complement but do not replace unit tests.
 
+Running a single Playwright spec ad hoc? Use `scripts/run-e2e.mjs` (e.g. `node scripts/run-e2e.mjs tests/e2e/some.spec.ts`), not a bare `npx playwright test ...`, and never pipe Playwright's own CLI through `tail`/`grep`. Piping buffers all output until the process exits, so a genuine hang and a slow-but-working run look identical — indistinguishable from the outside until you kill it and try again. `scripts/run-e2e.mjs` streams output directly and also works around the Windows `next start` teardown hang (see the comment at the top of that file).
+
 ## Accessibility requirements
 
 Use semantic HTML, accessible names, keyboard operation, visible focus, logical headings, status/error communication, meaningful time elements, captioned/headered tables, and text equivalents for visual data. Check mobile reflow, contrast, zoom, and page-level overflow.

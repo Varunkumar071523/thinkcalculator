@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState, type FormEvent } from "react"
 import { X } from "lucide-react"
 
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
@@ -9,6 +9,7 @@ import { CalculatorNumberInput } from "@/components/calculators/calculator-numbe
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
 import { Button } from "@/components/ui/button"
 import { CalculatorShell } from "@/features/calculators/core/calculator-shell"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { formatIndianCurrency } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateIncomeTax, compareRegimes } from "@/lib/tax/engine"
@@ -127,47 +128,47 @@ export function IncomeTaxCalculator() {
   const [calculation, setCalculation] = useState<{ input: TaxCalcInput; result: TaxCalculationResult; date: string } | null>(null)
   const [hraPassThroughAmount, setHraPassThroughAmount] = useState<number | null>(null)
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const search = new URLSearchParams(window.location.search)
-      const { values: parsedValues, hraPassThroughAmount: passThroughAmount } = applyHraExemptionPassThrough(
-        parseIncomeTaxUrlState(search),
-        search,
-      )
-      if (passThroughAmount !== null) setHraPassThroughAmount(passThroughAmount)
+  const markInteracted = useCalculatorUrlRestore((search) => {
+    const { values: parsedValues, hraPassThroughAmount: passThroughAmount } = applyHraExemptionPassThrough(
+      parseIncomeTaxUrlState(search),
+      search,
+    )
+    if (passThroughAmount !== null) setHraPassThroughAmount(passThroughAmount)
 
-      setValues(parsedValues)
-      const validation = parseAndValidateIncomeTaxForm(parsedValues)
-      if (validation.success) {
-        setCalculation({
-          input: validation.data,
-          result: calculateIncomeTax(validation.data, INCOME_TAX_FINANCIAL_YEAR),
-          date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
-        })
-      }
-    }, 0)
-    return () => window.clearTimeout(timer)
-  }, [])
+    setValues(parsedValues)
+    const validation = parseAndValidateIncomeTaxForm(parsedValues)
+    if (validation.success) {
+      setCalculation({
+        input: validation.data,
+        result: calculateIncomeTax(validation.data, INCOME_TAX_FINANCIAL_YEAR),
+        date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
+      })
+    }
+  })
 
   function switchRegime(regime: TaxRegime) {
+    markInteracted()
     setValues((current) => ({ ...current, regime }))
     setErrors({})
     setCalculation(null)
   }
 
   function updateShared(field: "grossIncome" | "ageBand", value: string) {
+    markInteracted()
     setValues((current) => ({ ...current, [field]: value }) as IncomeTaxFormValues)
     setErrors((current) => ({ ...current, [field]: undefined }))
     setCalculation(null)
   }
 
   function updateOldDeduction(field: keyof IncomeTaxFormValues["oldRegimeDeductions"], value: string) {
+    markInteracted()
     setValues((current) => ({ ...current, oldRegimeDeductions: { ...current.oldRegimeDeductions, [field]: value } }))
     setErrors((current) => ({ ...current, deductions: { ...current.deductions, [field]: undefined } }))
     setCalculation(null)
   }
 
   function updateNewDeduction(field: keyof IncomeTaxFormValues["newRegimeDeductions"], value: string) {
+    markInteracted()
     setValues((current) => ({ ...current, newRegimeDeductions: { ...current.newRegimeDeductions, [field]: value } }))
     setErrors((current) => ({ ...current, deductions: { ...current.deductions, [field]: undefined } }))
     setCalculation(null)

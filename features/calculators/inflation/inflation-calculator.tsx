@@ -1,5 +1,5 @@
 "use client"
-import { useEffect,useState,type FormEvent } from "react"
+import { useState,type FormEvent } from "react"
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
@@ -7,6 +7,7 @@ import { CalculatorSelectInput } from "@/components/calculators/calculator-selec
 import { DataTable,type DataTableColumn } from "@/components/calculators/data-table"
 import { Button } from "@/components/ui/button"
 import { CalculatorResultCard,CalculatorShell } from "@/features/calculators/core"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { formatIndianCurrency,formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
@@ -25,8 +26,9 @@ export function InflationCalculator(){
   const[values,setValues]=useState(()=>toForm(INFLATION_DEFAULT_INPUT))
   const[errors,setErrors]=useState<InflationValidationErrors>({})
   const[calculation,setCalculation]=useState<{input:InflationInput;result:InflationResult;date:string}|null>(null)
-  useEffect(()=>{const timer=setTimeout(()=>{const search=new URLSearchParams(location.search),input=parseInflationUrlState(search),shared=parseValidInflationUrlState(search);setValues(toForm(input));if(shared)setCalculation({input:shared,result:calculateInflation(shared),date:new Intl.DateTimeFormat("en-IN",{dateStyle:"long"}).format(new Date())})},0);return()=>clearTimeout(timer)},[])
+  const markInteracted=useCalculatorUrlRestore((search)=>{const input=parseInflationUrlState(search),shared=parseValidInflationUrlState(search);setValues(toForm(input));if(shared)setCalculation({input:shared,result:calculateInflation(shared),date:new Intl.DateTimeFormat("en-IN",{dateStyle:"long"}).format(new Date())})})
   function update(field:keyof InflationFormValues,value:string){
+    markInteracted()
     // Switching modes does NOT reset the amount field: the same numeric value is a valid "amount of
     // money" under either interpretation (a current amount or a future amount), unlike Step-up SIP's
     // mode toggle where the field's meaning and bounds genuinely differ enough to warrant a reset.

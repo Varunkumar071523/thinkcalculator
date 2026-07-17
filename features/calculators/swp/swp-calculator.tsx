@@ -1,5 +1,5 @@
 "use client"
-import { useEffect,useState,type FormEvent } from "react"
+import { useState,type FormEvent } from "react"
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
@@ -7,6 +7,7 @@ import { CalculatorSelectInput } from "@/components/calculators/calculator-selec
 import { DataTable,type DataTableColumn } from "@/components/calculators/data-table"
 import { Button } from "@/components/ui/button"
 import { CalculatorResultCard,CalculatorShell } from "@/features/calculators/core"
+import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
 import { formatIndianCurrency,formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
@@ -34,8 +35,9 @@ export function SWPCalculator(){
   const[values,setValues]=useState(()=>toForm(SWP_DEFAULT_INPUT))
   const[errors,setErrors]=useState<SWPValidationErrors>({})
   const[calculation,setCalculation]=useState<{input:SWPInput;result:SWPResult;date:string}|null>(null)
-  useEffect(()=>{const timer=setTimeout(()=>{const search=new URLSearchParams(location.search),input=parseSWPUrlState(search),shared=parseValidSWPUrlState(search);setValues(toForm(input));if(shared)setCalculation({input:shared,result:calculateSWP(shared),date:new Intl.DateTimeFormat("en-IN",{dateStyle:"long"}).format(new Date())})},0);return()=>clearTimeout(timer)},[])
+  const markInteracted=useCalculatorUrlRestore((search)=>{const input=parseSWPUrlState(search),shared=parseValidSWPUrlState(search);setValues(toForm(input));if(shared)setCalculation({input:shared,result:calculateSWP(shared),date:new Intl.DateTimeFormat("en-IN",{dateStyle:"long"}).format(new Date())})})
   function update(field:keyof SWPFormValues,value:string){
+    markInteracted()
     setValues(current=>({...current,[field]:value}))
     setErrors(current=>({...current,[field]:undefined}))
     setCalculation(null)
