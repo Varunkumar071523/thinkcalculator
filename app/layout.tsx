@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { IBM_Plex_Mono, Inter, Newsreader } from "next/font/google"
 
 import { GoogleAnalytics } from "@/components/analytics/google-analytics"
 import { SiteFooter } from "@/components/layout/site-footer"
@@ -9,8 +9,9 @@ import { createCanonicalUrl, createOpenGraph, createRootStructuredData } from "@
 import { siteConfig } from "@/lib/site-config"
 import "./globals.css"
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"], display: "swap" })
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"], display: "swap" })
+const newsreader = Newsreader({ variable: "--font-newsreader", subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap" })
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap" })
+const ibmPlexMono = IBM_Plex_Mono({ variable: "--font-ibm-plex-mono", subsets: ["latin"], weight: ["500"], display: "swap" })
 const rootTitle = `${siteConfig.name} — ${siteConfig.tagline}`
 const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
 
@@ -30,7 +31,7 @@ const analyticsConfig = getAnalyticsConfig()
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${newsreader.variable} ${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(rootStructuredData).replace(/</g, "\\u003c") }} />
         <a href="#main-content" className="sr-only z-50 rounded-lg bg-background px-4 py-2 font-medium focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:ring-2 focus:ring-ring">Skip to main content</a>
