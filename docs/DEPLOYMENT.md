@@ -154,3 +154,29 @@ The workflow needs `FTP_HOST`, `FTP_USERNAME`, and `FTP_PASSWORD` as GitHub **re
 5. Once all three exist, the next push to `main` (or a manual `workflow_dispatch` run from the Actions tab) will build and deploy automatically. Before that, every run still fails closed at the guard job with a clear `::error::` message naming the missing secrets — nothing is deployed and no FTP connection is attempted.
 
 This is one of the manual steps only the project owner can perform — see [LAUNCH-CHECKLIST.md](LAUNCH-CHECKLIST.md) for where it fits among the other launch steps.
+
+## Analytics and Search Console (Sprint 36)
+
+Both GA4 and Search Console verification are environment-variable-driven and optional at build time — omitting either simply ships that feature inert, same as any other build. See [DECISIONS.md](DECISIONS.md) #25 for the full reasoning (why GA4, why the meta-tag verification method, why gated on `STATIC_EXPORT` rather than `NODE_ENV`, and the DPDPA disclosure approach).
+
+### GA4
+
+1. Create a GA4 property in Google Analytics (Admin → Create Property) for `thinkcalculator.in`, then find its Measurement ID under Admin → Data Streams → (your web stream) — it looks like `G-XXXXXXXXXX`.
+2. Add it as the `NEXT_PUBLIC_GA_MEASUREMENT_ID` GitHub repository secret (Settings → Secrets and variables → Actions → New repository secret), same location as the three `FTP_*` secrets. The `deploy-hostinger.yml` workflow already passes it through to the build (see its `Build static export` step).
+3. The next deploy (push to `main`, or a manual `workflow_dispatch` run) will ship with GA4 active. Locally, `NEXT_PUBLIC_GA_MEASUREMENT_ID=... STATIC_EXPORT=true npx next build` reproduces the same production behavior for manual verification before relying on CI.
+4. It will **not** load under `next dev`, a plain `next build`/`next start`, or the Playwright e2e suite, regardless of whether the env var is set locally — it additionally requires `STATIC_EXPORT=true`, which only `npm run build:export` (and the CI workflow) ever sets. This is intentional: test runs must never pollute production analytics data.
+5. After the first deploy with the ID set, confirm real-time traffic appears in GA4's Admin → Realtime report by visiting the live site.
+6. Recommended one-time manual check (can't be verified from this sandboxed environment, same limitation class as the `.htaccess` header checks above): open a calculator, click "Copy share link" to get a URL with query-string values in it, open that URL in a fresh tab, and confirm in GA4's Realtime → "Event count by Event name" (or the browser's Network tab, inspecting the `collect`/`g/collect` request's `dl`/`page_location` parameter) that the recorded page location has no query string — confirming the `page_location` override in `components/analytics/google-analytics.tsx` actually works end-to-end against real `gtag.js`, not just by reading the source.
+
+### Search Console
+
+1. In [Google Search Console](https://search.google.com/search-console), add `thinkcalculator.in` as a property using the **HTML tag** verification method (not the domain-wide DNS method, and not the HTML-file method — a static export can't easily ship a dynamically-named file per verification token, but a meta tag bakes in at build time with zero extra routes; see decision 25).
+2. Copy the `content` value Search Console gives you for the `<meta name="google-site-verification" ...>` tag.
+3. Add it as the `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` GitHub repository secret, same as above.
+4. Deploy, then click "Verify" in Search Console against the live domain.
+5. Once verified, submit the sitemap: Search Console → Sitemaps → add `sitemap.xml` (resolves to `https://thinkcalculator.in/sitemap.xml`). `app/sitemap.ts` is already registry-driven and grows automatically as calculators, editorial content, glossary terms, and topic hubs are published — no code change is needed here or for any future content addition.
+6. Review the Coverage/Indexing and canonical reports over the following days — these take real crawl time and cannot be verified synchronously from this repository.
+
+### Bing Webmaster Tools
+
+Out of scope for Sprint 36 (see [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) section 20) — deferred to a future sprint.

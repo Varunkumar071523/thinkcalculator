@@ -57,6 +57,14 @@ jobs:
 
       - name: Build static export
         run: npm run build:export
+        env:
+          # Optional — see docs/DEPLOYMENT.md's "Analytics and Search Console" section. Neither is
+          # required for the guard job above (only the three FTP secrets are); if unset, the build
+          # simply ships with GA4 and Search Console verification both inert, same as any other
+          # build. Not sensitive values (both end up visible in the page's own HTML/script tags),
+          # but sourced as repository secrets here for consistency with the FTP credentials above.
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+          NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: ${{ secrets.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }}
 
       - name: Deploy out/ to Hostinger via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

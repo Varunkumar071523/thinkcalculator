@@ -3,9 +3,11 @@ import Link from "next/link"
 import { SiteContainer } from "@/components/layout/site-container"
 import { BrandLogo } from "@/components/shared/brand-logo"
 import { Separator } from "@/components/ui/separator"
+import { getAnalyticsConfig } from "@/lib/analytics-config"
 import { footerGroups, siteConfig } from "@/lib/site-config"
 
 export function SiteFooter() {
+  const { enabled: analyticsEnabled } = getAnalyticsConfig()
   return (
     <footer className="border-t bg-muted/30">
       <SiteContainer className="py-12 sm:py-16">
@@ -33,6 +35,12 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} ThinkCalculator. All rights reserved.</p>
           <p className="max-w-2xl sm:text-right">Calculations are provided for informational purposes only. Verify important results and consult a qualified professional when appropriate.</p>
         </div>
+        {analyticsEnabled && (
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">
+            This site uses Google Analytics to understand visitor traffic. Calculator inputs are never sent to analytics or any third party — see our{" "}
+            <Link className="underline hover:text-foreground" href="/privacy-policy">privacy policy</Link>.
+          </p>
+        )}
       </SiteContainer>
     </footer>
   )

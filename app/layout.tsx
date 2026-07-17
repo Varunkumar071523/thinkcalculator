@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
+import { GoogleAnalytics } from "@/components/analytics/google-analytics"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { SiteHeader } from "@/components/layout/site-header"
+import { getAnalyticsConfig } from "@/lib/analytics-config"
 import { createCanonicalUrl, createOpenGraph, createRootStructuredData } from "@/lib/seo"
 import { siteConfig } from "@/lib/site-config"
 import "./globals.css"
@@ -10,6 +12,7 @@ import "./globals.css"
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"], display: "swap" })
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"], display: "swap" })
 const rootTitle = `${siteConfig.name} — ${siteConfig.tagline}`
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -19,9 +22,11 @@ export const metadata: Metadata = {
   openGraph: createOpenGraph({ title: rootTitle, description: siteConfig.description, path: "/" }),
   twitter: { card: "summary_large_image", title: rootTitle, description: siteConfig.description, images: [{ url: "/opengraph-image", alt: "ThinkCalculator — Calculate. Compare. Decide. Financial calculators for India." }] },
   robots: { index: true, follow: true },
+  ...(googleSiteVerification ? { verification: { google: googleSiteVerification } } : {}),
 }
 
 const rootStructuredData = createRootStructuredData()
+const analyticsConfig = getAnalyticsConfig()
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -32,6 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <main id="main-content" className="flex-1" tabIndex={-1}>{children}</main>
         <SiteFooter />
+        {analyticsConfig.enabled && <GoogleAnalytics measurementId={analyticsConfig.measurementId!} />}
       </body>
     </html>
   )
