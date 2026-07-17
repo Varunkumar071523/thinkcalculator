@@ -17,7 +17,7 @@ export const incomeTaxFAQs: readonly CalculatorFAQ[] = [
   {
     question: "What counts as HRA exemption here?",
     answer:
-      "This calculator accepts an already-calculated HRA exemption amount, not a salary breakdown. HRA exemption itself is the least of three separate statutory rules and needs basic salary, actual HRA received, rent paid, and city of residence — that calculation is not built into this tool yet. If you don't know your exact HRA exemption, leave it at 0 or use a dedicated HRA calculator first.",
+      "This calculator accepts an already-calculated HRA exemption amount, not a salary breakdown. HRA exemption itself is the least of three separate statutory rules and needs basic salary, actual HRA received, rent paid, and city of residence. If you don't know your exact HRA exemption, use the HRA Exemption Calculator first — it computes the amount and can hand it straight to this field.",
   },
   {
     question: "Is the Section 80CCD(2) employer NPS contribution capped automatically?",
@@ -36,6 +36,7 @@ export const incomeTaxFAQs: readonly CalculatorFAQ[] = [
 ]
 
 export const incomeTaxRelatedCalculators: readonly RelatedCalculator[] = [
+  { slug: "hra-calculator", title: "HRA Calculator", description: "Calculate your Section 10(13A) HRA exemption to use in the old-regime HRA exemption field above.", href: "/finance/hra-calculator", category: "Finance" },
   { slug: "emi-calculator", title: "EMI Calculator", description: "Estimate monthly loan payments that may qualify for Section 24(b) or 80C treatment.", href: "/finance/emi-calculator", category: "Finance" },
   { slug: "ppf-calculator", title: "PPF Calculator", description: "Estimate PPF maturity value for a common Section 80C investment.", href: "/finance/ppf-calculator", category: "Finance" },
   { slug: "gratuity-calculator", title: "Gratuity Calculator", description: "Estimate statutory gratuity, generally exempt income under Section 10(10).", href: "/finance/gratuity-calculator", category: "Finance" },

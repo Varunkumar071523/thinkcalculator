@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState, type FormEvent } from "react"
+import { X } from "lucide-react"
 
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
@@ -16,8 +17,24 @@ import { cn } from "@/lib/utils"
 import { buildBestEffortComparisonInput, INCOME_TAX_DEFAULT_FORM_VALUES, parseAndValidateIncomeTaxForm } from "./income-tax-schema"
 import { INCOME_TAX_FINANCIAL_YEAR } from "./income-tax-regulatory-config"
 import type { IncomeTaxFormErrors, IncomeTaxFormValues } from "./income-tax-types"
-import { buildIncomeTaxCalculatorUrl, parseIncomeTaxUrlState } from "./income-tax-url-state"
+import { applyHraExemptionPassThrough, buildIncomeTaxCalculatorUrl, parseIncomeTaxUrlState } from "./income-tax-url-state"
 import { IncomeTaxRebateSurchargeCard, IncomeTaxResultSummary, IncomeTaxSlabBreakdownSection } from "./income-tax-results"
+
+function HraPassThroughNote({ amount, onDismiss }: { readonly amount: number; readonly onDismiss: () => void }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      data-testid="hra-pass-through-note"
+      className="mb-5 flex items-start justify-between gap-3 rounded-lg border bg-muted/30 p-4 text-sm leading-6"
+    >
+      <p>HRA exemption of {formatIndianCurrency(amount)} applied — this only affects the Old Regime calculation.</p>
+      <Button type="button" variant="ghost" size="icon-sm" aria-label="Dismiss" onClick={onDismiss}>
+        <X aria-hidden="true" />
+      </Button>
+    </div>
+  )
+}
 
 const ageBandOptions = [
   { label: "Below 60", value: "below60" },
@@ -108,11 +125,17 @@ export function IncomeTaxCalculator() {
   const [values, setValues] = useState<IncomeTaxFormValues>(INCOME_TAX_DEFAULT_FORM_VALUES)
   const [errors, setErrors] = useState<IncomeTaxFormErrors>({})
   const [calculation, setCalculation] = useState<{ input: TaxCalcInput; result: TaxCalculationResult; date: string } | null>(null)
+  const [hraPassThroughAmount, setHraPassThroughAmount] = useState<number | null>(null)
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const search = new URLSearchParams(window.location.search)
-      const parsedValues = parseIncomeTaxUrlState(search)
+      const { values: parsedValues, hraPassThroughAmount: passThroughAmount } = applyHraExemptionPassThrough(
+        parseIncomeTaxUrlState(search),
+        search,
+      )
+      if (passThroughAmount !== null) setHraPassThroughAmount(passThroughAmount)
+
       setValues(parsedValues)
       const validation = parseAndValidateIncomeTaxForm(parsedValues)
       if (validation.success) {
@@ -179,6 +202,9 @@ export function IncomeTaxCalculator() {
   return (
     <>
       <div data-calculator-form>
+        {hraPassThroughAmount !== null ? (
+          <HraPassThroughNote amount={hraPassThroughAmount} onDismiss={() => setHraPassThroughAmount(null)} />
+        ) : null}
         <CalculatorShell title="Calculate income tax" description="Choose a regime, enter your income and deductions, then calculate your full tax breakdown.">
           <form className="space-y-5" onSubmit={handleSubmit} noValidate>
             <div>
@@ -218,7 +244,7 @@ export function IncomeTaxCalculator() {
               <>
                 <CalculatorNumberInput id="section-80c" label="Section 80C" description="PF, ELSS, life insurance, and similar investments." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.section80C} onValueChange={(value) => updateOldDeduction("section80C", value)} error={deductionErrors.section80C} />
                 <CalculatorNumberInput id="section-80d" label="Section 80D" description="Health insurance premium paid for self and family." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.section80D} onValueChange={(value) => updateOldDeduction("section80D", value)} error={deductionErrors.section80D} />
-                <CalculatorNumberInput id="hra-exemption" label="HRA exemption" description="Enter your already-calculated HRA exemption amount, not your full HRA received." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.hraExemption} onValueChange={(value) => updateOldDeduction("hraExemption", value)} error={deductionErrors.hraExemption} />
+                <CalculatorNumberInput id="hra-exemption" label="HRA exemption" description="Enter your already-calculated HRA exemption amount, not your full HRA received. Use the HRA Exemption Calculator if you need to work this out first." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.hraExemption} onValueChange={(value) => updateOldDeduction("hraExemption", value)} error={deductionErrors.hraExemption} />
                 <CalculatorNumberInput id="home-loan-interest-24b" label="Home loan interest (24b)" description="Self-occupied property home loan interest." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.homeLoanInterestSection24b} onValueChange={(value) => updateOldDeduction("homeLoanInterestSection24b", value)} error={deductionErrors.homeLoanInterestSection24b} />
                 <CalculatorNumberInput id="other-80-deductions" label="Other Section 80 deductions" description="80E, 80G, 80TTA, and similar provisions." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.otherSection80Deductions} onValueChange={(value) => updateOldDeduction("otherSection80Deductions", value)} error={deductionErrors.otherSection80Deductions} />
               </>
