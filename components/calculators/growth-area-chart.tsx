@@ -157,6 +157,50 @@ export function DecliningBalanceChart({ points, label = "Balance" }: { readonly 
   )
 }
 
+export type TwoPhaseChartPoint = { readonly label: string; readonly balance: number }
+
+/** A single balance line that rises through an accumulation phase and falls through a decumulation
+ * phase (e.g. Retirement Corpus) — the shapes GrowthLineChart and DecliningBalanceChart each cover
+ * only half of. One continuous stroke keeps the visual language consistent with the other two
+ * charts; the phase boundary is called out with a dashed marker line and label instead of a second
+ * color, so a reader isn't asked to learn a new legend just for this one chart. */
+export function TwoPhaseChart({ points, retirementIndex, balanceLabel = "Corpus" }: { readonly points: readonly TwoPhaseChartPoint[]; readonly retirementIndex: number; readonly balanceLabel?: string }) {
+  if (points.length === 0) return null
+  const n = points.length
+  const maxAmount = Math.max(...points.map((point) => point.balance), 1)
+  const baseline = HEIGHT - PAD_BOTTOM
+
+  const coords = points.map((point, index) => ({ x: scaleX(index, n), y: scaleY(point.balance, maxAmount) }))
+  const areaPoints = [`${coords[0].x},${baseline}`, ...coords.map((coord) => `${coord.x},${coord.y}`), `${coords[n - 1].x},${baseline}`].join(" ")
+  const xTicks = pickIndices(n, 4).map((index) => ({ x: scaleX(index, n), label: points[index].label }))
+  const retirementX = coords[retirementIndex]?.x ?? coords[0].x
+  const retirementY = coords[retirementIndex]?.y ?? coords[0].y
+  const retirementPoint = points[retirementIndex] ?? points[0]
+  const last = points[n - 1]
+  const description = `${balanceLabel} grows to ${formatCompactINR(retirementPoint.balance)} at retirement (${retirementPoint.label}), then moves to ${formatCompactINR(last.balance)} by ${last.label}. See the yearly tables for exact figures.`
+
+  return (
+    <div>
+      <ul className="flex flex-wrap gap-5 text-[13px] text-muted-foreground">
+        <li className="flex items-center gap-2"><span className="h-[3px] w-4 rounded-full bg-cat-invest" aria-hidden="true" />{balanceLabel}</li>
+        <li className="flex items-center gap-2"><span className="h-2 w-2 rounded-full border-2 border-gold" aria-hidden="true" />Retirement</li>
+      </ul>
+      <div className="mt-4">
+        <ChartFrame maxAmount={maxAmount} xTicks={xTicks}>
+          <g role="img" aria-label={description}>
+            <polygon points={areaPoints} className="fill-cat-invest-soft" opacity={0.7} />
+            <path d={smoothPath(coords)} className="fill-none stroke-cat-invest" strokeWidth={2.5} />
+            <line x1={retirementX} y1={PAD_TOP} x2={retirementX} y2={baseline} className="stroke-gold" strokeWidth={1.5} strokeDasharray="4,3" />
+            <text x={retirementX} y={PAD_TOP - 6} textAnchor="middle" className="fill-gold font-mono text-[11px] font-semibold">Retirement</text>
+            <circle cx={retirementX} cy={retirementY} r={5} className="fill-gold" />
+            <circle cx={coords[n - 1].x} cy={coords[n - 1].y} r={5} className="fill-cat-invest" />
+          </g>
+        </ChartFrame>
+      </div>
+    </div>
+  )
+}
+
 export type MilestoneItem = { readonly label: string; readonly value: string; readonly highlight?: boolean }
 
 export function MilestoneRow({ items }: { readonly items: readonly MilestoneItem[] }) {
