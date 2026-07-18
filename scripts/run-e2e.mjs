@@ -1,24 +1,40 @@
-// Wraps `playwright test` because on Windows, Playwright's own webServer teardown can hang:
-// it signals the `next start -p 3104` process it spawned and waits for it to exit, but that
-// process doesn't reliably act on the signal on Windows, so Playwright's process (and the
-// npm script waiting on it) never returns control to the shell without a manual Ctrl+C.
-// (See playwright.config.ts webServer comment for the related, previously-diagnosed issue
-// where a lingering server on this port also caused stale-CSS test failures.)
+// Wraps `playwright test` because on Windows, Playwright's own webServer teardown can hang: it
+// signals the `next start -p 3104` process it spawned and waits for it to exit, but that process
+// doesn't reliably act on the signal on Windows, so Playwright's process (and the npm script
+// waiting on it) never returns control to the shell without a manual Ctrl+C.
 //
-// Playwright's reporter only prints its final "N passed" summary line AFTER teardown
-// completes, so when teardown is what's stuck, that line never appears - detecting "tests are
-// done" from it doesn't work here. Instead, track individual "ok"/"not ok" result lines against
-// the total Playwright announces at the start ("Running N tests"). Once every test has reported,
-// the run itself is done and anything after that is teardown. If teardown hasn't finished within
-// a grace period, force-kill whatever is listening on the port ourselves, which unblocks
-// Playwright's wait; if the process still hasn't exited shortly after that, kill it directly
-// rather than hang indefinitely.
+// A prior version of this script tried to detect "the run is done" by parsing stdout for a
+// `Running N tests` line and counting `ok`/`not ok` result lines, then force-killing the server
+// after a grace period. That detection was dead code: `ok NN` / `not ok NN` is TAP-reporter
+// syntax, but playwright.config.ts uses the `list` reporter, which prints `✓`/`✘` status marks
+// instead and never emits a line matching that regex. So `completedCount` never reached
+// `expectedTotal`, the grace-period kill never armed, and the wrapper was reduced to nothing but
+// `child.on("exit")` - i.e. functionally identical to running `npx playwright test` directly,
+// which is exactly the hang this script exists to work around.
+//
+// The actual fix: don't let Playwright spawn or own the server at all, and don't infer
+// completion from log text. This script starts `next start` itself by invoking Next's bin script
+// directly with `node` (no shell, no npx, no .cmd wrapper), so the PID it gets back is the real
+// server process, not an intermediary shell. It waits for the server to answer HTTP requests
+// (a real readiness check, not a text match), then runs `playwright test` with
+// `webServer.reuseExistingServer: true` (see playwright.config.ts). Playwright's own webServer
+// plugin, on seeing the URL already answering with reuseExistingServer set, returns immediately
+// without spawning or owning a process (see node_modules/playwright/lib/runner/index.js,
+// WebServerPlugin._startProcess: `if (isAlreadyAvailable) { if (reuseExistingServer) return; }`).
+// Its teardown then has nothing to wait on, so it cannot hang - the Windows termination-signal
+// problem is avoided structurally instead of detected-and-killed after the fact.
+// Once `playwright test` exits (its own process exit, not the server's), this script kills the
+// server it started via `taskkill /PID <pid> /T /F`, using the PID it already holds - no guessing
+// which process is listening on the port.
 import { execSync, spawn } from "node:child_process"
+import http from "node:http"
 import path from "node:path"
+import process from "node:process"
 
 const PORT = 3104
-const TEARDOWN_GRACE_MS = 10_000
-const FORCE_EXIT_GRACE_MS = 5_000
+const BASE_URL = `http://127.0.0.1:${PORT}`
+const SERVER_READY_TIMEOUT_MS = 60_000
+const SERVER_POLL_INTERVAL_MS = 200
 
 // This environment's child-process PATH doesn't reliably include System32, so bare
 // netstat/findstr/taskkill fail with "not recognized" - use fully-qualified paths.
@@ -78,69 +94,83 @@ function quoteArg(arg) {
   return `"${arg.replace(/"/g, '\\"')}"`
 }
 
-// Built as a single pre-quoted string (not an args array) so shell:true - needed on Windows
-// to resolve npx.cmd - doesn't trigger Node's DEP0190 unescaped-concatenation warning.
-const commandLine = ["npx", "playwright", "test", ...process.argv.slice(2)].map(quoteArg).join(" ")
-const child = spawn(commandLine, { stdio: ["inherit", "pipe", "pipe"], shell: true })
+function waitForServerReady(deadline) {
+  return new Promise((resolve, reject) => {
+    const attempt = () => {
+      const req = http.get(BASE_URL, (res) => {
+        res.resume()
+        resolve()
+      })
+      req.on("error", () => {
+        if (Date.now() >= deadline) {
+          reject(new Error(`Server did not respond on ${BASE_URL} within ${SERVER_READY_TIMEOUT_MS}ms`))
+          return
+        }
+        setTimeout(attempt, SERVER_POLL_INTERVAL_MS)
+      })
+    }
+    attempt()
+  })
+}
 
-let settled = false
-let expectedTotal = null
-let completedCount = 0
-let sawFailure = false
-let teardownTimer = null
-let forceExitTimer = null
-let buffer = ""
+async function main() {
+  // Clear out anything left listening from a previous crashed/interrupted run before starting -
+  // a stale server on this port has previously caused confusing stale-CSS test failures (see the
+  // webServer comment in playwright.config.ts).
+  killPort(PORT)
 
-function finish(code) {
-  if (settled) return
-  settled = true
-  clearTimeout(teardownTimer)
-  clearTimeout(forceExitTimer)
+  const nextBin = path.join(process.cwd(), "node_modules", "next", "dist", "bin", "next")
+  // Invoke Next's bin script directly with `node` rather than via `npx`/a `.cmd` shim: that keeps
+  // this the real server process's own PID, with no intermediary shell process in between whose
+  // exit doesn't imply the server underneath it has exited too.
+  const server = spawn(process.execPath, [nextBin, "start", "-p", String(PORT)], {
+    stdio: ["ignore", "pipe", "pipe"],
+  })
+  server.stdout.on("data", (chunk) => process.stdout.write(chunk))
+  server.stderr.on("data", (chunk) => process.stderr.write(chunk))
+
+  // If this script itself is interrupted (Ctrl+C, or a parent process signaling it), make sure
+  // the server it owns doesn't outlive it as an orphan.
+  for (const signal of ["SIGINT", "SIGTERM"]) {
+    process.on(signal, () => {
+      killProcessTree(server.pid)
+      killPort(PORT)
+      process.exit(1)
+    })
+  }
+
+  const deadline = Date.now() + SERVER_READY_TIMEOUT_MS
+  try {
+    await Promise.race([
+      waitForServerReady(deadline),
+      new Promise((_, reject) => {
+        server.once("exit", (code) => {
+          reject(new Error(`Server process exited early (code ${code}) before becoming ready`))
+        })
+      }),
+    ])
+  } catch (error) {
+    console.error(`[run-e2e] ${error.message}`)
+    killProcessTree(server.pid)
+    killPort(PORT)
+    process.exitCode = 1
+    return
+  }
+
+  const commandLine = ["npx", "playwright", "test", ...process.argv.slice(2)].map(quoteArg).join(" ")
+  const tests = spawn(commandLine, { stdio: "inherit", shell: true })
+
+  const code = await new Promise((resolve) => {
+    tests.on("exit", (code) => resolve(code ?? 1))
+  })
+
+  // The test run's own process has exited, which is now meaningful on its own: with
+  // `reuseExistingServer: true` and this script's server already answering before `playwright
+  // test` started, Playwright never spawned or owned a server process, so it had nothing to wait
+  // on during teardown and this exit was not gated on anything Windows-specific.
+  killProcessTree(server.pid)
   killPort(PORT)
   process.exitCode = code
 }
 
-function scheduleTeardownWatch() {
-  if (teardownTimer || settled) return
-  teardownTimer = setTimeout(() => {
-    if (settled) return
-    // Every announced test has reported and Playwright still hasn't exited: teardown is stuck.
-    // Killing the server it's waiting on should let it finish tearing down on its own.
-    killPort(PORT)
-    forceExitTimer = setTimeout(() => {
-      if (settled) return
-      killProcessTree(child.pid)
-      finish(sawFailure ? 1 : 0)
-    }, FORCE_EXIT_GRACE_MS)
-  }, TEARDOWN_GRACE_MS)
-}
-
-function forward(target, chunk) {
-  target.write(chunk)
-  buffer += chunk.toString()
-
-  if (expectedTotal === null) {
-    const totalMatch = buffer.match(/Running (\d+) tests?/)
-    if (totalMatch) expectedTotal = Number(totalMatch[1])
-  }
-
-  const lines = buffer.split("\n")
-  buffer = lines.pop() ?? ""
-  for (const line of lines) {
-    if (/^\s*(ok|not ok)\s+\d+\s/.test(line)) {
-      completedCount += 1
-      if (/^\s*not ok\s/.test(line)) sawFailure = true
-    }
-  }
-
-  if (expectedTotal !== null && completedCount >= expectedTotal) {
-    scheduleTeardownWatch()
-  }
-}
-
-child.stdout.on("data", (chunk) => forward(process.stdout, chunk))
-child.stderr.on("data", (chunk) => forward(process.stderr, chunk))
-
-child.on("exit", (code) => {
-  finish(code ?? (sawFailure ? 1 : 0))
-})
+main()
