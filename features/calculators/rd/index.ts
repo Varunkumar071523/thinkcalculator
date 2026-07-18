@@ -1,5 +1,6 @@
 export * from "./calculate-rd"
 export * from "./calculate-rd-schedule"
+export * from "./calculate-rd-yearly-schedule"
 export * from "./rd-calculator"
 export * from "./rd-content"
 export * from "./rd-definition"

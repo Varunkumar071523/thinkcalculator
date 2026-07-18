@@ -1,5 +1,6 @@
 export * from "./calculate-fd"
 export * from "./calculate-fd-schedule"
+export * from "./calculate-fd-yearly-schedule"
 export * from "./fd-calculator"
 export * from "./fd-content"
 export * from "./fd-definition"
