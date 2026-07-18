@@ -34,10 +34,21 @@ export default defineConfig({
   // run was interrupted (the shell-chain hides the real server PID from teardown). The build is a
   // separate, explicit step in the npm scripts (see package.json "test"/"test:e2e"), so this
   // config only ever has to start and stop one directly-managed process.
+  //
+  // `reuseExistingServer` is unconditionally true (not just outside CI): scripts/run-e2e.mjs -
+  // the only sanctioned way to run these tests, see docs/CONTRIBUTING.md - always starts and owns
+  // the server itself before invoking `playwright test`, and polls it until it responds. With the
+  // server already up, Playwright's webServer plugin takes its "already available" fast path and
+  // returns without spawning or owning any process of its own (see
+  // node_modules/playwright/lib/runner/index.js, WebServerPlugin._startProcess). That means its
+  // teardown has nothing to wait on and can't hang - the Windows issue above is sidestepped
+  // structurally rather than detected-and-killed after the fact. `command` below is kept only as
+  // a fallback for direct `npx playwright test` invocations that skip the wrapper; on Windows
+  // that path is still exposed to the hang this comment describes.
   webServer: {
     command: `next start -p ${PORT}`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 60_000,
   },
 })
