@@ -1,44 +1,72 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useMemo, useState, type FormEvent } from "react"
 
 import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CalculatorResultCard, CalculatorShell } from "@/features/calculators/core"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { calculateCAGR } from "@/features/calculators/cagr/calculate-cagr"
+import { CAGR_LIMITS, parseAndValidateCAGRForm, type CAGRFormValues } from "@/features/calculators/cagr/cagr-schema"
+import { buildCAGRCalculatorUrl, CAGR_DEFAULT_INPUT, parseCAGRUrlState } from "@/features/calculators/cagr/cagr-url-state"
+import type { CAGRInput, CAGRResult, CAGRValidationErrors } from "@/features/calculators/cagr/cagr-types"
 import { formatIndianCurrency, formatIndianNumber, formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import type { CalculatorResultItem } from "@/types/calculator"
-import { calculateCAGR } from "./calculate-cagr"
-import { CAGR_LIMITS, parseAndValidateCAGRForm, type CAGRFormValues } from "./cagr-schema"
-import { buildCAGRCalculatorUrl, CAGR_DEFAULT_INPUT, parseCAGRUrlState, parseValidCAGRUrlState } from "./cagr-url-state"
-import type { CAGRInput, CAGRResult, CAGRValidationErrors } from "./cagr-types"
+
+const BEGINNING_QUICK_AMOUNTS = [
+  { label: "50K", value: "50000" },
+  { label: "1L", value: "100000" },
+  { label: "5L", value: "500000" },
+  { label: "10L", value: "1000000" },
+]
 
 function toFormValues(input: CAGRInput): CAGRFormValues {
-  return {
-    beginningValue: String(input.beginningValue),
-    endingValue: String(input.endingValue),
-    investmentPeriodYears: String(input.investmentPeriodYears),
+  return { beginningValue: String(input.beginningValue), endingValue: String(input.endingValue), investmentPeriodYears: String(input.investmentPeriodYears) }
+}
+
+function clampFinite(value: number, fallback: number, min: number, max: number): number {
+  const base = Number.isFinite(value) ? value : fallback
+  return Math.min(Math.max(base, min), max)
+}
+
+/** Keeps the CAGR exponent (1/years) from producing a non-finite result on extreme ratios during
+ * live recalculation — pushes the years figure up (which shrinks the exponent) until it's safe.
+ * The schema's own validation still applies in full on submit/share; this only protects live preview. */
+function clampCAGRForSafety(input: CAGRInput): CAGRInput {
+  if (input.endingValue <= 0 || input.beginningValue <= 0) return input
+  const ratio = input.endingValue / input.beginningValue
+  let years = input.investmentPeriodYears
+  while (!Number.isFinite(ratio ** (1 / years)) && years < CAGR_LIMITS.investmentPeriodYears.max) {
+    years = Math.min(CAGR_LIMITS.investmentPeriodYears.max, years * 2)
   }
+  const rounded = Math.round(years * 100) / 100
+  return rounded === input.investmentPeriodYears ? input : { ...input, investmentPeriodYears: rounded }
+}
+
+/** Best-effort live view of the current form text, clamped into range, so the result panel can
+ * update on every keystroke/slider move instead of waiting for a valid, submitted form. Rounded to
+ * two decimal places because the schema rejects finer precision on investmentPeriodYears. */
+function toLiveInput(values: CAGRFormValues): CAGRInput {
+  const rawYears = clampFinite(Number(values.investmentPeriodYears), CAGR_DEFAULT_INPUT.investmentPeriodYears, CAGR_LIMITS.investmentPeriodYears.min, CAGR_LIMITS.investmentPeriodYears.max)
+  return clampCAGRForSafety({
+    beginningValue: clampFinite(Number(values.beginningValue), CAGR_DEFAULT_INPUT.beginningValue, CAGR_LIMITS.beginningValue.min, CAGR_LIMITS.beginningValue.max),
+    endingValue: clampFinite(Number(values.endingValue), CAGR_DEFAULT_INPUT.endingValue, CAGR_LIMITS.endingValue.min, CAGR_LIMITS.endingValue.max),
+    investmentPeriodYears: Math.round(rawYears * 100) / 100,
+  })
 }
 
 export function normaliseCAGRDisplayZero(value: number): number {
   return Object.is(value, -0) ? 0 : value
 }
 
-const scientificPercentageFormatter = new Intl.NumberFormat("en-IN", {
-  notation: "scientific",
-  maximumFractionDigits: 2,
-})
+const scientificPercentageFormatter = new Intl.NumberFormat("en-IN", { notation: "scientific", maximumFractionDigits: 2 })
 
 export function formatCAGRPercentageForDisplay(value: number): string {
   const normalised = normaliseCAGRDisplayZero(value)
-  return Math.abs(normalised) >= 1_000_000_000_000
-    ? `${scientificPercentageFormatter.format(normalised)}%`
-    : formatPercentage(normalised)
+  return Math.abs(normalised) >= 1_000_000_000_000 ? `${scientificPercentageFormatter.format(normalised)}%` : formatPercentage(normalised)
 }
 
 export function getCAGRGainLossLabel(result: CAGRResult): "Absolute gain" | "Absolute loss" {
@@ -74,100 +102,137 @@ export function createCAGRResultText(input: CAGRInput, result: CAGRResult): stri
 export function CAGRCalculator() {
   const [values, setValues] = useState<CAGRFormValues>(() => toFormValues(CAGR_DEFAULT_INPUT))
   const [errors, setErrors] = useState<CAGRValidationErrors>({})
-  const [calculation, setCalculation] = useState<{ input: CAGRInput; result: CAGRResult; date: string } | null>(null)
 
   const markInteracted = useCalculatorUrlRestore((search) => {
-    const parsed = parseCAGRUrlState(search)
-    const sharedInput = parseValidCAGRUrlState(search)
-    setValues(toFormValues(parsed))
-    if (sharedInput) {
-      setCalculation({
-        input: sharedInput,
-        result: calculateCAGR(sharedInput),
-        date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
-      })
-    }
+    setValues(toFormValues(parseCAGRUrlState(search)))
   })
 
-  function update(field: keyof CAGRFormValues, value: string) {
+  function updateValue(field: keyof CAGRFormValues, value: string) {
     markInteracted()
     setValues((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const validation = parseAndValidateCAGRForm(values)
-    if (!validation.success) {
-      setErrors(validation.errors)
-      setCalculation(null)
-      return
-    }
-
-    const result = calculateCAGR(validation.data)
+    if (!validation.success) { setErrors(validation.errors); return }
     setErrors({})
-    setCalculation({
-      input: validation.data,
-      result,
-      date: new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date()),
-    })
     window.history.replaceState(null, "", buildCAGRCalculatorUrl(validation.data))
   }
 
-  function reset() {
+  function handleReset() {
     setValues(toFormValues(CAGR_DEFAULT_INPUT))
     setErrors({})
-    setCalculation(null)
     window.history.replaceState(null, "", "/finance/cagr-calculator")
   }
 
-  const shareUrl = calculation ? buildCAGRCalculatorUrl(calculation.input, siteConfig.url) : ""
-  const gainLossLabel = calculation ? getCAGRGainLossLabel(calculation.result) : "Absolute gain"
-  const resultText = calculation ? createCAGRResultText(calculation.input, calculation.result) : ""
+  const liveInput = useMemo(() => toLiveInput(values), [values])
+  const result = useMemo(() => calculateCAGR(liveInput), [liveInput])
+  const gainLossLabel = getCAGRGainLossLabel(result)
+
+  const shareUrl = buildCAGRCalculatorUrl(liveInput, siteConfig.url)
+  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
+  const resultText = createCAGRResultText(liveInput, result)
 
   return (
-    <>
-      <div data-calculator-form>
-        <CalculatorShell title="Calculate CAGR" description="Enter two endpoint values and the elapsed period to calculate annualised compound growth.">
-          <form className="space-y-5" onSubmit={submit} noValidate>
-            <CalculatorNumberInput id="beginning-value" label="Beginning value" prefix="₹" min={CAGR_LIMITS.beginningValue.min} max={CAGR_LIMITS.beginningValue.max} step={0.01} value={values.beginningValue} onValueChange={(value) => update("beginningValue", value)} error={errors.beginningValue} required />
-            <CalculatorNumberInput id="ending-value" label="Ending value" prefix="₹" min={CAGR_LIMITS.endingValue.min} max={CAGR_LIMITS.endingValue.max} step={0.01} value={values.endingValue} onValueChange={(value) => update("endingValue", value)} error={errors.endingValue} required />
-            <CalculatorNumberInput id="investment-period" label="Investment period" description="Enter years from 0.01 to 100, with up to two decimal places." suffix="years" min={CAGR_LIMITS.investmentPeriodYears.min} max={CAGR_LIMITS.investmentPeriodYears.max} step={0.01} value={values.investmentPeriodYears} onValueChange={(value) => update("investmentPeriodYears", value)} error={errors.investmentPeriodYears} required />
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button className="flex-1" size="lg" type="submit">Calculate CAGR</Button>
-              <Button className="flex-1" size="lg" variant="outline" type="button" onClick={reset}>Reset</Button>
+    <div>
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_1.15fr]">
+        <div data-calculator-form>
+          <Card>
+            <CardHeader><CardTitle className="text-base">CAGR details</CardTitle></CardHeader>
+            <CardContent>
+              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+                <div>
+                  <CalculatorNumberInput id="beginning-value" label="Beginning value" description="Enter the value at the start of the period." prefix="₹" min={CAGR_LIMITS.beginningValue.min} max={CAGR_LIMITS.beginningValue.max} step={0.01} value={values.beginningValue} onValueChange={(value) => updateValue("beginningValue", value)} error={errors.beginningValue} required />
+                  <input type="range" aria-label="Beginning value slider" min={1_000} max={10_000_000} step={1_000} value={liveInput.beginningValue} onChange={(event) => updateValue("beginningValue", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
+                  <div className="mt-2 flex gap-1.5">
+                    {BEGINNING_QUICK_AMOUNTS.map((preset) => (
+                      <button key={preset.label} type="button" onClick={() => updateValue("beginningValue", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-cat-invest hover:text-cat-invest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <CalculatorNumberInput id="ending-value" label="Ending value" description="Enter the value at the end of the period." prefix="₹" min={CAGR_LIMITS.endingValue.min} max={CAGR_LIMITS.endingValue.max} step={0.01} value={values.endingValue} onValueChange={(value) => updateValue("endingValue", value)} error={errors.endingValue} required />
+                  <input type="range" aria-label="Ending value slider" min={0} max={20_000_000} step={1_000} value={liveInput.endingValue} onChange={(event) => updateValue("endingValue", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
+                </div>
+
+                <div>
+                  <CalculatorNumberInput id="investment-period" label="Investment period" description="Enter years from 0.01 to 100, with up to two decimal places." suffix="years" min={CAGR_LIMITS.investmentPeriodYears.min} max={CAGR_LIMITS.investmentPeriodYears.max} step={0.01} value={values.investmentPeriodYears} onValueChange={(value) => updateValue("investmentPeriodYears", value)} error={errors.investmentPeriodYears} required />
+                  <input type="range" aria-label="Investment period slider" min={1} max={30} step={1} value={liveInput.investmentPeriodYears} onChange={(event) => updateValue("investmentPeriodYears", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button className="flex-1" size="lg" type="submit">Calculate CAGR</Button>
+                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+          <CardContent>
+            <div className="border-b border-line pb-5 text-center">
+              <p className="mb-1.5 text-[13px] text-muted-foreground">Compound annual growth rate</p>
+              <p className="font-mono text-[42px] leading-none font-bold text-cat-invest">{formatCAGRPercentageForDisplay(result.cagrPercentage)}</p>
+              <p className="mt-2 text-[12.5px] text-muted-foreground">from {formatIndianCurrency(liveInput.beginningValue)} to {formatIndianCurrency(liveInput.endingValue)} over {formatIndianNumber(liveInput.investmentPeriodYears)} years</p>
             </div>
-          </form>
-        </CalculatorShell>
+
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-line bg-card p-3.5">
+                <p className="mb-1 text-xs text-muted-foreground">{gainLossLabel}</p>
+                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(normaliseCAGRDisplayZero(result.absoluteGainLoss))}</p>
+              </div>
+              <div className="rounded-lg border border-line bg-card p-3.5">
+                <p className="mb-1 text-xs text-muted-foreground">Total return</p>
+                <p className="font-mono text-lg font-semibold">{formatPercentage(normaliseCAGRDisplayZero(result.totalReturnPercentage))}</p>
+              </div>
+              <div className="rounded-lg border border-line bg-card p-3.5 col-span-2">
+                <p className="mb-1 text-xs text-muted-foreground">Growth multiple</p>
+                <p className="font-mono text-lg font-semibold">{formatIndianNumber(normaliseCAGRDisplayZero(result.growthMultiple))}×</p>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="space-y-6">
-        <CalculatorResultCard title="CAGR result" items={calculation ? createCAGRResultItems(calculation.result) : []} emptyTitle="Your CAGR result will appear here" emptyDescription="Enter the beginning value, ending value, and period, then select Calculate CAGR." />
-        {calculation ? (
-          <>
-            <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Beginning versus ending value</CardTitle></CardHeader>
-              <CardContent>
-                <dl className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Beginning value</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(calculation.result.beginningValue)}</dd></div>
-                  <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Ending value</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(calculation.result.endingValue)}</dd></div>
-                </dl>
-                <p className="mt-4 text-sm leading-6 text-muted-foreground">This comparison shows only the endpoints. CAGR smooths the change and does not show the actual path between them.</p>
-              </CardContent>
-            </Card>
-            <CalculationSummary title="ThinkCalculator CAGR Calculation" calculationDate={calculation.date} disclaimer="CAGR is an annualised endpoint measure, not a forecast. It excludes intermediate cash flows and hides volatility." items={[
-              { label: "Beginning value", value: formatIndianCurrency(calculation.input.beginningValue) },
-              { label: "Ending value", value: formatIndianCurrency(calculation.input.endingValue) },
-              { label: "Investment period", value: `${formatIndianNumber(calculation.input.investmentPeriodYears)} years` },
-              { label: "CAGR", value: formatCAGRPercentageForDisplay(calculation.result.cagrPercentage) },
-              { label: gainLossLabel, value: formatIndianCurrency(normaliseCAGRDisplayZero(calculation.result.absoluteGainLoss)) },
-              { label: "Total return", value: formatPercentage(normaliseCAGRDisplayZero(calculation.result.totalReturnPercentage)) },
-              { label: "Growth multiple", value: `${formatIndianNumber(normaliseCAGRDisplayZero(calculation.result.growthMultiple))}×` },
-            ]} />
-          </>
-        ) : null}
+      <div className="mt-6">
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Beginning versus ending value</CardTitle></CardHeader>
+          <CardContent>
+            <dl className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Beginning value</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(result.beginningValue)}</dd></div>
+              <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Ending value</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(result.endingValue)}</dd></div>
+            </dl>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">This comparison shows only the endpoints. CAGR smooths the change and does not show the actual path between them.</p>
+          </CardContent>
+        </Card>
       </div>
-    </>
+
+      <div className="mt-6">
+        <CalculationSummary
+          title="ThinkCalculator CAGR Calculation"
+          calculationDate={calculationDate}
+          disclaimer="CAGR is an annualised endpoint measure, not a forecast. It excludes intermediate cash flows and hides volatility."
+          items={[
+            { label: "Beginning value", value: formatIndianCurrency(liveInput.beginningValue) },
+            { label: "Ending value", value: formatIndianCurrency(liveInput.endingValue) },
+            { label: "Investment period", value: `${formatIndianNumber(liveInput.investmentPeriodYears)} years` },
+            { label: "CAGR", value: formatCAGRPercentageForDisplay(result.cagrPercentage) },
+            { label: gainLossLabel, value: formatIndianCurrency(normaliseCAGRDisplayZero(result.absoluteGainLoss)) },
+            { label: "Total return", value: formatPercentage(normaliseCAGRDisplayZero(result.totalReturnPercentage)) },
+            { label: "Growth multiple", value: `${formatIndianNumber(normaliseCAGRDisplayZero(result.growthMultiple))}×` },
+          ]}
+        />
+      </div>
+    </div>
   )
 }

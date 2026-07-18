@@ -1,12 +1,15 @@
-import { CalculatorContentLayout } from "@/components/content/calculator-content-layout"
 import {
-  CalculatorPageLayout,
   FAQSection,
   FormulaSection,
   RelatedCalculators,
   WorkedExampleSection,
   getRelatedCalculators,
 } from "@/features/calculators/core"
+import { CalculatorBreadcrumbs } from "@/features/calculators/core/calculator-breadcrumbs"
+import { ClusterNavigation } from "@/components/topics/cluster-navigation"
+import { CalculatorContentLayout } from "@/components/content/calculator-content-layout"
+import { SiteContainer } from "@/components/layout/site-container"
+import { Badge } from "@/components/ui/badge"
 import { CAGRCalculator, cagrCalculatorDefinition, cagrKnowledgeContent } from "@/features/calculators/cagr"
 import { createCalculatorMetadata } from "@/lib/seo"
 import { siteConfig } from "@/lib/site-config"
@@ -32,13 +35,25 @@ export default function CAGRCalculatorPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
-      <CalculatorPageLayout calculator={calculator} form={<CAGRCalculator />} result={null}>
-        {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
-        {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
-        <CalculatorContentLayout content={cagrKnowledgeContent} />
-        <FAQSection faqs={calculator.faqs} />
-        <RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
-      </CalculatorPageLayout>
+      <SiteContainer className="py-8 sm:py-10">
+        <CalculatorBreadcrumbs category={calculator.category} calculatorTitle={calculator.shortTitle} />
+        <header className="mt-6 max-w-2xl">
+          <Badge className="bg-cat-invest-soft text-cat-invest" variant="outline">{calculator.category}</Badge>
+          <h1 className="mt-4 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">{calculator.title}</h1>
+          <p className="mt-3 text-base leading-7 text-muted-foreground">{calculator.description}</p>
+        </header>
+        <div className="mt-8">
+          <CAGRCalculator />
+        </div>
+        <div className="mt-16 space-y-16 sm:mt-20 sm:space-y-20">
+          {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
+          {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
+          <CalculatorContentLayout content={cagrKnowledgeContent} />
+          <FAQSection faqs={calculator.faqs} />
+          <RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
+        </div>
+        <ClusterNavigation resourceId={calculator.id} className="mt-16 sm:mt-20" />
+      </SiteContainer>
     </>
   )
 }
