@@ -1,12 +1,14 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
+import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
+import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculators/yearly-bar-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -76,16 +78,11 @@ export function EMICalculator() {
 
   function updateValue(field: keyof EMIFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateEMIForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildEMICalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidateEMIForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildEMICalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -98,13 +95,15 @@ export function EMICalculator() {
   const result = useMemo(() => calculateEMI(liveInput), [liveInput])
   const monthlySchedule = useMemo(() => calculateAmortizationSchedule(liveInput, result), [liveInput, result])
   const yearlySchedule = useMemo(() => calculateYearlyAmortization(monthlySchedule), [monthlySchedule])
-
-  const principalPercent = result.totalPayment > 0 ? Math.round((result.principalAmount / result.totalPayment) * 100) : 100
-  const interestPercent = 100 - principalPercent
   const tenureIsYears = liveInput.tenureUnit === "years"
 
+  const yearlyChartLabels = useMemo(() => yearlySchedule.map((row) => `Y${row.year}`), [yearlySchedule])
+  const yearlyChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
+    { label: "Principal", values: yearlySchedule.map((row) => Math.round(row.principalPaid)), colorVar: "--money" },
+    { label: "Interest", values: yearlySchedule.map((row) => Math.round(row.interestPaid)), colorVar: "--gold" },
+  ], [yearlySchedule])
+
   const shareUrl = buildEMICalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = [
     "ThinkCalculator EMI Calculation", "",
     `Loan amount: ${formatIndianCurrency(liveInput.principalAmount)}`,
@@ -123,10 +122,23 @@ export function EMICalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">Loan details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <div>
-                  <CalculatorNumberInput id="loan-amount" label="Loan amount" description="Enter the principal amount you plan to borrow." prefix="₹" min={EMI_LIMITS.principalAmount.min} max={EMI_LIMITS.principalAmount.max} step={10_000} value={values.principalAmount} onValueChange={(value) => updateValue("principalAmount", value)} error={errors.principalAmount} required />
-                  <input type="range" aria-label="Loan amount slider" min={EMI_LIMITS.principalAmount.min} max={EMI_LIMITS.principalAmount.max} step={10_000} value={liveInput.principalAmount} onChange={(event) => updateValue("principalAmount", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-money" />
+                  <PairedNumberSliderInput
+                    id="loan-amount"
+                    label="Loan amount"
+                    description="Enter the principal amount you plan to borrow."
+                    prefix="₹"
+                    min={EMI_LIMITS.principalAmount.min}
+                    max={EMI_LIMITS.principalAmount.max}
+                    step={10_000}
+                    value={values.principalAmount}
+                    sliderValue={liveInput.principalAmount}
+                    onValueChange={(value) => updateValue("principalAmount", value)}
+                    error={errors.principalAmount}
+                    required
+                    accentClassName="accent-money"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {PRINCIPAL_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("principalAmount", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-money hover:text-money focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -136,15 +148,41 @@ export function EMICalculator() {
                   </div>
                 </div>
 
-                <div>
-                  <CalculatorNumberInput id="annual-interest-rate" label="Annual interest rate" description="Enter the annual rate offered by the lender." suffix="%" min={0} max={EMI_LIMITS.annualInterestRate.max} step={0.05} value={values.annualInterestRate} onValueChange={(value) => updateValue("annualInterestRate", value)} error={errors.annualInterestRate} required />
-                  <input type="range" aria-label="Annual interest rate slider" min={1} max={20} step={0.05} value={liveInput.annualInterestRate} onChange={(event) => updateValue("annualInterestRate", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-money" />
-                </div>
+                <PairedNumberSliderInput
+                  id="annual-interest-rate"
+                  label="Annual interest rate"
+                  description="Enter the annual rate offered by the lender."
+                  suffix="%"
+                  min={0}
+                  max={EMI_LIMITS.annualInterestRate.max}
+                  step={0.05}
+                  sliderMin={1}
+                  sliderMax={20}
+                  value={values.annualInterestRate}
+                  sliderValue={liveInput.annualInterestRate}
+                  onValueChange={(value) => updateValue("annualInterestRate", value)}
+                  error={errors.annualInterestRate}
+                  required
+                  accentClassName="accent-money"
+                />
 
-                <div>
-                  <CalculatorNumberInput id="loan-tenure" label="Loan tenure" description="Enter the length of the repayment period." suffix={tenureIsYears ? "years" : "months"} min={1} max={tenureIsYears ? EMI_LIMITS.tenureYears.max : EMI_LIMITS.tenureMonths.max} step={1} value={values.tenure} onValueChange={(value) => updateValue("tenure", value)} error={errors.tenure} required />
-                  <input type="range" aria-label="Loan tenure slider" min={tenureIsYears ? EMI_LIMITS.tenureYears.min : EMI_LIMITS.tenureMonths.min} max={tenureIsYears ? EMI_LIMITS.tenureYears.max : EMI_LIMITS.tenureMonths.max} step={1} value={liveInput.tenure} onChange={(event) => updateValue("tenure", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-money" />
-                </div>
+                <PairedNumberSliderInput
+                  id="loan-tenure"
+                  label="Loan tenure"
+                  description="Enter the length of the repayment period."
+                  suffix={tenureIsYears ? "years" : "months"}
+                  min={1}
+                  max={tenureIsYears ? EMI_LIMITS.tenureYears.max : EMI_LIMITS.tenureMonths.max}
+                  step={1}
+                  sliderMin={tenureIsYears ? EMI_LIMITS.tenureYears.min : EMI_LIMITS.tenureMonths.min}
+                  sliderMax={tenureIsYears ? EMI_LIMITS.tenureYears.max : EMI_LIMITS.tenureMonths.max}
+                  value={values.tenure}
+                  sliderValue={liveInput.tenure}
+                  onValueChange={(value) => updateValue("tenure", value)}
+                  error={errors.tenure}
+                  required
+                  accentClassName="accent-money"
+                />
 
                 <CalculatorSelectInput id="tenure-unit" label="Tenure unit" value={values.tenureUnit} onValueChange={(value) => updateValue("tenureUnit", value)} options={[{ label: "Years", value: "years" }, { label: "Months", value: "months" }]} error={errors.tenureUnit} required />
 
@@ -152,16 +190,13 @@ export function EMICalculator() {
                   EMI is calculated as <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-ink">P × r × (1+r)ⁿ / ((1+r)ⁿ − 1)</code>, where P is principal, r is the monthly interest rate, and n is the number of monthly instalments.
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate EMI</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-money-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-money-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Monthly EMI</p>
@@ -180,13 +215,14 @@ export function EMICalculator() {
               </div>
             </div>
 
-            <div className="mt-5 flex h-2.5 overflow-hidden rounded-full" role="img" aria-label={`Principal ${principalPercent}%, interest ${interestPercent}%`}>
-              <div className="bg-money" style={{ width: `${principalPercent}%` }} />
-              <div className="border border-gold bg-gold-soft" style={{ width: `${interestPercent}%` }} />
-            </div>
-            <div className="mt-2.5 flex gap-4.5 text-[12.5px] text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-money" aria-hidden="true" />Principal {principalPercent}%</span>
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm border border-gold bg-gold-soft" aria-hidden="true" />Interest {interestPercent}%</span>
+            <div className="mt-5 border-t border-line pt-5">
+              <SimpleDonutChart
+                title="Principal vs interest"
+                items={[
+                  { label: "Principal", value: result.principalAmount, formattedValue: formatIndianCurrency(result.principalAmount), colorClass: "bg-money", ringClass: "stroke-money" },
+                  { label: "Interest", value: result.totalInterest, formattedValue: formatIndianCurrency(result.totalInterest), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                ]}
+              />
             </div>
 
             <div className="mt-5">
@@ -196,42 +232,35 @@ export function EMICalculator() {
         </Card>
       </div>
 
-      {/* Rendered outside the gradient Card (which sets overflow-hidden) so the print stylesheet's
-          `position: absolute` repositioning of [data-print-summary] is never clipped by it. */}
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator EMI Calculation"
-          calculationDate={calculationDate}
-          disclaimer="This estimate is for informational purposes only. Lender calculations may differ because of rounding, fees, rate changes, and lender-specific methods."
-          items={[
-            { label: "Loan amount", value: formatIndianCurrency(liveInput.principalAmount) },
-            { label: "Annual interest rate", value: formatPercentage(liveInput.annualInterestRate) },
-            { label: "Loan tenure", value: `${liveInput.tenure} ${liveInput.tenureUnit}` },
-            { label: "Monthly EMI", value: formatIndianCurrency(result.monthlyEMI) },
-            { label: "Total interest", value: formatIndianCurrency(result.totalInterest) },
-            { label: "Total repayment", value: formatIndianCurrency(result.totalPayment) },
-          ]}
-        />
-      </div>
-
-      <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="amortization-heading">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-xs font-medium tracking-wide text-money uppercase">Amortization schedule</p>
-            <h2 id="amortization-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Yearly repayment breakdown</h2>
-            <p className="mt-1.5 text-[13.5px] text-muted-foreground">How much of each year&apos;s payments goes to principal vs interest.</p>
-          </div>
-          <Button type="button" variant="outline" data-print-hide onClick={() => setShowMonthlySchedule((value) => !value)}>{showMonthlySchedule ? "View yearly summary" : "View month-by-month"}</Button>
-        </div>
+      <section className="mt-10 border-t border-line pt-8" aria-labelledby="yearly-chart-heading">
+        <p className="font-mono text-xs font-medium tracking-wide text-money uppercase">Repayment breakdown</p>
+        <h2 id="yearly-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Principal vs interest, year by year</h2>
+        <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one year of payments, split by what goes to principal vs interest. Hover a bar for exact figures.</p>
         <div className="mt-6">
-          {showMonthlySchedule ? (
-            <DataTable caption="Monthly EMI amortization schedule" rows={monthlySchedule} columns={monthlyScheduleColumns} />
-          ) : (
-            <DataTable caption="Yearly EMI amortization schedule" rows={yearlySchedule} columns={yearlyScheduleColumns} initialRows={15} />
-          )}
+          <YearlyBarChart
+            labels={yearlyChartLabels}
+            series={yearlyChartSeries}
+            formatTooltipValue={formatIndianCurrency}
+            ariaLabel="Stacked bar chart of principal versus interest paid each year of the loan"
+          />
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
       </section>
+
+      <div className="mt-8" data-calculation-experience>
+        <CollapsibleSection title="Yearly amortization schedule" description="A year-by-year, or month-by-month, breakdown of principal, interest, and remaining balance.">
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" data-print-hide onClick={() => setShowMonthlySchedule((value) => !value)}>{showMonthlySchedule ? "View yearly summary" : "View month-by-month"}</Button>
+          </div>
+          <div className="mt-4">
+            {showMonthlySchedule ? (
+              <DataTable caption="Monthly EMI amortization schedule" rows={monthlySchedule} columns={monthlyScheduleColumns} />
+            ) : (
+              <DataTable caption="Yearly EMI amortization schedule" rows={yearlySchedule} columns={yearlyScheduleColumns} initialRows={15} />
+            )}
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
+        </CollapsibleSection>
+      </div>
     </div>
   )
 }

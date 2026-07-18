@@ -206,4 +206,8 @@
   .calculator-table th, .calculator-table td { padding: 4px !important; white-space: normal !important; }
   .schedule-extra-row { display: table-row !important; }
   tr { break-inside: avoid; }
+  /* Collapsed accordion content (e.g. the amortization schedule inside a closed <details>)
+     otherwise never enters the render tree, so no visibility override above can reveal it —
+     force it open for print regardless of its on-screen expanded/collapsed state. */
+  details:not([open]) > *:not(summary) { display: block !important; }
 }
