@@ -1,11 +1,13 @@
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CalculatorResultCard } from "@/features/calculators/core/calculator-result-card"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
 import type { SlabBreakdownRow, TaxCalculationResult } from "@/lib/tax/types"
 import type { CalculatorResultItem } from "@/types/calculator"
 import { INCOME_TAX_RULE_SET } from "./income-tax-regulatory-config"
 
+/** Kept as a pure, independently-tested mapping (see income-tax-integration.test.ts) even though
+ * the calculator UI itself now renders the regime-comparison panel and IncomeTaxBreakdownCard's dl
+ * instead of a CalculatorResultCard item list. */
 export function createIncomeTaxResultItems(result: TaxCalculationResult): readonly CalculatorResultItem[] {
   return [
     { id: "total-tax", label: "Total tax liability", value: result.totalTaxLiability, displayType: "currency", isPrimary: true },
@@ -42,6 +44,25 @@ const slabColumns: readonly DataTableColumn<SlabBreakdownRow>[] = [
   { header: "Tax at this slab", cell: (row) => formatIndianCurrency(row.taxAtThisSlab) },
 ]
 
+export function IncomeTaxBreakdownCard({ result }: { readonly result: TaxCalculationResult }) {
+  return (
+    <Card data-testid="income-tax-breakdown-card">
+      <CardHeader><CardTitle className="text-lg">{result.regime === "old" ? "Old Regime" : "New Regime"} breakdown</CardTitle></CardHeader>
+      <CardContent>
+        <dl className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Taxable income</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(result.taxableIncome)}</dd></div>
+          <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Total deductions</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(result.totalDeductions)}</dd></div>
+          <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Tax before rebate</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(result.taxBeforeRebate)}</dd></div>
+          <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Section 87A rebate</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(result.rebate87A.rebateAmount)}</dd></div>
+          <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Surcharge</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(result.surcharge.surcharge)}</dd></div>
+          <div className="rounded-lg border bg-muted/30 p-4"><dt className="text-sm text-muted-foreground">Health & Education Cess (4%)</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(result.cess)}</dd></div>
+          <div className="rounded-lg border bg-muted/30 p-4 sm:col-span-2"><dt className="text-sm text-muted-foreground">Total tax liability</dt><dd className="mt-1 break-words text-xl font-semibold">{formatIndianCurrency(result.totalTaxLiability)}</dd></div>
+        </dl>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function IncomeTaxRebateSurchargeCard({ result }: { readonly result: TaxCalculationResult }) {
   return (
     <Card>
@@ -56,21 +77,10 @@ export function IncomeTaxRebateSurchargeCard({ result }: { readonly result: TaxC
   )
 }
 
-export function IncomeTaxResultSummary({ result }: { readonly result: TaxCalculationResult | null }) {
-  return (
-    <CalculatorResultCard
-      title="Tax liability"
-      items={result ? createIncomeTaxResultItems(result) : []}
-      emptyTitle="Your tax estimate will appear here"
-      emptyDescription="Choose a regime, enter your income and details, then select Calculate."
-    />
-  )
-}
-
 export function IncomeTaxSlabBreakdownSection({ result }: { readonly result: TaxCalculationResult }) {
   return (
-    <section className="col-span-full mt-4" data-calculation-experience aria-labelledby="slab-breakdown-heading">
-      <h2 id="slab-breakdown-heading" className="text-2xl font-semibold tracking-tight">Slab-by-slab breakdown</h2>
+    <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="slab-breakdown-heading">
+      <h2 id="slab-breakdown-heading" className="font-serif text-2xl font-semibold tracking-tight">Slab-by-slab breakdown</h2>
       <p className="mt-3 max-w-3xl leading-7 text-muted-foreground">Each row shows the portion of your taxable income that falls in that slab and the tax charged on it. Rows sum to the tax before rebate, surcharge, and cess.</p>
       <div className="mt-6">
         <DataTable caption="Income tax slab-by-slab breakdown" rows={[...result.slabBreakdown]} columns={slabColumns} initialRows={result.slabBreakdown.length} />
