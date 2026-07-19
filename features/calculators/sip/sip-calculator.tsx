@@ -1,13 +1,15 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
 import { GrowthLineChart, MilestoneRow, pickMilestoneIndices, type MilestoneItem } from "@/components/calculators/growth-area-chart"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
+import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
+import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculators/yearly-bar-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -80,6 +82,24 @@ function toMilestoneItems(schedule: readonly SIPScheduleRow[], totalGain: number
   ]
 }
 
+/** The schedule holds cumulative invested/returns totals — derive each period's own contribution
+ * so the yearly bar chart shows what was added in that period, not the running total. */
+function toYearlyChartData(schedule: readonly SIPScheduleRow[]) {
+  let previousInvested = 0
+  let previousReturns = 0
+  const labels: string[] = []
+  const invested: number[] = []
+  const returns: number[] = []
+  for (const row of schedule) {
+    labels.push(formatPeriodLabel(row.monthsElapsed).replace("Year ", "Y").replace("Month ", "M"))
+    invested.push(Math.round(row.investedAmount - previousInvested))
+    returns.push(Math.round(row.estimatedReturns - previousReturns))
+    previousInvested = row.investedAmount
+    previousReturns = row.estimatedReturns
+  }
+  return { labels, invested, returns }
+}
+
 export function SIPCalculator() {
   const [values, setValues] = useState<SIPFormValues>(() => toFormValues(SIP_DEFAULT_INPUT))
   const [errors, setErrors] = useState<SIPValidationErrors>({})
@@ -91,16 +111,11 @@ export function SIPCalculator() {
 
   function updateValue(field: keyof SIPFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateSIPForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildSIPCalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidateSIPForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildSIPCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -116,11 +131,13 @@ export function SIPCalculator() {
   const milestoneItems = useMemo(() => toMilestoneItems(schedule, result.estimatedReturns), [schedule, result.estimatedReturns])
   const durationIsYears = liveInput.durationUnit === "years"
 
-  const investedPercent = result.futureValue > 0 ? Math.round((result.totalInvested / result.futureValue) * 100) : 100
-  const returnsPercent = 100 - investedPercent
+  const yearlyChartData = useMemo(() => toYearlyChartData(schedule), [schedule])
+  const yearlyChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
+    { label: "Invested", values: yearlyChartData.invested, colorVar: "--cat-invest" },
+    { label: "Returns", values: yearlyChartData.returns, colorVar: "--gold" },
+  ], [yearlyChartData])
 
   const shareUrl = buildSIPCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = [
     "ThinkCalculator SIP Calculation", "",
     `Monthly investment: ${formatIndianCurrency(liveInput.monthlyInvestment)}`,
@@ -139,10 +156,23 @@ export function SIPCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">SIP details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <div>
-                  <CalculatorNumberInput id="monthly-investment" label="Monthly investment" description="Enter the amount you plan to invest every month." prefix="₹" min={SIP_LIMITS.monthlyInvestment.min} max={SIP_LIMITS.monthlyInvestment.max} step={500} value={values.monthlyInvestment} onValueChange={(value) => updateValue("monthlyInvestment", value)} error={errors.monthlyInvestment} required />
-                  <input type="range" aria-label="Monthly investment slider" min={SIP_LIMITS.monthlyInvestment.min} max={SIP_LIMITS.monthlyInvestment.max} step={500} value={liveInput.monthlyInvestment} onChange={(event) => updateValue("monthlyInvestment", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
+                  <PairedNumberSliderInput
+                    id="monthly-investment"
+                    label="Monthly investment"
+                    description="Enter the amount you plan to invest every month."
+                    prefix="₹"
+                    min={SIP_LIMITS.monthlyInvestment.min}
+                    max={SIP_LIMITS.monthlyInvestment.max}
+                    step={500}
+                    value={values.monthlyInvestment}
+                    sliderValue={liveInput.monthlyInvestment}
+                    onValueChange={(value) => updateValue("monthlyInvestment", value)}
+                    error={errors.monthlyInvestment}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {MONTHLY_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("monthlyInvestment", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-cat-invest hover:text-cat-invest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -152,27 +182,50 @@ export function SIPCalculator() {
                   </div>
                 </div>
 
-                <div>
-                  <CalculatorNumberInput id="annual-return-rate" label="Expected annual return" description="Enter the return you expect the investment to earn each year." suffix="%" min={SIP_LIMITS.annualReturnRate.min} max={SIP_LIMITS.annualReturnRate.max} step={0.1} value={values.annualReturnRate} onValueChange={(value) => updateValue("annualReturnRate", value)} error={errors.annualReturnRate} required />
-                  <input type="range" aria-label="Expected annual return slider" min={1} max={20} step={0.1} value={liveInput.annualReturnRate} onChange={(event) => updateValue("annualReturnRate", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="annual-return-rate"
+                  label="Expected annual return"
+                  description="Enter the return you expect the investment to earn each year."
+                  suffix="%"
+                  min={SIP_LIMITS.annualReturnRate.min}
+                  max={SIP_LIMITS.annualReturnRate.max}
+                  step={0.1}
+                  sliderMin={1}
+                  sliderMax={20}
+                  value={values.annualReturnRate}
+                  sliderValue={liveInput.annualReturnRate}
+                  onValueChange={(value) => updateValue("annualReturnRate", value)}
+                  error={errors.annualReturnRate}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
 
-                <div>
-                  <CalculatorNumberInput id="investment-duration" label="Investment duration" description="Enter how long you plan to keep investing." suffix={durationIsYears ? "years" : "months"} min={1} max={durationIsYears ? SIP_LIMITS.durationYears.max : SIP_LIMITS.durationMonths.max} step={1} value={values.duration} onValueChange={(value) => updateValue("duration", value)} error={errors.duration} required />
-                  <input type="range" aria-label="Investment duration slider" min={durationIsYears ? SIP_LIMITS.durationYears.min : SIP_LIMITS.durationMonths.min} max={durationIsYears ? SIP_LIMITS.durationYears.max : SIP_LIMITS.durationMonths.max} step={1} value={liveInput.duration} onChange={(event) => updateValue("duration", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="investment-duration"
+                  label="Investment duration"
+                  description="Enter how long you plan to keep investing."
+                  suffix={durationIsYears ? "years" : "months"}
+                  min={1}
+                  max={durationIsYears ? SIP_LIMITS.durationYears.max : SIP_LIMITS.durationMonths.max}
+                  step={1}
+                  sliderMin={durationIsYears ? SIP_LIMITS.durationYears.min : SIP_LIMITS.durationMonths.min}
+                  sliderMax={durationIsYears ? SIP_LIMITS.durationYears.max : SIP_LIMITS.durationMonths.max}
+                  value={values.duration}
+                  sliderValue={liveInput.duration}
+                  onValueChange={(value) => updateValue("duration", value)}
+                  error={errors.duration}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
                 <CalculatorSelectInput id="duration-unit" label="Duration unit" value={values.durationUnit} onValueChange={(value) => updateValue("durationUnit", value)} options={[{ label: "Years", value: "years" }, { label: "Months", value: "months" }]} error={errors.durationUnit} required />
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate SIP</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated future value</p>
@@ -191,13 +244,14 @@ export function SIPCalculator() {
               </div>
             </div>
 
-            <div className="mt-5 flex h-2.5 overflow-hidden rounded-full" role="img" aria-label={`Invested ${investedPercent}%, returns ${returnsPercent}%`}>
-              <div className="bg-cat-invest" style={{ width: `${investedPercent}%` }} />
-              <div className="border border-gold bg-gold-soft" style={{ width: `${returnsPercent}%` }} />
-            </div>
-            <div className="mt-2.5 flex gap-4.5 text-[12.5px] text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-cat-invest" aria-hidden="true" />Invested {investedPercent}%</span>
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm border border-gold bg-gold-soft" aria-hidden="true" />Returns {returnsPercent}%</span>
+            <div className="mt-5 border-t border-line pt-5">
+              <SimpleDonutChart
+                title="Invested vs returns"
+                items={[
+                  { label: "Invested", value: result.totalInvested, formattedValue: formatIndianCurrency(result.totalInvested), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
+                  { label: "Returns", value: result.estimatedReturns, formattedValue: formatIndianCurrency(result.estimatedReturns), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                ]}
+              />
             </div>
 
             <div className="mt-5">
@@ -207,43 +261,38 @@ export function SIPCalculator() {
         </Card>
       </div>
 
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator SIP Calculation"
-          calculationDate={calculationDate}
-          disclaimer="Returns are estimates for informational purposes only and are not guaranteed."
-          items={[
-            { label: "Monthly investment", value: formatIndianCurrency(liveInput.monthlyInvestment) },
-            { label: "Expected annual return", value: formatPercentage(liveInput.annualReturnRate) },
-            { label: "Investment duration", value: `${liveInput.duration} ${liveInput.durationUnit}` },
-            { label: "Total invested", value: formatIndianCurrency(result.totalInvested) },
-            { label: "Estimated returns", value: formatIndianCurrency(result.estimatedReturns) },
-            { label: "Estimated future value", value: formatIndianCurrency(result.futureValue) },
-          ]}
-        />
-      </div>
-
-      <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="sip-schedule-heading">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-xs font-medium tracking-wide text-cat-invest uppercase">Growth over time</p>
-            <h2 id="sip-schedule-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">How your investment grows</h2>
-            <p className="mt-1.5 text-[13.5px] text-muted-foreground">Invested amount vs. estimated total value, year by year. Returns are estimates, not guaranteed.</p>
-          </div>
-          <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View table" : "View chart"}</Button>
-        </div>
+      <section className="mt-10 border-t border-line pt-8" aria-labelledby="sip-yearly-chart-heading">
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-invest uppercase">Growth breakdown</p>
+        <h2 id="sip-yearly-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Invested vs returns, year by year</h2>
+        <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one period&apos;s contribution, split by what was invested vs. what came from estimated returns.</p>
         <div className="mt-6">
-          {scheduleView === "chart" ? (
-            <>
-              <GrowthLineChart points={growthPoints} investedLabel="Amount invested" valueLabel="Total value (estimated)" />
-              <MilestoneRow items={milestoneItems} />
-            </>
-          ) : (
-            <DataTable caption="SIP growth schedule" rows={schedule} columns={scheduleColumns} initialRows={15} />
-          )}
+          <YearlyBarChart
+            labels={yearlyChartData.labels}
+            series={yearlyChartSeries}
+            formatTooltipValue={formatIndianCurrency}
+            ariaLabel="Stacked bar chart of amount invested versus estimated returns for each period of the SIP"
+          />
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
       </section>
+
+      <div className="mt-8" data-calculation-experience>
+        <CollapsibleSection title="Growth schedule" description="Invested amount vs. estimated total value, year by year. Returns are estimates, not guaranteed.">
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View table" : "View chart"}</Button>
+          </div>
+          <div className="mt-4">
+            {scheduleView === "chart" ? (
+              <>
+                <GrowthLineChart points={growthPoints} investedLabel="Amount invested" valueLabel="Total value (estimated)" />
+                <MilestoneRow items={milestoneItems} />
+              </>
+            ) : (
+              <DataTable caption="SIP growth schedule" rows={schedule} columns={scheduleColumns} initialRows={15} />
+            )}
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
+        </CollapsibleSection>
+      </div>
     </div>
   )
 }

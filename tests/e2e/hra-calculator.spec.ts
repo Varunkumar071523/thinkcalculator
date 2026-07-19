@@ -9,6 +9,10 @@ import { expect, test } from "@playwright/test"
 // Design-migration batch 4: the calculator now recalculates live on every keystroke/slider move
 // (matching CAGR/Retirement Corpus's pattern) instead of gating the result behind a "Calculate"
 // click, so every test below reads the result straight after filling rather than clicking first.
+//
+// Calculators rollout: the "Calculate" button has since been removed entirely — the share URL now
+// syncs live on every field change (the same keystroke/slider move that recalculates the result),
+// not just on an explicit submit.
 async function primaryValueFor(page: import("@playwright/test").Page, label: string): Promise<string | null> {
   return page
     .getByTestId("calculator-result-card")
@@ -47,9 +51,13 @@ test.describe("HRA exemption calculator", () => {
     // match more than once (strict-mode violation).
     await expect(page.getByTestId("hra-binding-constraint-card").getByText(/rent-based limit is your binding constraint/i)).toBeVisible()
 
-    // The "Calculate" button still exists to snapshot the current inputs into a shareable URL.
-    await page.getByRole("button", { name: /calculate hra exemption/i }).click()
-    await expect(page).toHaveURL(/basic=600000/)
+    // The share URL syncs live on every field change rather than behind an explicit submit. Filling
+    // in the field's already-current value is not a reliable trigger here: Playwright's fill() only
+    // dispatches input/change events when the underlying value actually changes, so re-typing an
+    // unchanged "600000" is a no-op in the browser. Using a genuinely different value exercises the
+    // real sync path instead.
+    await page.locator("#basic-salary").fill("650000")
+    await expect(page).toHaveURL(/basic=650000/)
   })
 
   test("non-metro city — percentage-of-salary limit is binding, and updates live as fields are filled", async ({ page }) => {

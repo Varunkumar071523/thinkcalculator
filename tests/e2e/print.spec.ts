@@ -8,6 +8,10 @@ import { expect, test } from "@playwright/test"
 // calculators" scope; the other 5 (SIP, Lumpsum, FD, RD, PPF) share the identical DataTable +
 // data-calculation-experience pattern (verified manually) but are not independently covered by this
 // runtime suite.
+//
+// All ten calculators now compute live (no Calculate/submit button — see the Sprint XX calculators
+// rollout): a result already exists from the default form values as soon as the page loads, so
+// there is nothing to click before asserting on [data-print-summary].
 const calculators = [
   { name: "EMI", path: "/finance/emi-calculator" },
   { name: "SWP", path: "/finance/swp-calculator" },
@@ -20,7 +24,6 @@ test.describe("print output", () => {
   for (const calculator of calculators) {
     test(`${calculator.name} — clean print output after a calculation`, async ({ page }) => {
       await page.goto(calculator.path)
-      await page.locator('[data-calculator-form] form button[type="submit"]').click()
       await expect(page.locator("[data-print-summary]")).toBeAttached()
 
       await page.emulateMedia({ media: "print" })
@@ -44,15 +47,21 @@ test.describe("print output", () => {
         const parse = (color: string) => {
           const match = color.match(/rgba?\(([^)]+)\)/)
           if (!match) return null
-          const [r, g, b] = match[1].split(",").map((part) => parseFloat(part.trim()))
-          return { r, g, b }
+          const [r, g, b, a] = match[1].split(",").map((part) => parseFloat(part.trim()))
+          return { r, g, b, a: Number.isNaN(a) ? 1 : a }
         }
         const bodyColor = parse(getComputedStyle(document.body).backgroundColor)
         const summaryEl = document.querySelector("[data-print-summary]")
         const summaryColor = summaryEl ? parse(getComputedStyle(summaryEl).backgroundColor) : null
         return { bodyColor, summaryColor }
       })
-      const isLight = (c: { r: number; g: number; b: number } | null) => !c || (c.r >= 200 && c.g >= 200 && c.b >= 200)
+      // A fully-transparent background-color (alpha 0) never paints, regardless of its r/g/b —
+      // several result cards pair `bg-card` with a `bg-gradient-to-b` accent for on-screen use, and
+      // Tailwind's conflict resolution drops the plain background-color utility in favor of the
+      // gradient's background-image, leaving background-color transparent. That's the desired print
+      // outcome (no ink spent on the accent), so alpha 0 must count as light, not as black.
+      const isLight = (c: { r: number; g: number; b: number; a: number } | null) =>
+        !c || c.a === 0 || (c.r >= 200 && c.g >= 200 && c.b >= 200)
       expect(isLight(backgrounds.bodyColor), "body has a dark print background").toBe(true)
       expect(isLight(backgrounds.summaryColor), "print summary has a dark background").toBe(true)
 

@@ -1,12 +1,12 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -82,16 +82,11 @@ export function InflationCalculator() {
 
   function updateValue(field: keyof InflationFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateInflationForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildInflationCalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidateInflationForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildInflationCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -112,7 +107,6 @@ export function InflationCalculator() {
   const multipleValue = result.mode === "futureCost" ? result.inflationMultiple : result.discountMultiple
 
   const shareUrl = buildInflationCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = [
     "ThinkCalculator Inflation Estimate",
     `Mode: ${isFutureCost ? "Future cost" : "Present value / purchasing power"}`,
@@ -136,12 +130,26 @@ export function InflationCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">Inflation details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <CalculatorSelectInput id="mode" label="Calculation mode" value={values.mode} onValueChange={(value) => updateValue("mode", value)} options={[{ label: "Future cost", value: "futureCost" }, { label: "Present value / purchasing power", value: "presentValue" }]} error={errors.mode} required />
 
                 <div>
-                  <CalculatorNumberInput id="amount" label={amountLabel} prefix="₹" min={INFLATION_LIMITS.amount.min} max={INFLATION_LIMITS.amount.max} step={1_000} value={values.amount} onValueChange={(value) => updateValue("amount", value)} error={errors.amount} required />
-                  <input type="range" aria-label="Amount slider" min={1_000} max={10_000_000} step={1_000} value={liveInput.amount} onChange={(event) => updateValue("amount", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
+                  <PairedNumberSliderInput
+                    id="amount"
+                    label={amountLabel}
+                    prefix="₹"
+                    min={INFLATION_LIMITS.amount.min}
+                    max={INFLATION_LIMITS.amount.max}
+                    step={1_000}
+                    sliderMin={1_000}
+                    sliderMax={10_000_000}
+                    value={values.amount}
+                    sliderValue={liveInput.amount}
+                    onValueChange={(value) => updateValue("amount", value)}
+                    error={errors.amount}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {AMOUNT_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("amount", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-cat-invest hover:text-cat-invest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -151,26 +159,44 @@ export function InflationCalculator() {
                   </div>
                 </div>
 
-                <div>
-                  <CalculatorNumberInput id="rate" label="Assumed annual inflation rate" description="A negative value models deflation. This is a modelling assumption, not official CPI data." suffix="%" min={INFLATION_LIMITS.annualInflationRate.min} max={INFLATION_LIMITS.annualInflationRate.max} step={0.1} value={values.annualInflationRate} onValueChange={(value) => updateValue("annualInflationRate", value)} error={errors.annualInflationRate} required />
-                  <input type="range" aria-label="Assumed annual inflation rate slider" min={INFLATION_LIMITS.annualInflationRate.min} max={INFLATION_LIMITS.annualInflationRate.max} step={0.1} value={liveInput.annualInflationRate} onChange={(event) => updateValue("annualInflationRate", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="rate"
+                  label="Assumed annual inflation rate"
+                  description="A negative value models deflation. This is a modelling assumption, not official CPI data."
+                  suffix="%"
+                  min={INFLATION_LIMITS.annualInflationRate.min}
+                  max={INFLATION_LIMITS.annualInflationRate.max}
+                  step={0.1}
+                  value={values.annualInflationRate}
+                  sliderValue={liveInput.annualInflationRate}
+                  onValueChange={(value) => updateValue("annualInflationRate", value)}
+                  error={errors.annualInflationRate}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
 
-                <div>
-                  <CalculatorNumberInput id="years" label="Duration" suffix="years" min={INFLATION_LIMITS.years.min} max={INFLATION_LIMITS.years.max} step={1} value={values.years} onValueChange={(value) => updateValue("years", value)} error={errors.years} required />
-                  <input type="range" aria-label="Duration slider" min={INFLATION_LIMITS.years.min} max={INFLATION_LIMITS.years.max} step={1} value={liveInput.years} onChange={(event) => updateValue("years", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="years"
+                  label="Duration"
+                  suffix="years"
+                  min={INFLATION_LIMITS.years.min}
+                  max={INFLATION_LIMITS.years.max}
+                  step={1}
+                  value={values.years}
+                  sliderValue={liveInput.years}
+                  onValueChange={(value) => updateValue("years", value)}
+                  error={errors.years}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate inflation impact</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">{primaryLabel}</p>
@@ -209,29 +235,12 @@ export function InflationCalculator() {
         </Card>
       </div>
 
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator Inflation Estimate"
-          calculationDate={calculationDate}
-          disclaimer="This is an illustrative assumption, not an economic forecast or CPI-linked data. It excludes Cost Inflation Index and other tax-indexation rules."
-          items={[
-            { label: "Mode", value: isFutureCost ? "Future cost" : "Present value / purchasing power" },
-            { label: amountLabel, value: formatIndianCurrency(liveInput.amount) },
-            { label: "Assumed annual inflation rate", value: formatPercentage(liveInput.annualInflationRate) },
-            { label: "Duration", value: `${liveInput.years} years` },
-            { label: primaryLabel, value: formatIndianCurrency(primaryValue) },
-            { label: secondaryLabel, value: formatIndianCurrency(secondaryValue) },
-          ]}
-        />
-      </div>
-
-      <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="inflation-schedule-heading">
-        <h2 id="inflation-schedule-heading" className="font-serif text-2xl font-semibold tracking-tight">Year-by-year schedule</h2>
-        <p className="mt-3 text-muted-foreground">{isFutureCost ? "Each row shows the equivalent cost if the same amount were needed in that year instead of today." : "Each row shows what the future amount would be worth in today's purchasing power if received in that year instead."} Displayed currency is rounded; calculations retain precision.</p>
-        <div className="mt-6">
+      <div className="mt-8" data-calculation-experience>
+        <CollapsibleSection title="Year-by-year schedule" description={isFutureCost ? "Each row shows the equivalent cost if the same amount were needed in that year instead of today." : "Each row shows what the future amount would be worth in today's purchasing power if received in that year instead."}>
           <DataTable caption={isFutureCost ? "Inflation future cost schedule" : "Inflation present value schedule"} rows={result.schedule} columns={scheduleColumns} initialRows={15} />
-        </div>
-      </section>
+          <p className="mt-3 text-sm text-muted-foreground">Displayed currency is rounded; calculations retain precision.</p>
+        </CollapsibleSection>
+      </div>
     </div>
   )
 }

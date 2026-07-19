@@ -1,20 +1,22 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
 import { GrowthLineChart, MilestoneRow, pickMilestoneIndices, type MilestoneItem } from "@/components/calculators/growth-area-chart"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
+import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
+import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculators/yearly-bar-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
-import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
+import { formatIndianCurrency } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculatePPF } from "./calculate-ppf"
-import { createPPFPrintDisclaimer, createPPFResultText } from "./ppf-content"
+import { createPPFResultText } from "./ppf-content"
 import { PPF_RATE_CONFIG } from "./ppf-rate-config"
 import { isPPFDuration, parseAndValidatePPFForm, PPF_LIMITS, type PPFFormValues } from "./ppf-schema"
 import { PPF_DURATIONS, type PPFInput, type PPFScheduleRow, type PPFValidationErrors } from "./ppf-types"
@@ -90,16 +92,11 @@ export function PPFCalculator() {
 
   function updateValue(field: keyof PPFFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidatePPFForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildPPFCalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidatePPFForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildPPFCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -113,11 +110,13 @@ export function PPFCalculator() {
   const growthPoints = useMemo(() => toGrowthPoints(result.schedule), [result.schedule])
   const milestoneItems = useMemo(() => toMilestoneItems(result.schedule, result.totalInterest), [result.schedule, result.totalInterest])
 
-  const contributionPercent = result.maturityValue > 0 ? Math.round((result.totalContributions / result.maturityValue) * 100) : 100
-  const interestPercent = 100 - contributionPercent
+  const yearlyChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
+    { label: "Contribution", values: result.schedule.map((row) => Math.round(row.contribution)), colorVar: "--money" },
+    { label: "Interest", values: result.schedule.map((row) => Math.round(row.interestEarned)), colorVar: "--gold" },
+  ], [result.schedule])
+  const yearlyChartLabels = useMemo(() => result.schedule.map((row) => `Y${row.year}`), [result.schedule])
 
   const shareUrl = buildPPFCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = createPPFResultText(liveInput, result)
 
   return (
@@ -127,10 +126,23 @@ export function PPFCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">PPF details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <div>
-                  <CalculatorNumberInput id="annual-contribution" label="Annual contribution" description="₹500 to ₹1,50,000, in whole-rupee multiples of ₹50." prefix="₹" min={PPF_LIMITS.annualContribution.min} max={PPF_LIMITS.annualContribution.max} step={PPF_LIMITS.annualContribution.step} value={values.annualContribution} onValueChange={(value) => updateValue("annualContribution", value)} error={errors.annualContribution} required />
-                  <input type="range" aria-label="Annual contribution slider" min={PPF_LIMITS.annualContribution.min} max={PPF_LIMITS.annualContribution.max} step={PPF_LIMITS.annualContribution.step} value={liveInput.annualContribution} onChange={(event) => updateValue("annualContribution", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-savings" />
+                  <PairedNumberSliderInput
+                    id="annual-contribution"
+                    label="Annual contribution"
+                    description="₹500 to ₹1,50,000, in whole-rupee multiples of ₹50."
+                    prefix="₹"
+                    min={PPF_LIMITS.annualContribution.min}
+                    max={PPF_LIMITS.annualContribution.max}
+                    step={PPF_LIMITS.annualContribution.step}
+                    value={values.annualContribution}
+                    sliderValue={liveInput.annualContribution}
+                    onValueChange={(value) => updateValue("annualContribution", value)}
+                    error={errors.annualContribution}
+                    required
+                    accentClassName="accent-cat-savings"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {CONTRIBUTION_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("annualContribution", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-cat-savings hover:text-cat-savings focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -140,25 +152,33 @@ export function PPFCalculator() {
                   </div>
                 </div>
 
-                <div>
-                  <CalculatorNumberInput id="assumed-annual-rate" label="Assumed annual interest rate" description={`${PPF_RATE_CONFIG.defaultRate}% reference default: ${PPF_RATE_CONFIG.verifiedPeriod}. Checked ${PPF_RATE_CONFIG.checkedOn}; not a current-rate claim.`} suffix="%" min={PPF_LIMITS.assumedAnnualInterestRate.min} max={PPF_LIMITS.assumedAnnualInterestRate.max} step={0.01} value={values.assumedAnnualInterestRate} onValueChange={(value) => updateValue("assumedAnnualInterestRate", value)} error={errors.assumedAnnualInterestRate} required />
-                  <input type="range" aria-label="Assumed annual interest rate slider" min={PPF_LIMITS.assumedAnnualInterestRate.min} max={PPF_LIMITS.assumedAnnualInterestRate.max} step={0.01} value={liveInput.assumedAnnualInterestRate} onChange={(event) => updateValue("assumedAnnualInterestRate", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-savings" />
-                </div>
+                <PairedNumberSliderInput
+                  id="assumed-annual-rate"
+                  label="Assumed annual interest rate"
+                  description={`${PPF_RATE_CONFIG.defaultRate}% reference default: ${PPF_RATE_CONFIG.verifiedPeriod}. Checked ${PPF_RATE_CONFIG.checkedOn}; not a current-rate claim.`}
+                  suffix="%"
+                  min={PPF_LIMITS.assumedAnnualInterestRate.min}
+                  max={PPF_LIMITS.assumedAnnualInterestRate.max}
+                  step={0.01}
+                  value={values.assumedAnnualInterestRate}
+                  sliderValue={liveInput.assumedAnnualInterestRate}
+                  onValueChange={(value) => updateValue("assumedAnnualInterestRate", value)}
+                  error={errors.assumedAnnualInterestRate}
+                  required
+                  accentClassName="accent-cat-savings"
+                />
 
                 <CalculatorSelectInput id="duration" label="Projection duration" description="The selector counts projection years. Official maturity timing, extension eligibility, and applications are outside this calculator." value={values.durationYears} onValueChange={(value) => updateValue("durationYears", value)} options={durationOptions} error={errors.durationYears} required />
 
                 <div className="rounded-lg border bg-muted/30 p-4 text-sm leading-6"><strong>Projection assumptions:</strong> the entered rate stays constant, and each annual contribution is added at the beginning of the projection year. Actual PPF rates may change, and official interest eligibility is determined monthly.</div>
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate PPF</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-savings-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-savings-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated maturity value</p>
@@ -177,13 +197,14 @@ export function PPFCalculator() {
               </div>
             </div>
 
-            <div className="mt-5 flex h-2.5 overflow-hidden rounded-full" role="img" aria-label={`Contributions ${contributionPercent}%, interest ${interestPercent}%`}>
-              <div className="bg-cat-savings" style={{ width: `${contributionPercent}%` }} />
-              <div className="border border-gold bg-gold-soft" style={{ width: `${interestPercent}%` }} />
-            </div>
-            <div className="mt-2.5 flex gap-4.5 text-[12.5px] text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-cat-savings" aria-hidden="true" />Contributions {contributionPercent}%</span>
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm border border-gold bg-gold-soft" aria-hidden="true" />Interest {interestPercent}%</span>
+            <div className="mt-5 border-t border-line pt-5">
+              <SimpleDonutChart
+                title="Contributions vs interest"
+                items={[
+                  { label: "Contributions", value: result.totalContributions, formattedValue: formatIndianCurrency(result.totalContributions), colorClass: "bg-money", ringClass: "stroke-money" },
+                  { label: "Interest", value: result.totalInterest, formattedValue: formatIndianCurrency(result.totalInterest), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                ]}
+              />
             </div>
 
             <div className="mt-5">
@@ -193,44 +214,38 @@ export function PPFCalculator() {
         </Card>
       </div>
 
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator PPF Projection"
-          calculationDate={calculationDate}
-          disclaimer={createPPFPrintDisclaimer()}
-          items={[
-            { label: "Annual contribution", value: formatIndianCurrency(liveInput.annualContribution) },
-            { label: "Assumed constant rate", value: formatPercentage(liveInput.assumedAnnualInterestRate) },
-            { label: "Projection duration", value: `${liveInput.durationYears} years` },
-            { label: "Contribution timing", value: "Beginning of each projection year" },
-            { label: "Total contributions", value: formatIndianCurrency(result.totalContributions) },
-            { label: "Estimated interest", value: formatIndianCurrency(result.totalInterest) },
-            { label: "Estimated maturity value", value: formatIndianCurrency(result.maturityValue) },
-          ]}
-        />
-      </div>
-
-      <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="ppf-schedule-heading">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-xs font-medium tracking-wide text-cat-savings uppercase">Growth over time</p>
-            <h2 id="ppf-schedule-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">How your PPF balance grows</h2>
-            <p className="mt-1.5 text-[13.5px] text-muted-foreground">Contributions vs. estimated total value, year by year. This schedule is illustrative, not an official PPF statement.</p>
-          </div>
-          <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View table" : "View chart"}</Button>
-        </div>
+      <section className="mt-10 border-t border-line pt-8" aria-labelledby="ppf-yearly-chart-heading">
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-savings uppercase">Growth breakdown</p>
+        <h2 id="ppf-yearly-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Contributions vs interest, year by year</h2>
+        <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one year&apos;s contribution, split by what was deposited vs. interest earned that year. Illustrative only, not an official PPF statement.</p>
         <div className="mt-6">
-          {scheduleView === "chart" ? (
-            <>
-              <GrowthLineChart points={growthPoints} investedLabel="Amount contributed" valueLabel="Total value (estimated)" />
-              <MilestoneRow items={milestoneItems} />
-            </>
-          ) : (
-            <DataTable caption="Annual PPF schedule using beginning-of-year contributions and one constant assumed rate; illustrative only" rows={result.schedule} columns={scheduleColumns} initialRows={15} />
-          )}
+          <YearlyBarChart
+            labels={yearlyChartLabels}
+            series={yearlyChartSeries}
+            formatTooltipValue={formatIndianCurrency}
+            ariaLabel="Stacked bar chart of contribution versus interest earned each year of the PPF projection"
+          />
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded for presentation; the calculation retains full numeric precision between years.</p>
       </section>
+
+      <div className="mt-8" data-calculation-experience>
+        <CollapsibleSection title="Growth schedule" description="Contributions vs. estimated total value, year by year. This schedule is illustrative, not an official PPF statement.">
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View table" : "View chart"}</Button>
+          </div>
+          <div className="mt-4">
+            {scheduleView === "chart" ? (
+              <>
+                <GrowthLineChart points={growthPoints} investedLabel="Amount contributed" valueLabel="Total value (estimated)" />
+                <MilestoneRow items={milestoneItems} />
+              </>
+            ) : (
+              <DataTable caption="Annual PPF schedule using beginning-of-year contributions and one constant assumed rate; illustrative only" rows={result.schedule} columns={scheduleColumns} initialRows={15} />
+            )}
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded for presentation; the calculation retains full numeric precision between years.</p>
+        </CollapsibleSection>
+      </div>
     </div>
   )
 }

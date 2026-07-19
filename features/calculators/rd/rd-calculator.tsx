@@ -1,12 +1,14 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
+import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
+import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculators/yearly-bar-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -47,6 +49,24 @@ function toFormValues(input: RDInput): RDFormValues {
   return { monthlyDeposit: String(input.monthlyDeposit), annualInterestRate: String(input.annualInterestRate), duration: String(input.duration), durationUnit: input.durationUnit, compoundingFrequency: input.compoundingFrequency }
 }
 
+/** Both totalDeposited and interestEarned are cumulative to date — derive each year's own
+ * contribution so the bar chart shows what was added that year, not the running total. */
+function toYearlyChartData(schedule: readonly RDYearlyScheduleRow[]) {
+  let previousDeposited = 0
+  let previousInterest = 0
+  const labels: string[] = []
+  const deposited: number[] = []
+  const interest: number[] = []
+  for (const row of schedule) {
+    labels.push(`Y${row.year}`)
+    deposited.push(Math.round(row.totalDeposited - previousDeposited))
+    interest.push(Math.round(row.interestEarned - previousInterest))
+    previousDeposited = row.totalDeposited
+    previousInterest = row.interestEarned
+  }
+  return { labels, deposited, interest }
+}
+
 function clampFinite(value: number, fallback: number, min: number, max: number): number {
   const base = Number.isFinite(value) ? value : fallback
   return Math.min(Math.max(base, min), max)
@@ -85,16 +105,11 @@ export function RDCalculator() {
 
   function updateValue(field: keyof RDFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateRDForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildRDCalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidateRDForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildRDCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -108,12 +123,15 @@ export function RDCalculator() {
   const yearlySchedule = useMemo(() => calculateRDYearlySchedule(liveInput), [liveInput])
   const detailedSchedule = useMemo(() => calculateRDSchedule(liveInput), [liveInput])
 
-  const depositedPercent = result.maturityAmount > 0 ? Math.round((result.totalDeposited / result.maturityAmount) * 100) : 100
-  const interestPercent = 100 - depositedPercent
   const durationIsYears = liveInput.durationUnit === "years"
 
+  const yearlyChartData = useMemo(() => toYearlyChartData(yearlySchedule), [yearlySchedule])
+  const yearlyChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
+    { label: "Deposited", values: yearlyChartData.deposited, colorVar: "--money" },
+    { label: "Interest", values: yearlyChartData.interest, colorVar: "--gold" },
+  ], [yearlyChartData])
+
   const shareUrl = buildRDCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = [
     "ThinkCalculator RD Calculation", "",
     `Monthly deposit: ${formatIndianCurrency(liveInput.monthlyDeposit)}`,
@@ -133,10 +151,23 @@ export function RDCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">Deposit details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <div>
-                  <CalculatorNumberInput id="monthly-deposit" label="Monthly deposit" description="Enter the amount deposited at the beginning of each month." prefix="₹" min={RD_LIMITS.monthlyDeposit.min} max={RD_LIMITS.monthlyDeposit.max} step={100} value={values.monthlyDeposit} onValueChange={(value) => updateValue("monthlyDeposit", value)} error={errors.monthlyDeposit} required />
-                  <input type="range" aria-label="Monthly deposit slider" min={RD_LIMITS.monthlyDeposit.min} max={RD_LIMITS.monthlyDeposit.max} step={100} value={liveInput.monthlyDeposit} onChange={(event) => updateValue("monthlyDeposit", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-money" />
+                  <PairedNumberSliderInput
+                    id="monthly-deposit"
+                    label="Monthly deposit"
+                    description="Enter the amount deposited at the beginning of each month."
+                    prefix="₹"
+                    min={RD_LIMITS.monthlyDeposit.min}
+                    max={RD_LIMITS.monthlyDeposit.max}
+                    step={100}
+                    value={values.monthlyDeposit}
+                    sliderValue={liveInput.monthlyDeposit}
+                    onValueChange={(value) => updateValue("monthlyDeposit", value)}
+                    error={errors.monthlyDeposit}
+                    required
+                    accentClassName="accent-money"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {DEPOSIT_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("monthlyDeposit", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-money hover:text-money focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -146,25 +177,47 @@ export function RDCalculator() {
                   </div>
                 </div>
 
-                <div>
-                  <CalculatorNumberInput id="annual-interest-rate" label="Annual interest rate" suffix="%" min={RD_LIMITS.annualInterestRate.min} max={RD_LIMITS.annualInterestRate.max} step={0.01} value={values.annualInterestRate} onValueChange={(value) => updateValue("annualInterestRate", value)} error={errors.annualInterestRate} required />
-                  <input type="range" aria-label="Annual interest rate slider" min={1} max={20} step={0.01} value={liveInput.annualInterestRate} onChange={(event) => updateValue("annualInterestRate", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-money" />
-                </div>
+                <PairedNumberSliderInput
+                  id="annual-interest-rate"
+                  label="Annual interest rate"
+                  suffix="%"
+                  min={RD_LIMITS.annualInterestRate.min}
+                  max={RD_LIMITS.annualInterestRate.max}
+                  step={0.01}
+                  sliderMin={1}
+                  sliderMax={20}
+                  value={values.annualInterestRate}
+                  sliderValue={liveInput.annualInterestRate}
+                  onValueChange={(value) => updateValue("annualInterestRate", value)}
+                  error={errors.annualInterestRate}
+                  required
+                  accentClassName="accent-money"
+                />
 
-                <CalculatorNumberInput id="deposit-duration" label="Deposit duration" suffix={durationIsYears ? "years" : "months"} min={RD_LIMITS.duration.min} max={RD_LIMITS.duration.max} step={1} value={values.duration} onValueChange={(value) => updateValue("duration", value)} error={errors.duration} required />
+                <PairedNumberSliderInput
+                  id="deposit-duration"
+                  label="Deposit duration"
+                  suffix={durationIsYears ? "years" : "months"}
+                  min={RD_LIMITS.duration.min}
+                  max={RD_LIMITS.duration.max}
+                  step={1}
+                  value={values.duration}
+                  sliderValue={liveInput.duration}
+                  onValueChange={(value) => updateValue("duration", value)}
+                  error={errors.duration}
+                  required
+                  accentClassName="accent-money"
+                />
                 <CalculatorSelectInput id="duration-unit" label="Duration unit" value={values.durationUnit} onValueChange={(value) => updateValue("durationUnit", value)} options={[{ label: "Years", value: "years" }, { label: "Months", value: "months" }]} error={errors.durationUnit} required />
                 <CalculatorSelectInput id="compounding-frequency" label="Compounding frequency" value={values.compoundingFrequency} onValueChange={(value) => updateValue("compoundingFrequency", value)} options={FREQUENCY_OPTIONS} error={errors.compoundingFrequency} required />
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate RD</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-savings-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-savings-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Maturity amount</p>
@@ -183,13 +236,14 @@ export function RDCalculator() {
               </div>
             </div>
 
-            <div className="mt-5 flex h-2.5 overflow-hidden rounded-full" role="img" aria-label={`Deposited ${depositedPercent}%, interest ${interestPercent}%`}>
-              <div className="bg-money" style={{ width: `${depositedPercent}%` }} />
-              <div className="border border-gold bg-gold-soft" style={{ width: `${interestPercent}%` }} />
-            </div>
-            <div className="mt-2.5 flex gap-4.5 text-[12.5px] text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-money" aria-hidden="true" />Deposited {depositedPercent}%</span>
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm border border-gold bg-gold-soft" aria-hidden="true" />Interest {interestPercent}%</span>
+            <div className="mt-5 border-t border-line pt-5">
+              <SimpleDonutChart
+                title="Deposited vs interest"
+                items={[
+                  { label: "Deposited", value: result.totalDeposited, formattedValue: formatIndianCurrency(result.totalDeposited), colorClass: "bg-money", ringClass: "stroke-money" },
+                  { label: "Interest", value: result.interestEarned, formattedValue: formatIndianCurrency(result.interestEarned), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                ]}
+              />
             </div>
 
             <div className="mt-5">
@@ -199,43 +253,35 @@ export function RDCalculator() {
         </Card>
       </div>
 
-      {/* Rendered outside the gradient Card (which sets overflow-hidden) so the print stylesheet's
-          `position: absolute` repositioning of [data-print-summary] is never clipped by it. */}
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator RD Calculation"
-          calculationDate={calculationDate}
-          disclaimer="This estimate is informational. Actual bank treatment may differ by deposit date, product rules, rounding, taxes, and penalties."
-          items={[
-            { label: "Monthly deposit", value: formatIndianCurrency(liveInput.monthlyDeposit) },
-            { label: "Annual interest rate", value: formatPercentage(liveInput.annualInterestRate) },
-            { label: "Deposit duration", value: `${liveInput.duration} ${liveInput.durationUnit}` },
-            { label: "Compounding frequency", value: FREQUENCY_LABELS[liveInput.compoundingFrequency] },
-            { label: "Total deposited", value: formatIndianCurrency(result.totalDeposited) },
-            { label: "Interest earned", value: formatIndianCurrency(result.interestEarned) },
-            { label: "Maturity amount", value: formatIndianCurrency(result.maturityAmount) },
-          ]}
-        />
-      </div>
-
-      <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="rd-schedule-heading">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-xs font-medium tracking-wide text-cat-savings uppercase">Maturity schedule</p>
-            <h2 id="rd-schedule-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Yearly maturity growth</h2>
-            <p className="mt-1.5 text-[13.5px] text-muted-foreground">How cumulative deposits and interest grow year by year under the selected compounding convention.</p>
-          </div>
-          <Button type="button" variant="outline" data-print-hide onClick={() => setShowDetailedSchedule((value) => !value)}>{showDetailedSchedule ? "View yearly summary" : "View detailed schedule"}</Button>
-        </div>
+      <section className="mt-10 border-t border-line pt-8" aria-labelledby="rd-yearly-chart-heading">
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-savings uppercase">Maturity breakdown</p>
+        <h2 id="rd-yearly-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Deposited vs interest, year by year</h2>
+        <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one year&apos;s contribution, split by what was deposited vs. interest earned that year.</p>
         <div className="mt-6">
-          {showDetailedSchedule ? (
-            <DataTable caption="Detailed RD maturity schedule" rows={detailedSchedule} columns={detailedScheduleColumns} />
-          ) : (
-            <DataTable caption="Yearly RD maturity schedule" rows={yearlySchedule} columns={yearlyScheduleColumns} initialRows={15} />
-          )}
+          <YearlyBarChart
+            labels={yearlyChartData.labels}
+            series={yearlyChartSeries}
+            formatTooltipValue={formatIndianCurrency}
+            ariaLabel="Stacked bar chart of amount deposited versus interest earned each year of the recurring deposit"
+          />
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
       </section>
+
+      <div className="mt-8" data-calculation-experience>
+        <CollapsibleSection title="Maturity schedule" description="How cumulative deposits and interest grow year by year under the selected compounding convention.">
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" data-print-hide onClick={() => setShowDetailedSchedule((value) => !value)}>{showDetailedSchedule ? "View yearly summary" : "View detailed schedule"}</Button>
+          </div>
+          <div className="mt-4">
+            {showDetailedSchedule ? (
+              <DataTable caption="Detailed RD maturity schedule" rows={detailedSchedule} columns={detailedScheduleColumns} />
+            ) : (
+              <DataTable caption="Yearly RD maturity schedule" rows={yearlySchedule} columns={yearlyScheduleColumns} initialRows={15} />
+            )}
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
+        </CollapsibleSection>
+      </div>
     </div>
   )
 }

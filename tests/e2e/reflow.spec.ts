@@ -59,7 +59,7 @@ test.describe("zoom and reflow", () => {
     await page.setViewportSize({ width: 320, height: 720 })
     await page.goto("/finance/emi-calculator")
     await expect(page.locator("#loan-amount")).toBeVisible()
-    await expect(page.getByRole("button", { name: /calculate/i })).toBeVisible()
+    await expect(page.getByRole("button", { name: /reset/i })).toBeVisible()
   })
 
   // Regression test for the mobile overflow bug (2026-07): the checks above only ever load each
@@ -67,8 +67,10 @@ test.describe("zoom and reflow", () => {
   // because CalculatorPageLayout's results grid had no explicit mobile column ("none"/implicit auto
   // sizing), so a wide amortization/schedule table rendered post-calculation could force the shared
   // grid track past the viewport even though the table itself was properly contained in its own
-  // overflow-x-auto wrapper. Submitting the form (and expanding the schedule, where present) is the
-  // part that must be exercised on every published calculator page, not just the 4 pages the
+  // overflow-x-auto wrapper. Every published calculator now computes live (no submit button — see
+  // the Sprint XX calculators rollout) and their schedule/breakdown tables live inside
+  // collapsed-by-default accordions, so opening every accordion on the page is what now exercises
+  // the part that must be checked on every published calculator page, not just the 4 pages the
   // original suite happened to list.
   const calculatorPaths = calculatorRegistry
     .filter((calculator) => calculator.status === "published")
@@ -80,7 +82,10 @@ test.describe("zoom and reflow", () => {
       await page.goto(path)
       await waitForSettled(page)
 
-      await page.locator("form button[type=submit]").first().click()
+      const accordionToggles = page.locator("details:not([open]) > summary")
+      while (await accordionToggles.count()) {
+        await accordionToggles.first().click()
+      }
       await page.waitForTimeout(300)
       expect(await hasPageLevelHorizontalScroll(page), `${path} has page-level horizontal scroll after calculating at 375px`).toBe(false)
 

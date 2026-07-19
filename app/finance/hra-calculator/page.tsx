@@ -8,6 +8,7 @@ import {
 import { CalculatorBreadcrumbs } from "@/features/calculators/core/calculator-breadcrumbs"
 import { ClusterNavigation } from "@/components/topics/cluster-navigation"
 import { CalculatorContentLayout } from "@/components/content/calculator-content-layout"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { SiteContainer } from "@/components/layout/site-container"
 import { Badge } from "@/components/ui/badge"
 import { HraCalculator, hraCalculatorDefinition, hraKnowledgeContent } from "@/features/calculators/hra"
@@ -68,11 +69,21 @@ export default function HraCalculatorPage() {
         <div className="mt-8">
           <HraCalculator />
         </div>
-        <div className="mt-16 space-y-16 sm:mt-20 sm:space-y-20">
-          {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
-          {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
-          <CalculatorContentLayout content={hraKnowledgeContent} />
-          <FAQSection faqs={calculator.faqs} />
+        <div className="mt-16 space-y-6 sm:mt-20 sm:space-y-8">
+          {calculator.formula || calculator.workedExample ? (
+            <CollapsibleSection title="Formula and worked example" description="How the HRA exemption is calculated, with a sample case worked through step by step.">
+              <div className="space-y-12">
+                {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
+                {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
+              </div>
+            </CollapsibleSection>
+          ) : null}
+          <CollapsibleSection title={hraKnowledgeContent.title} description={hraKnowledgeContent.description}>
+            <CalculatorContentLayout content={hraKnowledgeContent} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Frequently asked questions" description="Common questions about HRA exemption and how this calculator works.">
+            <FAQSection faqs={calculator.faqs} />
+          </CollapsibleSection>
           <RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
         </div>
         <ClusterNavigation resourceId={calculator.id} className="mt-16 sm:mt-20" />
