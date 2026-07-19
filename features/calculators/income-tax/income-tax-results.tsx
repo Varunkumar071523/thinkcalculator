@@ -1,3 +1,4 @@
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
@@ -79,12 +80,10 @@ export function IncomeTaxRebateSurchargeCard({ result }: { readonly result: TaxC
 
 export function IncomeTaxSlabBreakdownSection({ result }: { readonly result: TaxCalculationResult }) {
   return (
-    <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="slab-breakdown-heading">
-      <h2 id="slab-breakdown-heading" className="font-serif text-2xl font-semibold tracking-tight">Slab-by-slab breakdown</h2>
-      <p className="mt-3 max-w-3xl leading-7 text-muted-foreground">Each row shows the portion of your taxable income that falls in that slab and the tax charged on it. Rows sum to the tax before rebate, surcharge, and cess.</p>
-      <div className="mt-6">
+    <div className="mt-8" data-calculation-experience>
+      <CollapsibleSection title="Slab-by-slab breakdown" description="Each row shows the portion of your taxable income that falls in that slab and the tax charged on it. Rows sum to the tax before rebate, surcharge, and cess.">
         <DataTable caption="Income tax slab-by-slab breakdown" rows={[...result.slabBreakdown]} columns={slabColumns} initialRows={result.slabBreakdown.length} />
-      </div>
-    </section>
+      </CollapsibleSection>
+    </div>
   )
 }

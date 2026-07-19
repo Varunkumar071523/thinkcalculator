@@ -1,13 +1,15 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
 import { DecliningBalanceChart, MilestoneRow, pickMilestoneIndices, type MilestoneItem } from "@/components/calculators/growth-area-chart"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
+import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
+import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculators/yearly-bar-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -97,16 +99,11 @@ export function SWPCalculator() {
 
   function updateValue(field: keyof SWPFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateSWPForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildSWPCalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidateSWPForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildSWPCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -127,8 +124,13 @@ export function SWPCalculator() {
     ? `Remaining balance: ${formatIndianCurrency(result.remainingBalance)}`
     : `over ${formatDurationText(result.monthsSimulated)} at ${liveInput.expectedAnnualReturn.toFixed(2)}% p.a.`
 
+  const yearlyChartLabels = useMemo(() => result.schedule.map((row) => `Y${row.year}`), [result.schedule])
+  const yearlyChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
+    { label: "Withdrawals", values: result.schedule.map((row) => Math.round(row.withdrawalsInYear)), colorVar: "--cat-invest" },
+    { label: "Growth", values: result.schedule.map((row) => Math.round(row.growthInYear)), colorVar: "--gold" },
+  ], [result.schedule])
+
   const shareUrl = buildSWPCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = [
     "ThinkCalculator SWP Estimate", "",
     `Initial investment: ${formatIndianCurrency(liveInput.initialInvestment)}`,
@@ -150,10 +152,23 @@ export function SWPCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">SWP details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <div>
-                  <CalculatorNumberInput id="initial-investment" label="Initial investment" description="Enter the corpus you'll withdraw from." prefix="₹" min={SWP_LIMITS.initialInvestment.min} max={SWP_LIMITS.initialInvestment.max} step={10_000} value={values.initialInvestment} onValueChange={(value) => updateValue("initialInvestment", value)} error={errors.initialInvestment} required />
-                  <input type="range" aria-label="Initial investment slider" min={SWP_LIMITS.initialInvestment.min} max={SWP_LIMITS.initialInvestment.max} step={10_000} value={liveInput.initialInvestment} onChange={(event) => updateValue("initialInvestment", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
+                  <PairedNumberSliderInput
+                    id="initial-investment"
+                    label="Initial investment"
+                    description="Enter the corpus you'll withdraw from."
+                    prefix="₹"
+                    min={SWP_LIMITS.initialInvestment.min}
+                    max={SWP_LIMITS.initialInvestment.max}
+                    step={10_000}
+                    value={values.initialInvestment}
+                    sliderValue={liveInput.initialInvestment}
+                    onValueChange={(value) => updateValue("initialInvestment", value)}
+                    error={errors.initialInvestment}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {INITIAL_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("initialInvestment", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-cat-invest hover:text-cat-invest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -163,35 +178,66 @@ export function SWPCalculator() {
                   </div>
                 </div>
 
-                <div>
-                  <CalculatorNumberInput id="monthly-withdrawal" label="Monthly withdrawal" description="Enter the fixed amount to withdraw every month." prefix="₹" min={SWP_LIMITS.monthlyWithdrawal.min} max={SWP_LIMITS.monthlyWithdrawal.max} step={500} value={values.monthlyWithdrawal} onValueChange={(value) => updateValue("monthlyWithdrawal", value)} error={errors.monthlyWithdrawal} required />
-                  <input type="range" aria-label="Monthly withdrawal slider" min={SWP_LIMITS.monthlyWithdrawal.min} max={SWP_LIMITS.monthlyWithdrawal.max} step={500} value={liveInput.monthlyWithdrawal} onChange={(event) => updateValue("monthlyWithdrawal", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="monthly-withdrawal"
+                  label="Monthly withdrawal"
+                  description="Enter the fixed amount to withdraw every month."
+                  prefix="₹"
+                  min={SWP_LIMITS.monthlyWithdrawal.min}
+                  max={SWP_LIMITS.monthlyWithdrawal.max}
+                  step={500}
+                  value={values.monthlyWithdrawal}
+                  sliderValue={liveInput.monthlyWithdrawal}
+                  onValueChange={(value) => updateValue("monthlyWithdrawal", value)}
+                  error={errors.monthlyWithdrawal}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
 
-                <div>
-                  <CalculatorNumberInput id="expected-return" label="Expected annual return assumption" description="A constant modelling assumption for this scenario, not a forecast or guaranteed return." suffix="%" min={SWP_LIMITS.expectedAnnualReturn.min} max={SWP_LIMITS.expectedAnnualReturn.max} step={0.1} value={values.expectedAnnualReturn} onValueChange={(value) => updateValue("expectedAnnualReturn", value)} error={errors.expectedAnnualReturn} required />
-                  <input type="range" aria-label="Expected annual return slider" min={1} max={20} step={0.1} value={liveInput.expectedAnnualReturn} onChange={(event) => updateValue("expectedAnnualReturn", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="expected-return"
+                  label="Expected annual return assumption"
+                  description="A constant modelling assumption for this scenario, not a forecast or guaranteed return."
+                  suffix="%"
+                  min={SWP_LIMITS.expectedAnnualReturn.min}
+                  max={SWP_LIMITS.expectedAnnualReturn.max}
+                  step={0.1}
+                  sliderMin={1}
+                  sliderMax={20}
+                  value={values.expectedAnnualReturn}
+                  sliderValue={liveInput.expectedAnnualReturn}
+                  onValueChange={(value) => updateValue("expectedAnnualReturn", value)}
+                  error={errors.expectedAnnualReturn}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
 
                 <CalculatorSelectInput id="withdrawal-mode" label="Withdrawal duration" value={values.withdrawalMode} onValueChange={(value) => updateValue("withdrawalMode", value)} options={[{ label: "Fixed duration", value: "fixedDuration" }, { label: "Until balance is exhausted", value: "untilExhausted" }]} error={errors.withdrawalMode} required />
 
                 {isFixedDuration ? (
-                  <div>
-                    <CalculatorNumberInput id="duration-years" label="Withdrawal duration" suffix="years" min={SWP_LIMITS.durationYears.min} max={SWP_LIMITS.durationYears.max} step={1} value={values.durationYears} onValueChange={(value) => updateValue("durationYears", value)} error={errors.durationYears} required />
-                    <input type="range" aria-label="Withdrawal duration slider" min={SWP_LIMITS.durationYears.min} max={SWP_LIMITS.durationYears.max} step={1} value={liveInput.durationYears} onChange={(event) => updateValue("durationYears", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
+                  <PairedNumberSliderInput
+                    id="duration-years"
+                    label="Withdrawal duration"
+                    suffix="years"
+                    min={SWP_LIMITS.durationYears.min}
+                    max={SWP_LIMITS.durationYears.max}
+                    step={1}
+                    value={values.durationYears}
+                    sliderValue={liveInput.durationYears}
+                    onValueChange={(value) => updateValue("durationYears", value)}
+                    error={errors.durationYears}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
                 ) : null}
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate SWP</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">{primaryLabel}</p>
@@ -218,6 +264,16 @@ export function SWPCalculator() {
               </div>
             </div>
 
+            <div className="mt-5 border-t border-line pt-5">
+              <SimpleDonutChart
+                title="Withdrawals vs growth"
+                items={[
+                  { label: "Withdrawals", value: result.totalWithdrawn, formattedValue: formatIndianCurrency(result.totalWithdrawn), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
+                  { label: "Growth", value: result.totalGrowth, formattedValue: formatIndianCurrency(result.totalGrowth), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                ]}
+              />
+            </div>
+
             <div className="mt-5">
               <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
             </div>
@@ -225,45 +281,38 @@ export function SWPCalculator() {
         </Card>
       </div>
 
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator SWP Estimate"
-          calculationDate={calculationDate}
-          disclaimer="Market returns are uncertain and not guaranteed. This projection excludes taxation of withdrawals and product-specific rules."
-          items={[
-            { label: "Initial investment", value: formatIndianCurrency(liveInput.initialInvestment) },
-            { label: "Monthly withdrawal", value: formatIndianCurrency(liveInput.monthlyWithdrawal) },
-            { label: "Expected annual return assumption", value: formatPercentage(liveInput.expectedAnnualReturn) },
-            { label: "Withdrawal duration", value: isFixedDuration ? `${liveInput.durationYears} years, fixed` : "Until balance is exhausted" },
-            { label: "Total withdrawn", value: formatIndianCurrency(result.totalWithdrawn) },
-            { label: "Total growth", value: formatIndianCurrency(result.totalGrowth) },
-            { label: "Remaining balance", value: formatIndianCurrency(result.remainingBalance) },
-            { label: "Balance exhausted", value: result.isExhausted ? `Yes, after ${formatDurationText(result.exhaustionMonth!)}` : "No" },
-          ]}
-        />
-      </div>
-
-      <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="swp-schedule-heading">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-xs font-medium tracking-wide text-cat-invest uppercase">Balance over time</p>
-            <h2 id="swp-schedule-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">How your balance depletes</h2>
-            <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each year&apos;s withdrawals are taken before that year&apos;s growth is applied to the remaining balance.</p>
-          </div>
-          <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View table" : "View chart"}</Button>
-        </div>
+      <section className="mt-10 border-t border-line pt-8" aria-labelledby="swp-yearly-chart-heading">
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-invest uppercase">Withdrawal breakdown</p>
+        <h2 id="swp-yearly-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Withdrawals vs growth, year by year</h2>
+        <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one year&apos;s change in the corpus, split by what was withdrawn vs. growth earned that year.</p>
         <div className="mt-6">
-          {scheduleView === "chart" ? (
-            <>
-              <DecliningBalanceChart points={balancePoints} label="Balance" />
-              <MilestoneRow items={milestoneItems} />
-            </>
-          ) : (
-            <DataTable caption="SWP yearly balance schedule" rows={result.schedule} columns={scheduleColumns} initialRows={15} />
-          )}
+          <YearlyBarChart
+            labels={yearlyChartLabels}
+            series={yearlyChartSeries}
+            formatTooltipValue={formatIndianCurrency}
+            ariaLabel="Stacked bar chart of withdrawals versus growth for each year of the SWP"
+          />
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Displayed currency is rounded to two decimal places; calculations retain full precision.</p>
       </section>
+
+      <div className="mt-8" data-calculation-experience>
+        <CollapsibleSection title="Balance schedule" description="Each year's withdrawals are taken before that year's growth is applied to the remaining balance.">
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View table" : "View chart"}</Button>
+          </div>
+          <div className="mt-4">
+            {scheduleView === "chart" ? (
+              <>
+                <DecliningBalanceChart points={balancePoints} label="Balance" />
+                <MilestoneRow items={milestoneItems} />
+              </>
+            ) : (
+              <DataTable caption="SWP yearly balance schedule" rows={result.schedule} columns={scheduleColumns} initialRows={15} />
+            )}
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">Displayed currency is rounded to two decimal places; calculations retain full precision.</p>
+        </CollapsibleSection>
+      </div>
     </div>
   )
 }

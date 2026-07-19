@@ -1,12 +1,14 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
 import { MilestoneRow, pickMilestoneIndices, TwoPhaseChart, type MilestoneItem, type TwoPhaseChartPoint } from "@/components/calculators/growth-area-chart"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
+import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
+import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculators/yearly-bar-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -132,6 +134,22 @@ function toMilestoneItems(input: RetirementInput, result: RetirementResult): rea
   ]
 }
 
+/** gainToDate and cumulativeInvestment are cumulative to date — contributionThisYear is already
+ * incremental, so only gainToDate needs a year-over-year delta for the "growth this year" series. */
+function toAccumulationChartData(schedule: readonly RetirementAccumulationScheduleRow[]) {
+  let previousGain = 0
+  const labels: string[] = []
+  const contribution: number[] = []
+  const growth: number[] = []
+  for (const row of schedule) {
+    labels.push(`Age ${row.age}`)
+    contribution.push(Math.round(row.contributionThisYear))
+    growth.push(Math.round(row.gainToDate - previousGain))
+    previousGain = row.gainToDate
+  }
+  return { labels, contribution, growth }
+}
+
 const accumulationColumns: readonly DataTableColumn<RetirementAccumulationScheduleRow>[] = [
   { header: "Age", cell: (row) => row.age },
   { header: "Contribution this year", cell: (row) => formatIndianCurrency(row.contributionThisYear) },
@@ -167,21 +185,13 @@ export function RetirementCalculator() {
 
   function updateValue(field: keyof RetirementFormValues, value: string) {
     markInteracted()
-    setValues((current) => {
-      const next = { ...current, [field]: value }
-      if (field === "expectedReturnPreRetirement" && !postReturnTouched) next.expectedReturnPostRetirement = value
-      return next
-    })
+    const nextValues = { ...values, [field]: value }
+    if (field === "expectedReturnPreRetirement" && !postReturnTouched) nextValues.expectedReturnPostRetirement = value
+    setValues(nextValues)
     if (field === "expectedReturnPostRetirement") setPostReturnTouched(true)
-    setErrors((current) => ({ ...current, [field]: undefined, ...(field === "expectedReturnPreRetirement" && !postReturnTouched ? { expectedReturnPostRetirement: undefined } : {}) }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateRetirementForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildRetirementCalculatorUrl(validation.data))
+    const validation = parseAndValidateRetirementForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildRetirementCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -197,12 +207,23 @@ export function RetirementCalculator() {
   const milestoneItems = useMemo(() => toMilestoneItems(liveInput, result), [liveInput, result])
   const retirementDurationYears = liveInput.lifeExpectancy - liveInput.retirementAge
 
+  const accumulationChartData = useMemo(() => toAccumulationChartData(result.accumulationSchedule), [result.accumulationSchedule])
+  const accumulationChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
+    { label: "Contribution", values: accumulationChartData.contribution, colorVar: "--cat-invest" },
+    { label: "Growth", values: accumulationChartData.growth, colorVar: "--gold" },
+  ], [accumulationChartData])
+
+  const decumulationChartLabels = useMemo(() => result.decumulationSchedule.map((row) => `Age ${row.age}`), [result.decumulationSchedule])
+  const decumulationChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
+    { label: "Withdrawals", values: result.decumulationSchedule.map((row) => Math.round(row.withdrawalsInYear)), colorVar: "--cat-invest" },
+    { label: "Growth", values: result.decumulationSchedule.map((row) => Math.round(row.growthInYear)), colorVar: "--gold" },
+  ], [result.decumulationSchedule])
+
   const primaryLabel = result.isExhausted ? "Corpus exhausted at age" : "Remaining balance at life expectancy"
   const primaryValue = result.isExhausted ? `Age ${result.exhaustionAge}` : formatIndianCurrency(result.remainingBalanceAtLifeExpectancy)
   const subtitle = `from ${formatIndianCurrency(result.corpusAtRetirement)} at retirement (age ${liveInput.retirementAge}), over ${retirementDurationYears} years of retirement`
 
   const shareUrl = buildRetirementCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = [
     "ThinkCalculator Retirement Corpus Estimate", "",
     `Current age / retirement age / life expectancy: ${liveInput.currentAge} / ${liveInput.retirementAge} / ${liveInput.lifeExpectancy}`,
@@ -225,59 +246,160 @@ export function RetirementCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">Retirement details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-8" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-8">
                 <fieldset className="space-y-5">
                   <legend className="text-base font-semibold">Accumulation phase (until retirement)</legend>
-                  <div>
-                    <CalculatorNumberInput id="current-age" label="Current age" suffix="years" min={RETIREMENT_LIMITS.currentAge.min} max={RETIREMENT_LIMITS.currentAge.max} step={1} value={values.currentAge} onValueChange={(value) => updateValue("currentAge", value)} error={errors.currentAge} required />
-                    <input type="range" aria-label="Current age slider" min={RETIREMENT_LIMITS.currentAge.min} max={RETIREMENT_LIMITS.currentAge.max} step={1} value={liveInput.currentAge} onChange={(event) => updateValue("currentAge", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
-                  <div>
-                    <CalculatorNumberInput id="retirement-age" label="Retirement age" suffix="years" min={RETIREMENT_LIMITS.retirementAge.min} max={RETIREMENT_LIMITS.retirementAge.max} step={1} value={values.retirementAge} onValueChange={(value) => updateValue("retirementAge", value)} error={errors.retirementAge} required />
-                    <input type="range" aria-label="Retirement age slider" min={RETIREMENT_LIMITS.retirementAge.min} max={RETIREMENT_LIMITS.retirementAge.max} step={1} value={liveInput.retirementAge} onChange={(event) => updateValue("retirementAge", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
-                  <div>
-                    <CalculatorNumberInput id="current-savings" label="Current savings" prefix="₹" min={RETIREMENT_LIMITS.currentSavings.min} max={RETIREMENT_LIMITS.currentSavings.max} step={10_000} value={values.currentSavings} onValueChange={(value) => updateValue("currentSavings", value)} error={errors.currentSavings} required />
-                    <input type="range" aria-label="Current savings slider" min={0} max={10_000_000} step={10_000} value={liveInput.currentSavings} onChange={(event) => updateValue("currentSavings", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
-                  <div>
-                    <CalculatorNumberInput id="monthly-contribution" label="Monthly contribution" prefix="₹" min={RETIREMENT_LIMITS.monthlyContribution.min} max={RETIREMENT_LIMITS.monthlyContribution.max} step={500} value={values.monthlyContribution} onValueChange={(value) => updateValue("monthlyContribution", value)} error={errors.monthlyContribution} required />
-                    <input type="range" aria-label="Monthly contribution slider" min={0} max={200_000} step={500} value={liveInput.monthlyContribution} onChange={(event) => updateValue("monthlyContribution", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
-                  <div>
-                    <CalculatorNumberInput id="pre-return" label="Expected annual return before retirement" description="A constant modelling assumption for this scenario, not a forecast or guaranteed return." suffix="%" min={RETIREMENT_LIMITS.expectedReturnPreRetirement.min} max={RETIREMENT_LIMITS.expectedReturnPreRetirement.max} step={0.1} value={values.expectedReturnPreRetirement} onValueChange={(value) => updateValue("expectedReturnPreRetirement", value)} error={errors.expectedReturnPreRetirement} required />
-                    <input type="range" aria-label="Expected annual return before retirement slider" min={0} max={20} step={0.1} value={liveInput.expectedReturnPreRetirement} onChange={(event) => updateValue("expectedReturnPreRetirement", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
+                  <PairedNumberSliderInput
+                    id="current-age"
+                    label="Current age"
+                    suffix="years"
+                    min={RETIREMENT_LIMITS.currentAge.min}
+                    max={RETIREMENT_LIMITS.currentAge.max}
+                    step={1}
+                    value={values.currentAge}
+                    sliderValue={liveInput.currentAge}
+                    onValueChange={(value) => updateValue("currentAge", value)}
+                    error={errors.currentAge}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
+                  <PairedNumberSliderInput
+                    id="retirement-age"
+                    label="Retirement age"
+                    suffix="years"
+                    min={RETIREMENT_LIMITS.retirementAge.min}
+                    max={RETIREMENT_LIMITS.retirementAge.max}
+                    step={1}
+                    value={values.retirementAge}
+                    sliderValue={liveInput.retirementAge}
+                    onValueChange={(value) => updateValue("retirementAge", value)}
+                    error={errors.retirementAge}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
+                  <PairedNumberSliderInput
+                    id="current-savings"
+                    label="Current savings"
+                    prefix="₹"
+                    min={RETIREMENT_LIMITS.currentSavings.min}
+                    max={RETIREMENT_LIMITS.currentSavings.max}
+                    step={10_000}
+                    sliderMin={0}
+                    sliderMax={10_000_000}
+                    value={values.currentSavings}
+                    sliderValue={liveInput.currentSavings}
+                    onValueChange={(value) => updateValue("currentSavings", value)}
+                    error={errors.currentSavings}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
+                  <PairedNumberSliderInput
+                    id="monthly-contribution"
+                    label="Monthly contribution"
+                    prefix="₹"
+                    min={RETIREMENT_LIMITS.monthlyContribution.min}
+                    max={RETIREMENT_LIMITS.monthlyContribution.max}
+                    step={500}
+                    sliderMin={0}
+                    sliderMax={200_000}
+                    value={values.monthlyContribution}
+                    sliderValue={liveInput.monthlyContribution}
+                    onValueChange={(value) => updateValue("monthlyContribution", value)}
+                    error={errors.monthlyContribution}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
+                  <PairedNumberSliderInput
+                    id="pre-return"
+                    label="Expected annual return before retirement"
+                    description="A constant modelling assumption for this scenario, not a forecast or guaranteed return."
+                    suffix="%"
+                    min={RETIREMENT_LIMITS.expectedReturnPreRetirement.min}
+                    max={RETIREMENT_LIMITS.expectedReturnPreRetirement.max}
+                    step={0.1}
+                    sliderMin={0}
+                    sliderMax={20}
+                    value={values.expectedReturnPreRetirement}
+                    sliderValue={liveInput.expectedReturnPreRetirement}
+                    onValueChange={(value) => updateValue("expectedReturnPreRetirement", value)}
+                    error={errors.expectedReturnPreRetirement}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
                 </fieldset>
                 <fieldset className="space-y-5 border-t pt-6">
                   <legend className="text-base font-semibold">Retirement phase (from retirement to life expectancy)</legend>
-                  <div>
-                    <CalculatorNumberInput id="life-expectancy" label="Life expectancy" suffix="years" min={RETIREMENT_LIMITS.lifeExpectancy.min} max={RETIREMENT_LIMITS.lifeExpectancy.max} step={1} value={values.lifeExpectancy} onValueChange={(value) => updateValue("lifeExpectancy", value)} error={errors.lifeExpectancy} required />
-                    <input type="range" aria-label="Life expectancy slider" min={RETIREMENT_LIMITS.lifeExpectancy.min} max={RETIREMENT_LIMITS.lifeExpectancy.max} step={1} value={liveInput.lifeExpectancy} onChange={(event) => updateValue("lifeExpectancy", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
-                  <div>
-                    <CalculatorNumberInput id="post-return" label="Expected annual return during retirement" description="Starts equal to the pre-retirement return; lower it for a more conservative post-retirement allocation." suffix="%" min={RETIREMENT_LIMITS.expectedReturnPostRetirement.min} max={RETIREMENT_LIMITS.expectedReturnPostRetirement.max} step={0.1} value={values.expectedReturnPostRetirement} onValueChange={(value) => updateValue("expectedReturnPostRetirement", value)} error={errors.expectedReturnPostRetirement} required />
-                    <input type="range" aria-label="Expected annual return during retirement slider" min={0} max={20} step={0.1} value={liveInput.expectedReturnPostRetirement} onChange={(event) => updateValue("expectedReturnPostRetirement", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
-                  <div>
-                    <CalculatorNumberInput id="withdrawal" label="Desired monthly withdrawal (today's money)" description="The nominal (actual rupee) monthly withdrawal grows with assumed inflation each year of retirement." prefix="₹" min={RETIREMENT_LIMITS.desiredMonthlyWithdrawal.min} max={RETIREMENT_LIMITS.desiredMonthlyWithdrawal.max} step={1_000} value={values.desiredMonthlyWithdrawal} onValueChange={(value) => updateValue("desiredMonthlyWithdrawal", value)} error={errors.desiredMonthlyWithdrawal} required />
-                    <input type="range" aria-label="Desired monthly withdrawal slider" min={100} max={500_000} step={1_000} value={liveInput.desiredMonthlyWithdrawal} onChange={(event) => updateValue("desiredMonthlyWithdrawal", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
-                  <div>
-                    <CalculatorNumberInput id="inflation" label="Assumed annual inflation rate" description="A negative value models deflation." suffix="%" min={RETIREMENT_LIMITS.inflationRate.min} max={RETIREMENT_LIMITS.inflationRate.max} step={0.1} value={values.inflationRate} onValueChange={(value) => updateValue("inflationRate", value)} error={errors.inflationRate} required />
-                    <input type="range" aria-label="Assumed annual inflation rate slider" min={RETIREMENT_LIMITS.inflationRate.min} max={RETIREMENT_LIMITS.inflationRate.max} step={0.1} value={liveInput.inflationRate} onChange={(event) => updateValue("inflationRate", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                  </div>
+                  <PairedNumberSliderInput
+                    id="life-expectancy"
+                    label="Life expectancy"
+                    suffix="years"
+                    min={RETIREMENT_LIMITS.lifeExpectancy.min}
+                    max={RETIREMENT_LIMITS.lifeExpectancy.max}
+                    step={1}
+                    value={values.lifeExpectancy}
+                    sliderValue={liveInput.lifeExpectancy}
+                    onValueChange={(value) => updateValue("lifeExpectancy", value)}
+                    error={errors.lifeExpectancy}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
+                  <PairedNumberSliderInput
+                    id="post-return"
+                    label="Expected annual return during retirement"
+                    description="Starts equal to the pre-retirement return; lower it for a more conservative post-retirement allocation."
+                    suffix="%"
+                    min={RETIREMENT_LIMITS.expectedReturnPostRetirement.min}
+                    max={RETIREMENT_LIMITS.expectedReturnPostRetirement.max}
+                    step={0.1}
+                    sliderMin={0}
+                    sliderMax={20}
+                    value={values.expectedReturnPostRetirement}
+                    sliderValue={liveInput.expectedReturnPostRetirement}
+                    onValueChange={(value) => updateValue("expectedReturnPostRetirement", value)}
+                    error={errors.expectedReturnPostRetirement}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
+                  <PairedNumberSliderInput
+                    id="withdrawal"
+                    label="Desired monthly withdrawal (today's money)"
+                    description="The nominal (actual rupee) monthly withdrawal grows with assumed inflation each year of retirement."
+                    prefix="₹"
+                    min={RETIREMENT_LIMITS.desiredMonthlyWithdrawal.min}
+                    max={RETIREMENT_LIMITS.desiredMonthlyWithdrawal.max}
+                    step={1_000}
+                    sliderMin={100}
+                    sliderMax={500_000}
+                    value={values.desiredMonthlyWithdrawal}
+                    sliderValue={liveInput.desiredMonthlyWithdrawal}
+                    onValueChange={(value) => updateValue("desiredMonthlyWithdrawal", value)}
+                    error={errors.desiredMonthlyWithdrawal}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
+                  <PairedNumberSliderInput
+                    id="inflation"
+                    label="Assumed annual inflation rate"
+                    description="A negative value models deflation."
+                    suffix="%"
+                    min={RETIREMENT_LIMITS.inflationRate.min}
+                    max={RETIREMENT_LIMITS.inflationRate.max}
+                    step={0.1}
+                    value={values.inflationRate}
+                    sliderValue={liveInput.inflationRate}
+                    onValueChange={(value) => updateValue("inflationRate", value)}
+                    error={errors.inflationRate}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
                 </fieldset>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button type="submit" size="lg" className="flex-1">Calculate retirement corpus</Button>
-                  <Button type="button" size="lg" variant="outline" className="flex-1" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button type="button" size="lg" variant="outline" className="w-full" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">{primaryLabel}</p>
@@ -304,6 +426,16 @@ export function RetirementCalculator() {
               </div>
             </div>
 
+            <div className="mt-5 border-t border-line pt-5">
+              <SimpleDonutChart
+                title="Contributions vs growth at retirement"
+                items={[
+                  { label: "Contributions", value: result.totalContributions, formattedValue: formatIndianCurrency(result.totalContributions), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
+                  { label: "Growth", value: result.totalGainAtRetirement, formattedValue: formatIndianCurrency(result.totalGainAtRetirement), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                ]}
+              />
+            </div>
+
             <div className="mt-5">
               <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
             </div>
@@ -311,57 +443,63 @@ export function RetirementCalculator() {
         </Card>
       </div>
 
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator Retirement Corpus Estimate"
-          calculationDate={calculationDate}
-          disclaimer="This is an illustrative projection based on constant assumed rates, not a retirement plan. It excludes sequence-of-returns risk, healthcare costs, taxation, and government pension income."
-          items={[
-            { label: "Current age / retirement age / life expectancy", value: `${liveInput.currentAge} / ${liveInput.retirementAge} / ${liveInput.lifeExpectancy}` },
-            { label: "Current savings", value: formatIndianCurrency(liveInput.currentSavings) },
-            { label: "Monthly contribution", value: formatIndianCurrency(liveInput.monthlyContribution) },
-            { label: "Expected return before / during retirement", value: `${formatPercentage(liveInput.expectedReturnPreRetirement)} / ${formatPercentage(liveInput.expectedReturnPostRetirement)}` },
-            { label: "Desired monthly withdrawal (today's money)", value: formatIndianCurrency(liveInput.desiredMonthlyWithdrawal) },
-            { label: "Assumed annual inflation", value: formatPercentage(liveInput.inflationRate) },
-            { label: "Corpus at retirement", value: formatIndianCurrency(result.corpusAtRetirement) },
-            { label: "Total contributions", value: formatIndianCurrency(result.totalContributions) },
-            { label: "Retirement outcome", value: result.isExhausted ? `Corpus exhausted at age ${result.exhaustionAge}` : `Remaining balance at life expectancy: ${formatIndianCurrency(result.remainingBalanceAtLifeExpectancy)}` },
-          ]}
-        />
-      </div>
-
-      <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="retirement-schedule-heading">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-xs font-medium tracking-wide text-cat-invest uppercase">Corpus over time</p>
-            <h2 id="retirement-schedule-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">How your corpus grows, then draws down</h2>
-            <p className="mt-1.5 text-[13.5px] text-muted-foreground">The accumulation phase compounds savings and contributions to retirement; the withdrawal phase then draws the corpus down at an inflation-adjusted rate.</p>
-          </div>
-          <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View tables" : "View chart"}</Button>
-        </div>
+      <section className="mt-10 border-t border-line pt-8" aria-labelledby="retirement-accumulation-chart-heading">
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-invest uppercase">Accumulation breakdown</p>
+        <h2 id="retirement-accumulation-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Contribution vs growth, year by year</h2>
+        <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one year&apos;s contribution to the corpus before retirement, split by what was contributed vs. growth earned that year.</p>
         <div className="mt-6">
-          {scheduleView === "chart" ? (
-            <>
-              <TwoPhaseChart points={chart.points} retirementIndex={chart.retirementIndex} balanceLabel="Corpus" />
-              <MilestoneRow items={milestoneItems} />
-            </>
-          ) : (
-            <div className="space-y-10">
-              <div>
-                <h3 className="text-lg font-semibold">Accumulation schedule</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Each year&apos;s contribution is added before that year&apos;s growth is applied.</p>
-                <div className="mt-4"><DataTable caption="Retirement Corpus accumulation-phase yearly schedule, from current age to retirement age" rows={result.accumulationSchedule} columns={accumulationColumns} initialRows={15} /></div>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Retirement withdrawal schedule</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Each year&apos;s withdrawals are taken before that year&apos;s growth is applied to the remaining balance, and the monthly withdrawal amount grows with assumed inflation each year.</p>
-                <div className="mt-4"><DataTable caption="Retirement Corpus retirement-phase yearly withdrawal schedule, from retirement age to life expectancy" rows={result.decumulationSchedule} columns={decumulationColumns} initialRows={15} /></div>
-              </div>
-            </div>
-          )}
+          <YearlyBarChart
+            labels={accumulationChartData.labels}
+            series={accumulationChartSeries}
+            formatTooltipValue={formatIndianCurrency}
+            ariaLabel="Stacked bar chart of contribution versus growth for each year of the accumulation phase"
+          />
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Displayed currency is rounded to two decimal places; calculations retain full precision.</p>
       </section>
+
+      <section className="mt-10 border-t border-line pt-8" aria-labelledby="retirement-decumulation-chart-heading">
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-invest uppercase">Withdrawal breakdown</p>
+        <h2 id="retirement-decumulation-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Withdrawals vs growth, year by year</h2>
+        <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one year&apos;s change in the corpus during retirement, split by what was withdrawn vs. growth earned that year.</p>
+        <div className="mt-6">
+          <YearlyBarChart
+            labels={decumulationChartLabels}
+            series={decumulationChartSeries}
+            formatTooltipValue={formatIndianCurrency}
+            ariaLabel="Stacked bar chart of withdrawals versus growth for each year of the retirement drawdown phase"
+          />
+        </div>
+      </section>
+
+      <div className="mt-8" data-calculation-experience>
+        <CollapsibleSection title="Corpus over time" description="The accumulation phase compounds savings and contributions to retirement; the withdrawal phase then draws the corpus down at an inflation-adjusted rate.">
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View tables" : "View chart"}</Button>
+          </div>
+          <div className="mt-4">
+            {scheduleView === "chart" ? (
+              <>
+                <TwoPhaseChart points={chart.points} retirementIndex={chart.retirementIndex} balanceLabel="Corpus" />
+                <MilestoneRow items={milestoneItems} />
+              </>
+            ) : (
+              <div className="space-y-10">
+                <div>
+                  <h3 className="text-lg font-semibold">Accumulation schedule</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">Each year&apos;s contribution is added before that year&apos;s growth is applied.</p>
+                  <div className="mt-4"><DataTable caption="Retirement Corpus accumulation-phase yearly schedule, from current age to retirement age" rows={result.accumulationSchedule} columns={accumulationColumns} initialRows={15} /></div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Retirement withdrawal schedule</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">Each year&apos;s withdrawals are taken before that year&apos;s growth is applied to the remaining balance, and the monthly withdrawal amount grows with assumed inflation each year.</p>
+                  <div className="mt-4"><DataTable caption="Retirement Corpus retirement-phase yearly withdrawal schedule, from retirement age to life expectancy" rows={result.decumulationSchedule} columns={decumulationColumns} initialRows={15} /></div>
+                </div>
+              </div>
+            )}
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">Displayed currency is rounded to two decimal places; calculations retain full precision.</p>
+        </CollapsibleSection>
+      </div>
     </div>
   )
 }

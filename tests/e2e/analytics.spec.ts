@@ -35,7 +35,7 @@ test.describe("analytics", () => {
     await page.locator("#loan-amount").fill(sentinel)
     await page.locator("#annual-interest-rate").fill("9.5")
     await page.locator("#loan-tenure").fill("5")
-    await page.getByRole("button", { name: /calculate emi/i }).click()
+    // Live — no "Calculate" click needed; the result panel already reflects the typed values.
     await expect(page.getByTestId("calculator-result-card")).toBeVisible()
 
     const dataLayer = await page.evaluate(() => (window as unknown as { dataLayer: unknown[] }).dataLayer)

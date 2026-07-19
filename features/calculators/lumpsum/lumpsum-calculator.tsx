@@ -1,13 +1,15 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
 import { GrowthLineChart, MilestoneRow, pickMilestoneIndices, type MilestoneItem } from "@/components/calculators/growth-area-chart"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
+import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
+import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculators/yearly-bar-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -80,6 +82,24 @@ function toMilestoneItems(schedule: readonly LumpsumScheduleRow[], totalGain: nu
   ]
 }
 
+/** The initial investment is only "contributed" once, so its per-period delta is nonzero only in
+ * the first bar — every later bar shows pure compounding growth on top of that principal. */
+function toYearlyChartData(schedule: readonly LumpsumScheduleRow[]) {
+  let previousInvested = 0
+  let previousReturns = 0
+  const labels: string[] = []
+  const invested: number[] = []
+  const returns: number[] = []
+  for (const row of schedule) {
+    labels.push(formatPeriodLabel(row.monthsElapsed).replace("Year ", "Y").replace("Month ", "M"))
+    invested.push(Math.round(row.initialInvestment - previousInvested))
+    returns.push(Math.round(row.estimatedReturns - previousReturns))
+    previousInvested = row.initialInvestment
+    previousReturns = row.estimatedReturns
+  }
+  return { labels, invested, returns }
+}
+
 export function LumpsumCalculator() {
   const [values, setValues] = useState<LumpsumFormValues>(() => toFormValues(LUMPSUM_DEFAULT_INPUT))
   const [errors, setErrors] = useState<LumpsumValidationErrors>({})
@@ -91,16 +111,11 @@ export function LumpsumCalculator() {
 
   function updateValue(field: keyof LumpsumFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateLumpsumForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildLumpsumCalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidateLumpsumForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildLumpsumCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -116,11 +131,13 @@ export function LumpsumCalculator() {
   const milestoneItems = useMemo(() => toMilestoneItems(schedule, result.estimatedReturns), [schedule, result.estimatedReturns])
   const durationIsYears = liveInput.durationUnit === "years"
 
-  const investedPercent = result.futureValue > 0 ? Math.round((result.initialInvestment / result.futureValue) * 100) : 100
-  const returnsPercent = 100 - investedPercent
+  const yearlyChartData = useMemo(() => toYearlyChartData(schedule), [schedule])
+  const yearlyChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
+    { label: "Invested", values: yearlyChartData.invested, colorVar: "--cat-invest" },
+    { label: "Returns", values: yearlyChartData.returns, colorVar: "--gold" },
+  ], [yearlyChartData])
 
   const shareUrl = buildLumpsumCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = [
     "ThinkCalculator Lumpsum Calculation", "",
     `Initial investment: ${formatIndianCurrency(liveInput.initialInvestment)}`,
@@ -138,10 +155,23 @@ export function LumpsumCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">Lumpsum details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <div>
-                  <CalculatorNumberInput id="initial-investment" label="Initial investment" description="Enter the one-time amount you plan to invest." prefix="₹" min={LUMPSUM_LIMITS.initialInvestment.min} max={LUMPSUM_LIMITS.initialInvestment.max} step={1_000} value={values.initialInvestment} onValueChange={(value) => updateValue("initialInvestment", value)} error={errors.initialInvestment} required />
-                  <input type="range" aria-label="Initial investment slider" min={LUMPSUM_LIMITS.initialInvestment.min} max={LUMPSUM_LIMITS.initialInvestment.max} step={1_000} value={liveInput.initialInvestment} onChange={(event) => updateValue("initialInvestment", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
+                  <PairedNumberSliderInput
+                    id="initial-investment"
+                    label="Initial investment"
+                    description="Enter the one-time amount you plan to invest."
+                    prefix="₹"
+                    min={LUMPSUM_LIMITS.initialInvestment.min}
+                    max={LUMPSUM_LIMITS.initialInvestment.max}
+                    step={1_000}
+                    value={values.initialInvestment}
+                    sliderValue={liveInput.initialInvestment}
+                    onValueChange={(value) => updateValue("initialInvestment", value)}
+                    error={errors.initialInvestment}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {PRINCIPAL_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("initialInvestment", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-cat-invest hover:text-cat-invest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -151,27 +181,50 @@ export function LumpsumCalculator() {
                   </div>
                 </div>
 
-                <div>
-                  <CalculatorNumberInput id="annual-return-rate" label="Expected annual return" description="Enter the return you expect the investment to earn each year." suffix="%" min={LUMPSUM_LIMITS.annualReturnRate.min} max={LUMPSUM_LIMITS.annualReturnRate.max} step={0.1} value={values.annualReturnRate} onValueChange={(value) => updateValue("annualReturnRate", value)} error={errors.annualReturnRate} required />
-                  <input type="range" aria-label="Expected annual return slider" min={1} max={20} step={0.1} value={liveInput.annualReturnRate} onChange={(event) => updateValue("annualReturnRate", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="annual-return-rate"
+                  label="Expected annual return"
+                  description="Enter the return you expect the investment to earn each year."
+                  suffix="%"
+                  min={LUMPSUM_LIMITS.annualReturnRate.min}
+                  max={LUMPSUM_LIMITS.annualReturnRate.max}
+                  step={0.1}
+                  sliderMin={1}
+                  sliderMax={20}
+                  value={values.annualReturnRate}
+                  sliderValue={liveInput.annualReturnRate}
+                  onValueChange={(value) => updateValue("annualReturnRate", value)}
+                  error={errors.annualReturnRate}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
 
-                <div>
-                  <CalculatorNumberInput id="investment-duration" label="Investment duration" description="Enter how long the investment will stay invested." suffix={durationIsYears ? "years" : "months"} min={1} max={durationIsYears ? LUMPSUM_LIMITS.durationYears.max : LUMPSUM_LIMITS.durationMonths.max} step={1} value={values.duration} onValueChange={(value) => updateValue("duration", value)} error={errors.duration} required />
-                  <input type="range" aria-label="Investment duration slider" min={durationIsYears ? LUMPSUM_LIMITS.durationYears.min : LUMPSUM_LIMITS.durationMonths.min} max={durationIsYears ? LUMPSUM_LIMITS.durationYears.max : LUMPSUM_LIMITS.durationMonths.max} step={1} value={liveInput.duration} onChange={(event) => updateValue("duration", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="investment-duration"
+                  label="Investment duration"
+                  description="Enter how long the investment will stay invested."
+                  suffix={durationIsYears ? "years" : "months"}
+                  min={1}
+                  max={durationIsYears ? LUMPSUM_LIMITS.durationYears.max : LUMPSUM_LIMITS.durationMonths.max}
+                  step={1}
+                  sliderMin={durationIsYears ? LUMPSUM_LIMITS.durationYears.min : LUMPSUM_LIMITS.durationMonths.min}
+                  sliderMax={durationIsYears ? LUMPSUM_LIMITS.durationYears.max : LUMPSUM_LIMITS.durationMonths.max}
+                  value={values.duration}
+                  sliderValue={liveInput.duration}
+                  onValueChange={(value) => updateValue("duration", value)}
+                  error={errors.duration}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
                 <CalculatorSelectInput id="duration-unit" label="Duration unit" value={values.durationUnit} onValueChange={(value) => updateValue("durationUnit", value)} options={[{ label: "Years", value: "years" }, { label: "Months", value: "months" }]} error={errors.durationUnit} required />
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate value</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated future value</p>
@@ -190,13 +243,14 @@ export function LumpsumCalculator() {
               </div>
             </div>
 
-            <div className="mt-5 flex h-2.5 overflow-hidden rounded-full" role="img" aria-label={`Invested ${investedPercent}%, returns ${returnsPercent}%`}>
-              <div className="bg-cat-invest" style={{ width: `${investedPercent}%` }} />
-              <div className="border border-gold bg-gold-soft" style={{ width: `${returnsPercent}%` }} />
-            </div>
-            <div className="mt-2.5 flex gap-4.5 text-[12.5px] text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-cat-invest" aria-hidden="true" />Invested {investedPercent}%</span>
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm border border-gold bg-gold-soft" aria-hidden="true" />Returns {returnsPercent}%</span>
+            <div className="mt-5 border-t border-line pt-5">
+              <SimpleDonutChart
+                title="Invested vs returns"
+                items={[
+                  { label: "Invested", value: result.initialInvestment, formattedValue: formatIndianCurrency(result.initialInvestment), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
+                  { label: "Returns", value: result.estimatedReturns, formattedValue: formatIndianCurrency(result.estimatedReturns), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                ]}
+              />
             </div>
 
             <div className="mt-5">
@@ -206,42 +260,38 @@ export function LumpsumCalculator() {
         </Card>
       </div>
 
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator Lumpsum Calculation"
-          calculationDate={calculationDate}
-          disclaimer="Returns are estimates for informational purposes only and are not guaranteed."
-          items={[
-            { label: "Initial investment", value: formatIndianCurrency(liveInput.initialInvestment) },
-            { label: "Expected annual return", value: formatPercentage(liveInput.annualReturnRate) },
-            { label: "Investment duration", value: `${liveInput.duration} ${liveInput.durationUnit}` },
-            { label: "Estimated returns", value: formatIndianCurrency(result.estimatedReturns) },
-            { label: "Estimated future value", value: formatIndianCurrency(result.futureValue) },
-          ]}
-        />
-      </div>
-
-      <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="lumpsum-schedule-heading">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-xs font-medium tracking-wide text-cat-invest uppercase">Growth over time</p>
-            <h2 id="lumpsum-schedule-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">How your investment grows</h2>
-            <p className="mt-1.5 text-[13.5px] text-muted-foreground">Initial investment vs. estimated total value, year by year. Returns are estimates, not guaranteed.</p>
-          </div>
-          <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View table" : "View chart"}</Button>
-        </div>
+      <section className="mt-10 border-t border-line pt-8" aria-labelledby="lumpsum-yearly-chart-heading">
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-invest uppercase">Growth breakdown</p>
+        <h2 id="lumpsum-yearly-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Invested vs returns, year by year</h2>
+        <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one period&apos;s contribution to the total. The principal shows up once, at the start; every bar after that is compounding growth.</p>
         <div className="mt-6">
-          {scheduleView === "chart" ? (
-            <>
-              <GrowthLineChart points={growthPoints} investedLabel="Initial investment" valueLabel="Total value (estimated)" />
-              <MilestoneRow items={milestoneItems} />
-            </>
-          ) : (
-            <DataTable caption="Lumpsum growth schedule" rows={schedule} columns={scheduleColumns} initialRows={15} />
-          )}
+          <YearlyBarChart
+            labels={yearlyChartData.labels}
+            series={yearlyChartSeries}
+            formatTooltipValue={formatIndianCurrency}
+            ariaLabel="Stacked bar chart of the initial investment versus estimated returns for each period"
+          />
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
       </section>
+
+      <div className="mt-8" data-calculation-experience>
+        <CollapsibleSection title="Growth schedule" description="Initial investment vs. estimated total value, year by year. Returns are estimates, not guaranteed.">
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" data-print-hide onClick={() => setScheduleView((view) => (view === "chart" ? "table" : "chart"))}>{scheduleView === "chart" ? "View table" : "View chart"}</Button>
+          </div>
+          <div className="mt-4">
+            {scheduleView === "chart" ? (
+              <>
+                <GrowthLineChart points={growthPoints} investedLabel="Initial investment" valueLabel="Total value (estimated)" />
+                <MilestoneRow items={milestoneItems} />
+              </>
+            ) : (
+              <DataTable caption="Lumpsum growth schedule" rows={schedule} columns={scheduleColumns} initialRows={15} />
+            )}
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
+        </CollapsibleSection>
+      </div>
     </div>
   )
 }

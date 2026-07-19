@@ -1,12 +1,14 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
+import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
+import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculators/yearly-bar-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -45,6 +47,23 @@ const detailedScheduleColumns: readonly DataTableColumn<FDScheduleRow>[] = [
 
 function toFormValues(input: FDInput): FDFormValues {
   return { principalAmount: String(input.principalAmount), annualInterestRate: String(input.annualInterestRate), duration: String(input.duration), durationUnit: input.durationUnit, compoundingFrequency: input.compoundingFrequency }
+}
+
+/** yearlyGrowth is already this year's own incremental interest. The principal is deposited once,
+ * so its "invested" contribution appears only in the first row. */
+function toYearlyChartData(schedule: readonly FDYearlyScheduleRow[]) {
+  let previousPrincipal = 0
+  const labels: string[] = []
+  const invested: number[] = []
+  const returns: number[] = []
+  for (const row of schedule) {
+    const principalToDate = row.maturityAmount - row.interestEarned
+    labels.push(`Y${row.year}`)
+    invested.push(Math.round(principalToDate - previousPrincipal))
+    returns.push(Math.round(row.yearlyGrowth))
+    previousPrincipal = principalToDate
+  }
+  return { labels, invested, returns }
 }
 
 function clampFinite(value: number, fallback: number, min: number, max: number): number {
@@ -86,16 +105,11 @@ export function FDCalculator() {
 
   function updateValue(field: keyof FDFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateFDForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildFDCalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidateFDForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildFDCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -109,12 +123,15 @@ export function FDCalculator() {
   const yearlySchedule = useMemo(() => calculateFDYearlySchedule(liveInput), [liveInput])
   const detailedSchedule = useMemo(() => calculateFDSchedule(liveInput), [liveInput])
 
-  const principalPercent = result.maturityAmount > 0 ? Math.round((result.principalAmount / result.maturityAmount) * 100) : 100
-  const interestPercent = 100 - principalPercent
   const durationIsYears = liveInput.durationUnit === "years"
 
+  const yearlyChartData = useMemo(() => toYearlyChartData(yearlySchedule), [yearlySchedule])
+  const yearlyChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
+    { label: "Principal", values: yearlyChartData.invested, colorVar: "--money" },
+    { label: "Interest", values: yearlyChartData.returns, colorVar: "--gold" },
+  ], [yearlyChartData])
+
   const shareUrl = buildFDCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = [
     "ThinkCalculator FD Calculation", "",
     `Deposit amount: ${formatIndianCurrency(liveInput.principalAmount)}`,
@@ -133,10 +150,23 @@ export function FDCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">Deposit details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <div>
-                  <CalculatorNumberInput id="deposit-amount" label="Deposit amount" description="Enter the principal amount placed in the fixed deposit." prefix="₹" min={FD_LIMITS.principalAmount.min} max={FD_LIMITS.principalAmount.max} step={1_000} value={values.principalAmount} onValueChange={(value) => updateValue("principalAmount", value)} error={errors.principalAmount} required />
-                  <input type="range" aria-label="Deposit amount slider" min={FD_LIMITS.principalAmount.min} max={FD_LIMITS.principalAmount.max} step={1_000} value={liveInput.principalAmount} onChange={(event) => updateValue("principalAmount", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-money" />
+                  <PairedNumberSliderInput
+                    id="deposit-amount"
+                    label="Deposit amount"
+                    description="Enter the principal amount placed in the fixed deposit."
+                    prefix="₹"
+                    min={FD_LIMITS.principalAmount.min}
+                    max={FD_LIMITS.principalAmount.max}
+                    step={1_000}
+                    value={values.principalAmount}
+                    sliderValue={liveInput.principalAmount}
+                    onValueChange={(value) => updateValue("principalAmount", value)}
+                    error={errors.principalAmount}
+                    required
+                    accentClassName="accent-money"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {PRINCIPAL_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("principalAmount", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-money hover:text-money focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -146,25 +176,49 @@ export function FDCalculator() {
                   </div>
                 </div>
 
-                <div>
-                  <CalculatorNumberInput id="annual-interest-rate" label="Annual interest rate" description="Enter the annual rate offered for the deposit." suffix="%" min={FD_LIMITS.annualInterestRate.min} max={FD_LIMITS.annualInterestRate.max} step={0.01} value={values.annualInterestRate} onValueChange={(value) => updateValue("annualInterestRate", value)} error={errors.annualInterestRate} required />
-                  <input type="range" aria-label="Annual interest rate slider" min={1} max={20} step={0.01} value={liveInput.annualInterestRate} onChange={(event) => updateValue("annualInterestRate", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-money" />
-                </div>
+                <PairedNumberSliderInput
+                  id="annual-interest-rate"
+                  label="Annual interest rate"
+                  description="Enter the annual rate offered for the deposit."
+                  suffix="%"
+                  min={FD_LIMITS.annualInterestRate.min}
+                  max={FD_LIMITS.annualInterestRate.max}
+                  step={0.01}
+                  sliderMin={1}
+                  sliderMax={20}
+                  value={values.annualInterestRate}
+                  sliderValue={liveInput.annualInterestRate}
+                  onValueChange={(value) => updateValue("annualInterestRate", value)}
+                  error={errors.annualInterestRate}
+                  required
+                  accentClassName="accent-money"
+                />
 
-                <CalculatorNumberInput id="deposit-duration" label="Deposit duration" description="Enter how long the deposit will remain invested." suffix={durationIsYears ? "years" : "months"} min={1} max={durationIsYears ? FD_LIMITS.durationYears.max : FD_LIMITS.durationMonths.max} step={1} value={values.duration} onValueChange={(value) => updateValue("duration", value)} error={errors.duration} required />
+                <PairedNumberSliderInput
+                  id="deposit-duration"
+                  label="Deposit duration"
+                  description="Enter how long the deposit will remain invested."
+                  suffix={durationIsYears ? "years" : "months"}
+                  min={1}
+                  max={durationIsYears ? FD_LIMITS.durationYears.max : FD_LIMITS.durationMonths.max}
+                  step={1}
+                  value={values.duration}
+                  sliderValue={liveInput.duration}
+                  onValueChange={(value) => updateValue("duration", value)}
+                  error={errors.duration}
+                  required
+                  accentClassName="accent-money"
+                />
                 <CalculatorSelectInput id="duration-unit" label="Duration unit" value={values.durationUnit} onValueChange={(value) => updateValue("durationUnit", value)} options={[{ label: "Years", value: "years" }, { label: "Months", value: "months" }]} error={errors.durationUnit} required />
                 <CalculatorSelectInput id="compounding-frequency" label="Compounding frequency" description="Choose how often interest is added to the deposit." value={values.compoundingFrequency} onValueChange={(value) => updateValue("compoundingFrequency", value)} options={FREQUENCY_OPTIONS} error={errors.compoundingFrequency} required />
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate FD</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-savings-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-savings-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Maturity amount</p>
@@ -183,13 +237,14 @@ export function FDCalculator() {
               </div>
             </div>
 
-            <div className="mt-5 flex h-2.5 overflow-hidden rounded-full" role="img" aria-label={`Principal ${principalPercent}%, interest ${interestPercent}%`}>
-              <div className="bg-money" style={{ width: `${principalPercent}%` }} />
-              <div className="border border-gold bg-gold-soft" style={{ width: `${interestPercent}%` }} />
-            </div>
-            <div className="mt-2.5 flex gap-4.5 text-[12.5px] text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-money" aria-hidden="true" />Principal {principalPercent}%</span>
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm border border-gold bg-gold-soft" aria-hidden="true" />Interest {interestPercent}%</span>
+            <div className="mt-5 border-t border-line pt-5">
+              <SimpleDonutChart
+                title="Principal vs interest"
+                items={[
+                  { label: "Principal", value: result.principalAmount, formattedValue: formatIndianCurrency(result.principalAmount), colorClass: "bg-money", ringClass: "stroke-money" },
+                  { label: "Interest", value: result.interestEarned, formattedValue: formatIndianCurrency(result.interestEarned), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                ]}
+              />
             </div>
 
             <div className="mt-5">
@@ -199,42 +254,35 @@ export function FDCalculator() {
         </Card>
       </div>
 
-      {/* Rendered outside the gradient Card (which sets overflow-hidden) so the print stylesheet's
-          `position: absolute` repositioning of [data-print-summary] is never clipped by it. */}
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator FD Calculation"
-          calculationDate={calculationDate}
-          disclaimer="This estimate is informational. Actual bank calculations may differ because of product rules, dates, rounding, taxes, and penalties."
-          items={[
-            { label: "Deposit amount", value: formatIndianCurrency(liveInput.principalAmount) },
-            { label: "Annual interest rate", value: formatPercentage(liveInput.annualInterestRate) },
-            { label: "Deposit duration", value: `${liveInput.duration} ${liveInput.durationUnit}` },
-            { label: "Compounding frequency", value: FREQUENCY_LABELS[liveInput.compoundingFrequency] },
-            { label: "Interest earned", value: formatIndianCurrency(result.interestEarned) },
-            { label: "Maturity amount", value: formatIndianCurrency(result.maturityAmount) },
-          ]}
-        />
-      </div>
-
-      <section className="mt-10 border-t border-line pt-8" data-calculation-experience aria-labelledby="fd-schedule-heading">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-xs font-medium tracking-wide text-cat-savings uppercase">Maturity schedule</p>
-            <h2 id="fd-schedule-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Yearly maturity growth</h2>
-            <p className="mt-1.5 text-[13.5px] text-muted-foreground">How the deposit grows year by year under the selected compounding convention.</p>
-          </div>
-          <Button type="button" variant="outline" data-print-hide onClick={() => setShowDetailedSchedule((value) => !value)}>{showDetailedSchedule ? "View yearly summary" : "View detailed schedule"}</Button>
-        </div>
+      <section className="mt-10 border-t border-line pt-8" aria-labelledby="fd-yearly-chart-heading">
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-savings uppercase">Maturity breakdown</p>
+        <h2 id="fd-yearly-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Principal vs interest, year by year</h2>
+        <p className="mt-1.5 text-[13.5px] text-muted-foreground">The principal shows up once, at the start; every bar after that is interest earned that year.</p>
         <div className="mt-6">
-          {showDetailedSchedule ? (
-            <DataTable caption="Detailed FD maturity schedule" rows={detailedSchedule} columns={detailedScheduleColumns} />
-          ) : (
-            <DataTable caption="Yearly FD maturity schedule" rows={yearlySchedule} columns={yearlyScheduleColumns} initialRows={15} />
-          )}
+          <YearlyBarChart
+            labels={yearlyChartData.labels}
+            series={yearlyChartSeries}
+            formatTooltipValue={formatIndianCurrency}
+            ariaLabel="Stacked bar chart of principal versus interest earned each year of the deposit"
+          />
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
       </section>
+
+      <div className="mt-8" data-calculation-experience>
+        <CollapsibleSection title="Maturity schedule" description="How the deposit grows year by year under the selected compounding convention.">
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" data-print-hide onClick={() => setShowDetailedSchedule((value) => !value)}>{showDetailedSchedule ? "View yearly summary" : "View detailed schedule"}</Button>
+          </div>
+          <div className="mt-4">
+            {showDetailedSchedule ? (
+              <DataTable caption="Detailed FD maturity schedule" rows={detailedSchedule} columns={detailedScheduleColumns} />
+            ) : (
+              <DataTable caption="Yearly FD maturity schedule" rows={yearlySchedule} columns={yearlyScheduleColumns} initialRows={15} />
+            )}
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">Displayed values are rounded to two decimal places, so visible totals may differ slightly from the full-precision calculation.</p>
+        </CollapsibleSection>
+      </div>
     </div>
   )
 }

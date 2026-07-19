@@ -1,12 +1,11 @@
 "use client"
 
-import { useMemo, useState, useSyncExternalStore, type FormEvent } from "react"
+import { useMemo, useState, useSyncExternalStore } from "react"
 import { X } from "lucide-react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -149,7 +148,7 @@ function RegimeComparisonPanel({ comparison, selectedRegime, resultText, shareUr
   const beneficialLabel = comparison.beneficialRegime === "new" ? "New Regime" : "Old Regime"
   const otherLabel = comparison.beneficialRegime === "new" ? "Old Regime" : "New Regime"
   return (
-    <Card className="bg-gradient-to-b from-cat-tax-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+    <Card className="bg-gradient-to-b from-cat-tax-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
       <CardContent>
         <div className="border-b border-line pb-5 text-center">
           <p className="mb-1.5 text-[13px] text-muted-foreground">{comparison.savings === 0 ? "Both regimes cost the same" : `${beneficialLabel} saves you`}</p>
@@ -200,39 +199,31 @@ export function IncomeTaxCalculator() {
     setValues(parsedValues)
   })
 
+  function commit(nextValues: IncomeTaxFormValues) {
+    setValues(nextValues)
+    const validation = parseAndValidateIncomeTaxForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildIncomeTaxCalculatorUrl(validation.data))
+  }
+
   function switchRegime(regime: TaxRegime) {
     markInteracted()
-    setValues((current) => ({ ...current, regime }))
-    setErrors({})
+    commit({ ...values, regime })
   }
 
   function updateShared(field: "grossIncome" | "ageBand", value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }) as IncomeTaxFormValues)
-    setErrors((current) => ({ ...current, [field]: undefined }))
+    commit({ ...values, [field]: value } as IncomeTaxFormValues)
   }
 
   function updateOldDeduction(field: keyof IncomeTaxFormValues["oldRegimeDeductions"], value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, oldRegimeDeductions: { ...current.oldRegimeDeductions, [field]: value } }))
-    setErrors((current) => ({ ...current, deductions: { ...current.deductions, [field]: undefined } }))
+    commit({ ...values, oldRegimeDeductions: { ...values.oldRegimeDeductions, [field]: value } })
   }
 
   function updateNewDeduction(field: keyof IncomeTaxFormValues["newRegimeDeductions"], value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, newRegimeDeductions: { ...current.newRegimeDeductions, [field]: value } }))
-    setErrors((current) => ({ ...current, deductions: { ...current.deductions, [field]: undefined } }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateIncomeTaxForm(values)
-    if (!validation.success) {
-      setErrors(validation.errors)
-      return
-    }
-    setErrors({})
-    window.history.replaceState(null, "", buildIncomeTaxCalculatorUrl(validation.data))
+    commit({ ...values, newRegimeDeductions: { ...values.newRegimeDeductions, [field]: value } })
   }
 
   function handleReset() {
@@ -249,7 +240,7 @@ export function IncomeTaxCalculator() {
   const deductionErrors = errors.deductions ?? {}
 
   const shareUrl = buildIncomeTaxCalculatorUrl(liveTaxInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
+  const section80DCap = liveTaxInput.ageBand === "below60" ? INCOME_TAX_RULE_SET.oldRegime.deductionCaps.section80D.below60 : INCOME_TAX_RULE_SET.oldRegime.deductionCaps.section80D.age60OrAbove
   const resultText = [
     "ThinkCalculator Income Tax Calculation",
     "",
@@ -276,7 +267,7 @@ export function IncomeTaxCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">Income tax details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <div>
                   <RegimeToggle value={values.regime} onChange={switchRegime} />
                   {errors.regime ? (
@@ -290,22 +281,23 @@ export function IncomeTaxCalculator() {
                   <HraPassThroughNote amount={hraPassThroughAmount} onDismiss={() => setHraPassThroughAmount(null)} />
                 ) : null}
 
-                <div>
-                  <CalculatorNumberInput
-                    id="gross-income"
-                    label="Gross income"
-                    description="Enter your total gross income for the financial year."
-                    prefix="₹"
-                    min={INCOME_TAX_LIMITS.grossIncome.min}
-                    max={INCOME_TAX_LIMITS.grossIncome.max}
-                    step={10_000}
-                    value={values.grossIncome}
-                    onValueChange={(value) => updateShared("grossIncome", value)}
-                    error={errors.grossIncome}
-                    required
-                  />
-                  <input type="range" aria-label="Gross income slider" min={0} max={5_000_000} step={10_000} value={liveTaxInput.grossIncome} onChange={(event) => updateShared("grossIncome", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-tax" />
-                </div>
+                <PairedNumberSliderInput
+                  id="gross-income"
+                  label="Gross income"
+                  description="Enter your total gross income for the financial year."
+                  prefix="₹"
+                  min={INCOME_TAX_LIMITS.grossIncome.min}
+                  max={INCOME_TAX_LIMITS.grossIncome.max}
+                  step={10_000}
+                  sliderMin={0}
+                  sliderMax={5_000_000}
+                  value={values.grossIncome}
+                  sliderValue={liveTaxInput.grossIncome}
+                  onValueChange={(value) => updateShared("grossIncome", value)}
+                  error={errors.grossIncome}
+                  required
+                  accentClassName="accent-cat-tax"
+                />
                 <CalculatorSelectInput
                   id="age-band"
                   label="Age band"
@@ -319,24 +311,21 @@ export function IncomeTaxCalculator() {
 
                 {isOld ? (
                   <>
-                    <CalculatorNumberInput id="section-80c" label="Section 80C" description="PF, ELSS, life insurance, and similar investments." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.section80C} onValueChange={(value) => updateOldDeduction("section80C", value)} error={deductionErrors.section80C} />
-                    <CalculatorNumberInput id="section-80d" label="Section 80D" description="Health insurance premium paid for self and family." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.section80D} onValueChange={(value) => updateOldDeduction("section80D", value)} error={deductionErrors.section80D} />
-                    <CalculatorNumberInput id="hra-exemption" label="HRA exemption" description="Enter your already-calculated HRA exemption amount, not your full HRA received. Use the HRA Exemption Calculator if you need to work this out first." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.hraExemption} onValueChange={(value) => updateOldDeduction("hraExemption", value)} error={deductionErrors.hraExemption} />
-                    <CalculatorNumberInput id="home-loan-interest-24b" label="Home loan interest (24b)" description="Self-occupied property home loan interest." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.homeLoanInterestSection24b} onValueChange={(value) => updateOldDeduction("homeLoanInterestSection24b", value)} error={deductionErrors.homeLoanInterestSection24b} />
-                    <CalculatorNumberInput id="other-80-deductions" label="Other Section 80 deductions" description="80E, 80G, 80TTA, and similar provisions." prefix="₹" min={0} step={1_000} value={values.oldRegimeDeductions.otherSection80Deductions} onValueChange={(value) => updateOldDeduction("otherSection80Deductions", value)} error={deductionErrors.otherSection80Deductions} />
+                    <PairedNumberSliderInput id="section-80c" label="Section 80C" description="PF, ELSS, life insurance, and similar investments." prefix="₹" min={0} max={INCOME_TAX_RULE_SET.oldRegime.deductionCaps.section80C} step={1_000} value={values.oldRegimeDeductions.section80C} sliderValue={liveTaxInput.regime === "old" ? liveTaxInput.deductions.section80C : 0} onValueChange={(value) => updateOldDeduction("section80C", value)} error={deductionErrors.section80C} accentClassName="accent-cat-tax" />
+                    <PairedNumberSliderInput id="section-80d" label="Section 80D" description="Health insurance premium paid for self and family." prefix="₹" min={0} max={section80DCap} step={1_000} value={values.oldRegimeDeductions.section80D} sliderValue={liveTaxInput.regime === "old" ? liveTaxInput.deductions.section80D : 0} onValueChange={(value) => updateOldDeduction("section80D", value)} error={deductionErrors.section80D} accentClassName="accent-cat-tax" />
+                    <PairedNumberSliderInput id="hra-exemption" label="HRA exemption" description="Enter your already-calculated HRA exemption amount, not your full HRA received. Use the HRA Exemption Calculator if you need to work this out first." prefix="₹" min={0} max={Math.max(1, liveTaxInput.grossIncome)} step={1_000} value={values.oldRegimeDeductions.hraExemption} sliderValue={liveTaxInput.regime === "old" ? liveTaxInput.deductions.hraExemption : 0} onValueChange={(value) => updateOldDeduction("hraExemption", value)} error={deductionErrors.hraExemption} accentClassName="accent-cat-tax" />
+                    <PairedNumberSliderInput id="home-loan-interest-24b" label="Home loan interest (24b)" description="Self-occupied property home loan interest." prefix="₹" min={0} max={INCOME_TAX_RULE_SET.oldRegime.deductionCaps.homeLoanInterestSection24b} step={1_000} value={values.oldRegimeDeductions.homeLoanInterestSection24b} sliderValue={liveTaxInput.regime === "old" ? liveTaxInput.deductions.homeLoanInterestSection24b : 0} onValueChange={(value) => updateOldDeduction("homeLoanInterestSection24b", value)} error={deductionErrors.homeLoanInterestSection24b} accentClassName="accent-cat-tax" />
+                    <PairedNumberSliderInput id="other-80-deductions" label="Other Section 80 deductions" description="80E, 80G, 80TTA, and similar provisions." prefix="₹" min={0} max={Math.max(1, liveTaxInput.grossIncome)} step={1_000} value={values.oldRegimeDeductions.otherSection80Deductions} sliderValue={liveTaxInput.regime === "old" ? liveTaxInput.deductions.otherSection80Deductions : 0} onValueChange={(value) => updateOldDeduction("otherSection80Deductions", value)} error={deductionErrors.otherSection80Deductions} accentClassName="accent-cat-tax" />
                   </>
                 ) : (
-                  <CalculatorNumberInput id="employer-nps-80ccd2" label="Employer NPS contribution (80CCD(2))" description="Enter the amount already capped at 14% of basic salary plus DA." prefix="₹" min={0} step={1_000} value={values.newRegimeDeductions.employerNpsSection80CCD2} onValueChange={(value) => updateNewDeduction("employerNpsSection80CCD2", value)} error={deductionErrors.employerNpsSection80CCD2} />
+                  <PairedNumberSliderInput id="employer-nps-80ccd2" label="Employer NPS contribution (80CCD(2))" description="Enter the amount already capped at 14% of basic salary plus DA." prefix="₹" min={0} max={Math.max(1, liveTaxInput.grossIncome)} step={1_000} value={values.newRegimeDeductions.employerNpsSection80CCD2} sliderValue={liveTaxInput.regime === "new" ? liveTaxInput.deductions.employerNpsSection80CCD2 : 0} onValueChange={(value) => updateNewDeduction("employerNpsSection80CCD2", value)} error={deductionErrors.employerNpsSection80CCD2} accentClassName="accent-cat-tax" />
                 )}
 
                 <div className="rounded-lg border bg-muted/30 p-4 text-sm leading-6">
                   <strong>Narrow scope:</strong> this applies regular slab-rate income only. Capital gains, other special-rate income, TDS, and advance tax are not modelled. Verify against official sources or consult a qualified professional before filing.
                 </div>
-                <div className="flex flex-col gap-3 pt-1 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate tax</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -344,30 +333,9 @@ export function IncomeTaxCalculator() {
         <RegimeComparisonPanel comparison={comparison} selectedRegime={values.regime} resultText={resultText} shareUrl={shareUrl} />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-6" data-calculation-experience>
         <IncomeTaxBreakdownCard result={result} />
-      </div>
-      <div className="mt-6">
         <IncomeTaxRebateSurchargeCard result={result} />
-      </div>
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator Income Tax Calculation"
-          calculationDate={calculationDate}
-          disclaimer="This is an estimate for informational purposes only. It does not account for TDS, advance tax, capital gains, or other special-rate income. Verify against official sources or consult a qualified professional before filing."
-          items={[
-            { label: "Regime", value: liveTaxInput.regime === "old" ? "Old Regime" : "New Regime" },
-            { label: "Gross income", value: formatIndianCurrency(liveTaxInput.grossIncome) },
-            { label: "Taxable income", value: formatIndianCurrency(result.taxableIncome) },
-            { label: "Tax before rebate", value: formatIndianCurrency(result.taxBeforeRebate) },
-            { label: "Section 87A rebate", value: formatIndianCurrency(result.rebate87A.rebateAmount) },
-            { label: "Surcharge", value: formatIndianCurrency(result.surcharge.surcharge) },
-            { label: "Cess", value: formatIndianCurrency(result.cess) },
-            { label: "Total tax liability", value: formatIndianCurrency(result.totalTaxLiability) },
-            { label: "Old Regime total tax", value: formatIndianCurrency(comparison.oldRegime.totalTaxLiability) },
-            { label: "New Regime total tax", value: formatIndianCurrency(comparison.newRegime.totalTaxLiability) },
-          ]}
-        />
       </div>
 
       <IncomeTaxSlabBreakdownSection result={result} />

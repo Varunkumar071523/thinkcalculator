@@ -8,6 +8,7 @@ import {
 import { CalculatorBreadcrumbs } from "@/features/calculators/core/calculator-breadcrumbs"
 import { ClusterNavigation } from "@/components/topics/cluster-navigation"
 import { CalculatorContentLayout } from "@/components/content/calculator-content-layout"
+import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { SiteContainer } from "@/components/layout/site-container"
 import { Badge } from "@/components/ui/badge"
 import { StepUpSIPCalculator, stepUpSIPCalculatorDefinition, stepUpSIPKnowledgeContent } from "@/features/calculators/step-up-sip"
@@ -68,11 +69,21 @@ export default function StepUpSIPCalculatorPage() {
         <div className="mt-8">
           <StepUpSIPCalculator />
         </div>
-        <div className="mt-16 space-y-16 sm:mt-20 sm:space-y-20">
-          {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
-          {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
-          <CalculatorContentLayout content={stepUpSIPKnowledgeContent} />
-          <FAQSection faqs={calculator.faqs} />
+        <div className="mt-16 space-y-6 sm:mt-20 sm:space-y-8">
+          {calculator.formula || calculator.workedExample ? (
+            <CollapsibleSection title="Formula and worked example" description="How the step-up SIP maturity value is calculated, with a sample investment worked through step by step.">
+              <div className="space-y-12">
+                {calculator.formula ? <FormulaSection formula={calculator.formula} /> : null}
+                {calculator.workedExample ? <WorkedExampleSection example={calculator.workedExample} /> : null}
+              </div>
+            </CollapsibleSection>
+          ) : null}
+          <CollapsibleSection title={stepUpSIPKnowledgeContent.title} description={stepUpSIPKnowledgeContent.description}>
+            <CalculatorContentLayout content={stepUpSIPKnowledgeContent} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Frequently asked questions" description="Common questions about step-up SIPs and how this calculator works.">
+            <FAQSection faqs={calculator.faqs} />
+          </CollapsibleSection>
           <RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
         </div>
         <ClusterNavigation resourceId={calculator.id} className="mt-16 sm:mt-20" />

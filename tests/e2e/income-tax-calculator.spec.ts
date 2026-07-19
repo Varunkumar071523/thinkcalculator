@@ -41,6 +41,10 @@ test.describe("income tax calculator", () => {
     expect(await breakdownValueFor(page, "Taxable income")).toBe("₹12,00,000.00")
     expect(await breakdownValueFor(page, "Section 87A rebate")).toBe("₹60,000.00")
 
+    // The slab breakdown lives in a collapsed-by-default accordion — open it before checking its
+    // heading and table. Located by the <summary> itself rather than role="button": Chromium does
+    // not expose <summary> with an implicit button role, so a role-based lookup never resolves.
+    await page.locator("summary", { hasText: "Slab-by-slab breakdown" }).click()
     await expect(page.getByRole("heading", { name: "Slab-by-slab breakdown" })).toBeVisible()
     await expect(page.getByRole("table", { name: /slab-by-slab/i })).toBeVisible()
   })
@@ -60,6 +64,8 @@ test.describe("income tax calculator", () => {
     // The breakdown card's title is a styled div (CardTitle), not a semantic heading, so it's
     // looked up by text within the card rather than by heading role.
     await expect(page.getByTestId("income-tax-breakdown-card").getByText("Old Regime breakdown")).toBeVisible()
+    // The slab breakdown lives in a collapsed-by-default accordion — open it before checking its heading.
+    await page.locator("summary", { hasText: "Slab-by-slab breakdown" }).click()
     await expect(page.getByRole("heading", { name: "Slab-by-slab breakdown" })).toBeVisible()
 
     // The regime comparison panel shows this same figure in the Old Regime column specifically —

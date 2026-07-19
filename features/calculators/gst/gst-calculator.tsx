@@ -1,19 +1,18 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
-import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
+import { formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateGST } from "./calculate-gst"
-import { createGSTPrintDisclaimer, createGSTResultText, formatGSTCurrency, normaliseGSTDisplayZero } from "./gst-content"
+import { createGSTResultText, formatGSTCurrency, normaliseGSTDisplayZero } from "./gst-content"
 import { getGSTRatePreset, GST_RATE_CONFIG } from "./gst-rate-config"
 import { GST_LIMITS, isGSTCalculationMode, isGSTSupplyType, parseAndValidateGSTForm, parseGSTNumericText, type GSTFormValues } from "./gst-schema"
 import type { GSTInput, GSTValidationErrors } from "./gst-types"
@@ -64,16 +63,11 @@ export function GSTCalculator() {
 
   function update(field: keyof GSTFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateGSTForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildGSTCalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidateGSTForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildGSTCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -95,7 +89,6 @@ export function GSTCalculator() {
   const secondaryValue = isAdd ? result.taxableValue : result.invoiceValue
 
   const shareUrl = buildGSTCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = createGSTResultText(liveInput, result)
 
   return (
@@ -105,12 +98,27 @@ export function GSTCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">GST details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <CalculatorSelectInput id="gst-mode" label="Calculation mode" description="Choose whether the entered amount excludes or already includes GST." value={values.calculationMode} onValueChange={(value) => update("calculationMode", value)} options={modeOptions} error={errors.calculationMode} required />
 
                 <div>
-                  <CalculatorNumberInput id="gst-amount" label={amountLabel} description={amountHelp} prefix="₹" min={GST_LIMITS.amount.min} max={GST_LIMITS.amount.max} step={0.01} value={values.amount} onValueChange={(value) => update("amount", value)} error={errors.amount} required />
-                  <input type="range" aria-label="Amount slider" min={100} max={1_000_000} step={100} value={liveInput.amount} onChange={(event) => update("amount", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-business" />
+                  <PairedNumberSliderInput
+                    id="gst-amount"
+                    label={amountLabel}
+                    description={amountHelp}
+                    prefix="₹"
+                    min={GST_LIMITS.amount.min}
+                    max={GST_LIMITS.amount.max}
+                    step={0.01}
+                    sliderMin={100}
+                    sliderMax={1_000_000}
+                    value={values.amount}
+                    sliderValue={liveInput.amount}
+                    onValueChange={(value) => update("amount", value)}
+                    error={errors.amount}
+                    required
+                    accentClassName="accent-cat-business"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {AMOUNT_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => update("amount", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-cat-business hover:text-cat-business focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -127,23 +135,31 @@ export function GSTCalculator() {
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground" aria-live="polite">{activePreset ? `${activePreset.label} preset selected.` : "Custom rate entered."} Presets are arithmetic shortcuts, not classification advice.</p>
                 </div>
-                <div>
-                  <CalculatorNumberInput id="gst-rate" label="GST rate" description="The rate input is the calculation value. Enter a custom rate if needed; up to two decimal places are accepted." suffix="%" min={GST_LIMITS.gstRate.min} max={GST_LIMITS.gstRate.max} step={0.01} value={values.gstRate} onValueChange={(value) => update("gstRate", value)} error={errors.gstRate} required />
-                  <input type="range" aria-label="GST rate slider" min={GST_LIMITS.gstRate.min} max={GST_LIMITS.gstRate.max} step={0.01} value={liveInput.gstRate} onChange={(event) => update("gstRate", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-business" />
-                </div>
+                <PairedNumberSliderInput
+                  id="gst-rate"
+                  label="GST rate"
+                  description="The rate input is the calculation value. Enter a custom rate if needed; up to two decimal places are accepted."
+                  suffix="%"
+                  min={GST_LIMITS.gstRate.min}
+                  max={GST_LIMITS.gstRate.max}
+                  step={0.01}
+                  value={values.gstRate}
+                  sliderValue={liveInput.gstRate}
+                  onValueChange={(value) => update("gstRate", value)}
+                  error={errors.gstRate}
+                  required
+                  accentClassName="accent-cat-business"
+                />
 
                 <CalculatorSelectInput id="gst-supply" label="Supply type for arithmetic" description="Select this yourself. The calculator does not infer place of supply from an address or location." value={values.supplyType} onValueChange={(value) => update("supplyType", value)} options={supplyOptions} error={errors.supplyType} required />
                 <div className="rounded-lg border bg-muted/30 p-4 text-sm leading-6"><strong>Rate and supply warning:</strong> actual applicability depends on current classification, notification, place-of-supply rules, and transaction facts. Verify official sources or consult a qualified professional.</div>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate GST</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-business-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-business-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">{primaryLabel}</p>
@@ -169,7 +185,7 @@ export function GSTCalculator() {
         </Card>
       </div>
 
-      <div className="mt-6 grid gap-6 sm:grid-cols-2">
+      <div className="mt-6 grid gap-6 sm:grid-cols-2" data-calculation-experience>
         <Card>
           <CardContent>
             <SimpleDonutChart title="Taxable value versus GST" items={[{ label: "Taxable value", value: result.taxableValue, formattedValue: formatGSTCurrency(result.taxableValue), colorClass: "bg-chart-1" }, { label: "Total GST", value: result.totalGSTAmount, formattedValue: formatGSTCurrency(result.totalGSTAmount), colorClass: "bg-chart-2" }]} />
@@ -188,26 +204,6 @@ export function GSTCalculator() {
             <p className="mt-4 text-sm leading-6 text-muted-foreground">Each tax head and total is rounded independently for display, so displayed halves can differ by one paise from the displayed total. No hidden round-off adjustment is applied. Use the rounding rules applicable to your invoice and accounting records.</p>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator GST Calculation"
-          calculationDate={calculationDate}
-          disclaimer={createGSTPrintDisclaimer()}
-          items={[
-            { label: `Entered ${liveInput.calculationMode === "add" ? "exclusive" : "inclusive"} amount`, value: formatIndianCurrency(liveInput.amount) },
-            { label: "Entered GST rate", value: formatPercentage(liveInput.gstRate) },
-            { label: "Mode", value: liveInput.calculationMode === "add" ? "Add GST" : "Remove GST" },
-            { label: "Supply arithmetic", value: liveInput.supplyType === "intra-state" ? "Intra-State — CGST + SGST/UTGST" : "Inter-State — IGST" },
-            { label: "Taxable / exclusive value", value: formatGSTCurrency(result.taxableValue) },
-            { label: "Total GST", value: formatGSTCurrency(result.totalGSTAmount) },
-            { label: "Invoice / inclusive value", value: formatGSTCurrency(result.invoiceValue) },
-            { label: "CGST", value: formatGSTCurrency(result.cgstAmount) },
-            { label: "SGST/UTGST", value: formatGSTCurrency(result.sgstUtgstAmount) },
-            { label: "IGST", value: formatGSTCurrency(result.igstAmount) },
-          ]}
-        />
       </div>
     </div>
   )

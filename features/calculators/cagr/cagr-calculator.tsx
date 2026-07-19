@@ -1,10 +1,9 @@
 "use client"
 
-import { useMemo, useState, type FormEvent } from "react"
+import { useMemo, useState } from "react"
 
-import { CalculationSummary } from "@/components/calculators/calculation-summary"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
-import { CalculatorNumberInput } from "@/components/calculators/calculator-number-input"
+import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
@@ -109,16 +108,11 @@ export function CAGRCalculator() {
 
   function updateValue(field: keyof CAGRFormValues, value: string) {
     markInteracted()
-    setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => ({ ...current, [field]: undefined }))
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const validation = parseAndValidateCAGRForm(values)
-    if (!validation.success) { setErrors(validation.errors); return }
-    setErrors({})
-    window.history.replaceState(null, "", buildCAGRCalculatorUrl(validation.data))
+    const nextValues = { ...values, [field]: value }
+    setValues(nextValues)
+    const validation = parseAndValidateCAGRForm(nextValues)
+    setErrors(validation.success ? {} : validation.errors)
+    if (validation.success) window.history.replaceState(null, "", buildCAGRCalculatorUrl(validation.data))
   }
 
   function handleReset() {
@@ -132,7 +126,6 @@ export function CAGRCalculator() {
   const gainLossLabel = getCAGRGainLossLabel(result)
 
   const shareUrl = buildCAGRCalculatorUrl(liveInput, siteConfig.url)
-  const calculationDate = new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date())
   const resultText = createCAGRResultText(liveInput, result)
 
   return (
@@ -142,10 +135,25 @@ export function CAGRCalculator() {
           <Card>
             <CardHeader><CardTitle className="text-base">CAGR details</CardTitle></CardHeader>
             <CardContent>
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <div className="space-y-5">
                 <div>
-                  <CalculatorNumberInput id="beginning-value" label="Beginning value" description="Enter the value at the start of the period." prefix="₹" min={CAGR_LIMITS.beginningValue.min} max={CAGR_LIMITS.beginningValue.max} step={0.01} value={values.beginningValue} onValueChange={(value) => updateValue("beginningValue", value)} error={errors.beginningValue} required />
-                  <input type="range" aria-label="Beginning value slider" min={1_000} max={10_000_000} step={1_000} value={liveInput.beginningValue} onChange={(event) => updateValue("beginningValue", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
+                  <PairedNumberSliderInput
+                    id="beginning-value"
+                    label="Beginning value"
+                    description="Enter the value at the start of the period."
+                    prefix="₹"
+                    min={CAGR_LIMITS.beginningValue.min}
+                    max={CAGR_LIMITS.beginningValue.max}
+                    step={0.01}
+                    sliderMin={1_000}
+                    sliderMax={10_000_000}
+                    value={values.beginningValue}
+                    sliderValue={liveInput.beginningValue}
+                    onValueChange={(value) => updateValue("beginningValue", value)}
+                    error={errors.beginningValue}
+                    required
+                    accentClassName="accent-cat-invest"
+                  />
                   <div className="mt-2 flex gap-1.5">
                     {BEGINNING_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("beginningValue", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-cat-invest hover:text-cat-invest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -155,26 +163,49 @@ export function CAGRCalculator() {
                   </div>
                 </div>
 
-                <div>
-                  <CalculatorNumberInput id="ending-value" label="Ending value" description="Enter the value at the end of the period." prefix="₹" min={CAGR_LIMITS.endingValue.min} max={CAGR_LIMITS.endingValue.max} step={0.01} value={values.endingValue} onValueChange={(value) => updateValue("endingValue", value)} error={errors.endingValue} required />
-                  <input type="range" aria-label="Ending value slider" min={0} max={20_000_000} step={1_000} value={liveInput.endingValue} onChange={(event) => updateValue("endingValue", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="ending-value"
+                  label="Ending value"
+                  description="Enter the value at the end of the period."
+                  prefix="₹"
+                  min={CAGR_LIMITS.endingValue.min}
+                  max={CAGR_LIMITS.endingValue.max}
+                  step={0.01}
+                  sliderMin={0}
+                  sliderMax={20_000_000}
+                  value={values.endingValue}
+                  sliderValue={liveInput.endingValue}
+                  onValueChange={(value) => updateValue("endingValue", value)}
+                  error={errors.endingValue}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
 
-                <div>
-                  <CalculatorNumberInput id="investment-period" label="Investment period" description="Enter years from 0.01 to 100, with up to two decimal places." suffix="years" min={CAGR_LIMITS.investmentPeriodYears.min} max={CAGR_LIMITS.investmentPeriodYears.max} step={0.01} value={values.investmentPeriodYears} onValueChange={(value) => updateValue("investmentPeriodYears", value)} error={errors.investmentPeriodYears} required />
-                  <input type="range" aria-label="Investment period slider" min={1} max={30} step={1} value={liveInput.investmentPeriodYears} onChange={(event) => updateValue("investmentPeriodYears", event.target.value)} className="mt-2.5 h-1 w-full cursor-pointer accent-cat-invest" />
-                </div>
+                <PairedNumberSliderInput
+                  id="investment-period"
+                  label="Investment period"
+                  description="Enter years from 0.01 to 100, with up to two decimal places."
+                  suffix="years"
+                  min={CAGR_LIMITS.investmentPeriodYears.min}
+                  max={CAGR_LIMITS.investmentPeriodYears.max}
+                  step={0.01}
+                  sliderMin={1}
+                  sliderMax={30}
+                  value={values.investmentPeriodYears}
+                  sliderValue={liveInput.investmentPeriodYears}
+                  onValueChange={(value) => updateValue("investmentPeriodYears", value)}
+                  error={errors.investmentPeriodYears}
+                  required
+                  accentClassName="accent-cat-invest"
+                />
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button className="flex-1" size="lg" type="submit">Calculate CAGR</Button>
-                  <Button className="flex-1" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
-                </div>
-              </form>
+                <Button className="w-full" size="lg" variant="outline" type="button" onClick={handleReset}>Reset</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Compound annual growth rate</p>
@@ -215,23 +246,6 @@ export function CAGRCalculator() {
             <p className="mt-4 text-sm leading-6 text-muted-foreground">This comparison shows only the endpoints. CAGR smooths the change and does not show the actual path between them.</p>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="mt-6">
-        <CalculationSummary
-          title="ThinkCalculator CAGR Calculation"
-          calculationDate={calculationDate}
-          disclaimer="CAGR is an annualised endpoint measure, not a forecast. It excludes intermediate cash flows and hides volatility."
-          items={[
-            { label: "Beginning value", value: formatIndianCurrency(liveInput.beginningValue) },
-            { label: "Ending value", value: formatIndianCurrency(liveInput.endingValue) },
-            { label: "Investment period", value: `${formatIndianNumber(liveInput.investmentPeriodYears)} years` },
-            { label: "CAGR", value: formatCAGRPercentageForDisplay(result.cagrPercentage) },
-            { label: gainLossLabel, value: formatIndianCurrency(normaliseCAGRDisplayZero(result.absoluteGainLoss)) },
-            { label: "Total return", value: formatPercentage(normaliseCAGRDisplayZero(result.totalReturnPercentage)) },
-            { label: "Growth multiple", value: `${formatIndianNumber(normaliseCAGRDisplayZero(result.growthMultiple))}×` },
-          ]}
-        />
       </div>
     </div>
   )
