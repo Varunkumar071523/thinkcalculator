@@ -18,9 +18,9 @@ export const topicRegistry: readonly TopicDefinition[] = [
       { title: "Follow the practical guide", description: "Learn how to enter loan inputs and interpret payment, interest, and schedule results.", resourceId: "guide-use-emi" },
       { title: "Estimate a scenario", description: "Use the EMI Calculator with the amount, annual rate, and repayment period you want to compare.", resourceId: "emi-calculator" },
     ],
-    calculatorIds: ["emi-calculator"],
+    calculatorIds: ["emi-calculator", "home-loan-eligibility-calculator"],
     editorialIds: ["blog-understanding-loan-emi", "guide-use-emi"],
-    glossaryIds: ["glossary-emi", "glossary-principal", "glossary-interest-rate", "glossary-tenure"],
+    glossaryIds: ["glossary-emi", "glossary-principal", "glossary-interest-rate", "glossary-tenure", "glossary-foir"],
   },
   {
     id: "topic-investing", slug: "investing", name: "Investing", canonicalPath: "/topics/investing", status: "published",
