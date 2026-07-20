@@ -27,7 +27,13 @@ export function createRootStructuredData() {
   return {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "Organization", "@id": `${siteConfig.url}/#organization`, name: siteConfig.name, url: siteConfig.url },
+      {
+        "@type": "Organization",
+        "@id": `${siteConfig.url}/#organization`,
+        name: siteConfig.name,
+        url: siteConfig.url,
+        logo: { "@type": "ImageObject", url: `${siteConfig.url}/icon`, width: 512, height: 512 },
+      },
       {
         "@type": "WebSite",
         "@id": `${siteConfig.url}/#website`,

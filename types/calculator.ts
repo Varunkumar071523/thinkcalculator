@@ -7,6 +7,8 @@ export type CalculatorCategory =
 
 export type CalculatorStatus = "draft" | "published"
 
+export type CalculatorBadge = "popular" | "new"
+
 export type CalculatorMetadata = {
   readonly title: string
   readonly description: string
@@ -111,4 +113,5 @@ export type CalculatorDefinition = {
   readonly relatedCalculators: readonly RelatedCalculator[]
   readonly metadata: CalculatorMetadata
   readonly status: CalculatorStatus
+  readonly badge?: CalculatorBadge
 }

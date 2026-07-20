@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react"
 
 import type { CalculatorGroup } from "@/lib/calculator-taxonomy"
+import type { CalculatorBadge } from "@/types/calculator"
 
 export type SiteLink = {
   title: string
@@ -17,6 +18,7 @@ export type CalculatorSummary = SiteLink & {
   description: string
   category: string
   icon: LucideIcon
+  badge?: CalculatorBadge
 }
 
 /**
@@ -32,7 +34,7 @@ export type GroupedCalculatorSummary = {
   category: string
   slug: string
   group: CalculatorGroup
-  popular?: boolean
+  badge?: CalculatorBadge
 }
 
 export type FooterGroup = {

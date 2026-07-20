@@ -68,8 +68,11 @@ export function CalculatorGridCard({ calculator }: { readonly calculator: Groupe
         <span className={cn("flex size-9 items-center justify-center rounded-lg", style.iconBg, style.iconColor)}>
           <Icon className="size-4.5" aria-hidden="true" />
         </span>
-        {calculator.popular ? (
+        {calculator.badge === "popular" ? (
           <span className="rounded-md bg-gold-soft px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-gold uppercase">Popular</span>
+        ) : null}
+        {calculator.badge === "new" ? (
+          <span className="rounded-md bg-money-soft px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-money uppercase">New</span>
         ) : null}
       </div>
       <h3 className="mt-2.5 text-[15.5px] font-semibold">{calculator.title}</h3>

@@ -66,9 +66,6 @@ export const calculatorIconBySlug: Readonly<Record<string, LucideIcon>> = {
   "retirement-corpus-calculator": Sunrise,
 }
 
-/** Curated, not derived — mirrors which tools get the "Popular" badge in the redesign mockup. */
-export const popularCalculatorSlugs: ReadonlySet<string> = new Set(["emi-calculator", "sip-calculator"])
-
 export type CalculatorGroupStyle = {
   readonly border: string
   readonly iconBg: string
@@ -95,7 +92,7 @@ export function toGroupedCalculators(definitions: readonly CalculatorDefinition[
       category: definition.category,
       slug: definition.slug,
       group: calculatorGroupBySlug[definition.slug] ?? "business",
-      popular: popularCalculatorSlugs.has(definition.slug),
+      badge: definition.badge,
     }))
 }
 
