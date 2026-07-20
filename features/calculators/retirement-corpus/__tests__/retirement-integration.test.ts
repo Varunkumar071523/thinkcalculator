@@ -14,7 +14,7 @@ import { retirementWorkedExample } from "../retirement-content"
 describe("Retirement Corpus production integration", () => {
   it("registers a unique thirteenth published Finance calculator", () => {
     expect(calculatorRegistry.filter((item) => item.id === retirementCalculatorDefinition.id)).toEqual([retirementCalculatorDefinition])
-    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(15)
+    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(16)
     expect(retirementCalculatorDefinition).toMatchObject({ category: "Finance", canonicalPath: "/finance/retirement-corpus-calculator", status: "published" })
     for (const values of [calculatorRegistry.map((item) => item.id), calculatorRegistry.map((item) => item.slug), calculatorRegistry.map((item) => item.canonicalPath)]) expect(new Set(values).size).toBe(values.length)
   })

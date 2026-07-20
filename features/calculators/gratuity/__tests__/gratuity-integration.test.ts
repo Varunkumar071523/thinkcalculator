@@ -29,7 +29,7 @@ describe("gratuity production integration", () => {
   it("registers one unique ninth published Finance calculator", () => {
     expect(calculatorRegistry.filter((item) => item.id === "gratuity-calculator")).toEqual([gratuityCalculatorDefinition])
     expect(gratuityCalculatorDefinition).toMatchObject({ status: "published", category: "Finance", canonicalPath: "/finance/gratuity-calculator" })
-    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(15)
+    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(16)
     expect(new Set(calculatorRegistry.map((item) => item.id)).size).toBe(calculatorRegistry.length)
     expect(new Set(calculatorRegistry.map((item) => item.slug)).size).toBe(calculatorRegistry.length)
     expect(new Set(calculatorRegistry.map((item) => item.canonicalPath)).size).toBe(calculatorRegistry.length)

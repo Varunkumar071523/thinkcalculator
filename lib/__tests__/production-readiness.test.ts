@@ -26,7 +26,7 @@ describe("production readiness configuration", () => {
   it("lists every published calculator but excludes the demo from the sitemap", () => {
     const urls = new Set(sitemap().map((entry) => entry.url))
     const published = calculatorRegistry.filter((calculator) => calculator.status === "published")
-    expect(published).toHaveLength(15)
+    expect(published).toHaveLength(16)
     for (const calculator of published) expect(urls.has(createCanonicalUrl(calculator.canonicalPath))).toBe(true)
     expect(urls.has(createCanonicalUrl(demoCalculatorDefinition.canonicalPath))).toBe(false)
   })

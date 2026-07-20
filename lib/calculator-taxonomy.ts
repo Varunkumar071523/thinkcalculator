@@ -32,6 +32,7 @@ export const calculatorGroups: readonly { readonly id: CalculatorGroup; readonly
 
 export const calculatorGroupBySlug: Readonly<Record<string, CalculatorGroup>> = {
   "emi-calculator": "loans",
+  "home-loan-eligibility-calculator": "loans",
   "sip-calculator": "investments",
   "lumpsum-calculator": "investments",
   "fd-calculator": "savings",
@@ -50,6 +51,7 @@ export const calculatorGroupBySlug: Readonly<Record<string, CalculatorGroup>> = 
 
 export const calculatorIconBySlug: Readonly<Record<string, LucideIcon>> = {
   "emi-calculator": WalletCards,
+  "home-loan-eligibility-calculator": Landmark,
   "sip-calculator": LineChart,
   "lumpsum-calculator": PiggyBank,
   "fd-calculator": IndianRupee,

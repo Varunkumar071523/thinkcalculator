@@ -4,6 +4,7 @@ import type {
   RelatedCalculator,
 } from "@/types/calculator"
 import { emiCalculatorDefinition } from "@/features/calculators/emi/emi-definition"
+import { homeLoanEligibilityCalculatorDefinition } from "@/features/calculators/home-loan-eligibility/home-loan-eligibility-definition"
 import { sipCalculatorDefinition } from "@/features/calculators/sip/sip-definition"
 import { lumpsumCalculatorDefinition } from "@/features/calculators/lumpsum/lumpsum-definition"
 import { fdCalculatorDefinition } from "@/features/calculators/fd/fd-definition"
@@ -130,6 +131,7 @@ export const demoCalculatorDefinition = {
 export const calculatorRegistry: readonly CalculatorDefinition[] = [
   demoCalculatorDefinition,
   emiCalculatorDefinition,
+  homeLoanEligibilityCalculatorDefinition,
   sipCalculatorDefinition,
   lumpsumCalculatorDefinition,
   fdCalculatorDefinition,

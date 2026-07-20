@@ -14,6 +14,7 @@ import { expect, test } from "@playwright/test"
 const sourcePages = [
   { path: "/finance/emi-calculator", label: "EMI calculator", faqSelector: "#faqs" },
   { path: "/finance/fd-calculator", label: "FD calculator", faqSelector: "#faqs" },
+  { path: "/finance/home-loan-eligibility-calculator", label: "Home Loan Eligibility calculator", faqSelector: "#faqs" },
   { path: "/guides/understanding-emi-fd-and-rd", label: "Loans guide", faqSelector: 'section[aria-labelledby="editorial-faq"]' },
 ]
 
@@ -35,6 +36,15 @@ test.describe("glossary auto-linking", () => {
       }
     })
   }
+
+  test("Home Loan Eligibility calculator FAQ links the FOIR glossary term, and it resolves", async ({ page, request }) => {
+    await page.goto("/finance/home-loan-eligibility-calculator")
+    const hrefs = glossaryHrefs(await page.locator("#faqs a[href^=\"/glossary/\"]").evaluateAll((links) => links.map((link) => link.getAttribute("href"))))
+    expect(hrefs).toContain("/glossary/foir")
+
+    const response = await request.get("/glossary/foir")
+    expect(response.status()).toBeLessThan(400)
+  })
 
   test("RD calculator FAQ text has no glossary matches, so no glossary links render there", async ({ page }) => {
     await page.goto("/finance/rd-calculator")
