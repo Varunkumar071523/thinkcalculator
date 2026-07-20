@@ -12,6 +12,7 @@ import { CollapsibleSection } from "@/components/calculators/collapsible-section
 import { SiteContainer } from "@/components/layout/site-container"
 import { Badge } from "@/components/ui/badge"
 import { EMICalculator, emiCalculatorDefinition, emiKnowledgeContent } from "@/features/calculators/emi"
+import { getPublishedGlossaryTerms } from "@/features/content"
 import { siteConfig } from "@/lib/site-config"
 import { createCalculatorMetadata } from "@/lib/seo"
 
@@ -82,7 +83,7 @@ export default function EMICalculatorPage() {
             <CalculatorContentLayout content={emiKnowledgeContent} />
           </CollapsibleSection>
           <CollapsibleSection title="Frequently asked questions" description="Common questions about EMI and how this calculator works.">
-            <FAQSection faqs={calculator.faqs} />
+            <FAQSection faqs={calculator.faqs} glossaryTerms={getPublishedGlossaryTerms()} />
           </CollapsibleSection>
           <RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
         </div>

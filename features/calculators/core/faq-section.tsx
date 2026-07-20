@@ -1,10 +1,18 @@
 import { ChevronDown } from "lucide-react"
 
+import { GlossaryLinkedText } from "@/components/content/glossary-linked-text"
 import { CalculatorSection } from "@/features/calculators/core/calculator-section"
+import { createGlossaryMatcher, linkGlossaryTermsInText } from "@/features/content/glossary-linker"
 import type { CalculatorFAQ } from "@/types/calculator"
+import type { GlossaryTerm } from "@/types/glossary-content"
 
-export function FAQSection({ faqs }: { readonly faqs: readonly CalculatorFAQ[] }) {
+// `glossaryTerms` is opt-in: when omitted, answers render as plain text exactly as before, so
+// calculators that have not been validated against the glossary auto-linker are unaffected.
+export function FAQSection({ faqs, glossaryTerms }: { readonly faqs: readonly CalculatorFAQ[]; readonly glossaryTerms?: readonly GlossaryTerm[] }) {
   if (faqs.length === 0) return null
+
+  const matcher = glossaryTerms?.length ? createGlossaryMatcher(glossaryTerms) : null
+  const linkedSlugs = new Set<string>()
 
   return (
     <CalculatorSection id="faqs" title="Frequently asked questions">
@@ -15,7 +23,9 @@ export function FAQSection({ faqs }: { readonly faqs: readonly CalculatorFAQ[] }
               {faq.question}
               <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
             </summary>
-            <p className="pt-3 leading-7 text-muted-foreground">{faq.answer}</p>
+            <p className="pt-3 leading-7 text-muted-foreground">
+              {matcher ? <GlossaryLinkedText segments={linkGlossaryTermsInText(faq.answer, matcher, linkedSlugs)} /> : faq.answer}
+            </p>
           </details>
         ))}
       </div>

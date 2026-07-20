@@ -19,8 +19,9 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - Calculator knowledge content with formulas, examples, FAQs, comparison tables, and internal links.
 - SEO metadata helpers, canonical URLs, sitemap, robots, factual structured data, manifest, icons, and social-image routes.
 - Production headers, custom not-found/error experiences, and accessibility-oriented navigation.
-- Typed Blog and Guide engine with four published items and one draft excluded from routes, lists, related content, and sitemap.
+- Typed Blog and Guide engine with five published items (including the Sprint 38 Loans category guide covering EMI, FD, and RD together) and one draft excluded from routes, lists, related content, and sitemap.
 - Typed Glossary Engine with ten substantive published terms, one excluded draft, static routes, DefinedTerm schema, internal links, and sitemap coverage.
+- Sprint 38 build-time glossary auto-linker: whitelist, word-boundary, first-occurrence-per-page linking from calculator/guide FAQ answer text to glossary terms, with a reverse "used in" lookup on glossary pages derived from the same matching data. Wired site-wide for guide/blog FAQs (shared template) and opt-in per page for calculators, currently enabled on EMI, FD, and RD only.
 - Registry-derived `/business` directory, with GST available through calculator-only homepage search and excluded from editorial `/search` while the GST glossary term is included.
 - Typed Topic Hub engine with public `/topics/loans` and `/topics/investing` clusters, curated stable-ID relationships, substantive eligibility checks, static routes, breadcrumb schema, and sitemap coverage.
 - Registry-derived reciprocal cluster navigation on eligible calculator, editorial, and glossary pages, with authored-link precedence, deterministic type-balanced fallbacks, canonical-path deduplication, and linked ordered hub learning paths.
