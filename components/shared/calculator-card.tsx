@@ -17,7 +17,11 @@ export function CalculatorCard({ calculator }: { calculator: CalculatorSummary }
         </CardHeader>
         <CardContent>
           <p className="leading-6 text-muted-foreground">{calculator.description}</p>
-          <Badge className="mt-4" variant="secondary">{calculator.category}</Badge>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Badge variant="secondary">{calculator.category}</Badge>
+            {calculator.badge === "popular" ? <Badge className="bg-gold-soft text-gold">Popular</Badge> : null}
+            {calculator.badge === "new" ? <Badge className="bg-money-soft text-money">New</Badge> : null}
+          </div>
         </CardContent>
       </Card>
     </Link>

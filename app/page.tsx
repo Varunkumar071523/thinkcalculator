@@ -4,7 +4,9 @@ import {
   ArrowRight, BarChart3, BookOpen, CheckCircle2, FileText, MapPin, Send, Share2,
 } from "lucide-react"
 
+import { ChangelogBlock } from "@/components/home/changelog-block"
 import { HomeHeroCalculator } from "@/components/home/home-hero-calculator"
+import { TrustStatsStrip } from "@/components/home/trust-stats-strip"
 import { SiteContainer } from "@/components/layout/site-container"
 import { CalculatorGrid } from "@/components/shared/calculator-grid"
 import { Badge } from "@/components/ui/badge"
@@ -99,6 +101,8 @@ export default function HomePage() {
         </SiteContainer>
       </section>
 
+      <TrustStatsStrip calculatorCount={publishedCalculators.length} />
+
       <section className="border-t border-line py-10 sm:py-12">
         <SiteContainer>
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
@@ -112,6 +116,17 @@ export default function HomePage() {
           <div className="mt-6">
             <CalculatorGrid calculators={groupedCalculators} />
           </div>
+        </SiteContainer>
+      </section>
+
+      <section className="border-t border-line py-10 sm:py-12">
+        <SiteContainer className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <p className="font-mono text-xs font-medium tracking-wide text-money uppercase">Updates</p>
+            <h2 className="mt-2 font-serif text-3xl font-semibold tracking-tight">What&apos;s changed recently</h2>
+            <p className="mt-1.5 max-w-[52ch] text-[14.5px] text-muted-foreground">New calculators and regulatory updates, most recent first.</p>
+          </div>
+          <ChangelogBlock />
         </SiteContainer>
       </section>
 

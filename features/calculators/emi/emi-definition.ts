@@ -34,4 +34,5 @@ export const emiCalculatorDefinition = {
     keywords: ["EMI calculator", "loan EMI calculator", "loan interest calculator India"],
   },
   status: "published",
+  badge: "popular",
 } as const satisfies CalculatorDefinition

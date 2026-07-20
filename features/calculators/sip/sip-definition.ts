@@ -34,4 +34,5 @@ export const sipCalculatorDefinition = {
     keywords: ["SIP calculator", "SIP return calculator", "mutual fund SIP calculator India"],
   },
   status: "published",
+  badge: "popular",
 } as const satisfies CalculatorDefinition

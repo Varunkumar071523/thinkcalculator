@@ -36,6 +36,7 @@ export const availableCalculators: CalculatorSummary[] = calculatorRegistry
     description: calculator.description,
     category: calculator.category,
     icon: iconBySlug[calculator.slug as keyof typeof iconBySlug] ?? BarChart3,
+    badge: calculator.badge,
   }))
 
 export default function CalculatorsPage() {
