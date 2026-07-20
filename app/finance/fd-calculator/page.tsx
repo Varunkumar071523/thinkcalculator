@@ -12,6 +12,7 @@ import { CollapsibleSection } from "@/components/calculators/collapsible-section
 import { SiteContainer } from "@/components/layout/site-container"
 import { Badge } from "@/components/ui/badge"
 import { FDCalculator, fdCalculatorDefinition, fdKnowledgeContent } from "@/features/calculators/fd"
+import { getPublishedGlossaryTerms } from "@/features/content"
 import { siteConfig } from "@/lib/site-config"
 import { createCalculatorMetadata } from "@/lib/seo"
 
@@ -82,7 +83,7 @@ export default function FDCalculatorPage() {
             <CalculatorContentLayout content={fdKnowledgeContent} />
           </CollapsibleSection>
           <CollapsibleSection title="Frequently asked questions" description="Common questions about fixed deposits and how this calculator works.">
-            <FAQSection faqs={calculator.faqs} />
+            <FAQSection faqs={calculator.faqs} glossaryTerms={getPublishedGlossaryTerms()} />
           </CollapsibleSection>
           <RelatedCalculators calculators={getRelatedCalculators(calculator.slug)} />
         </div>
