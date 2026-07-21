@@ -10,9 +10,13 @@ export type YearlyBarChartSeries = {
   readonly colorVar: string
 }
 
+// Widened from a fixed 2-tuple to a 2-or-3-tuple so a calculator whose yearly breakdown has three
+// parts (e.g. EPF's employee/employer/interest split) can reuse this chart instead of forking it.
+// Every existing 2-series caller (EMI, PPF, retirement corpus, ...) keeps type-checking unchanged,
+// since a 2-tuple is still one of the two accepted shapes.
 type YearlyBarChartProps = {
   readonly labels: readonly string[]
-  readonly series: readonly [YearlyBarChartSeries, YearlyBarChartSeries]
+  readonly series: readonly [YearlyBarChartSeries, YearlyBarChartSeries] | readonly [YearlyBarChartSeries, YearlyBarChartSeries, YearlyBarChartSeries]
   readonly formatTooltipValue: (value: number) => string
   readonly ariaLabel: string
 }
@@ -22,13 +26,22 @@ function resolveColor(cssVar: string): string {
 }
 
 /** Compact ₹ axis labels (e.g. ₹12.5L, ₹1.2Cr) — full precision is reserved for tooltips. */
-function formatCompactINR(value: number): string {
+export function formatCompactINR(value: number): string {
   const sign = value < 0 ? "-" : ""
   const abs = Math.abs(value)
   if (abs >= 1_00_00_000) return `${sign}₹${(abs / 1_00_00_000).toFixed(abs >= 10_00_00_000 ? 0 : 1)}Cr`
   if (abs >= 1_00_000) return `${sign}₹${(abs / 1_00_000).toFixed(abs >= 10_00_000 ? 0 : 1)}L`
   if (abs >= 1_000) return `${sign}₹${(abs / 1_000).toFixed(abs >= 10_000 ? 0 : 1)}K`
   return `${sign}₹${Math.round(abs)}`
+}
+
+export type YearlyBarChartDataset = { readonly label: string; readonly data: readonly number[]; readonly stack: "yearly" }
+
+/** Pure series-to-dataset mapping (color resolution is kept out of this function since it reads
+ * `document`/`getComputedStyle`, which only exist once mounted in a browser) — split out so the
+ * 2-vs-3-series stacking behaviour is directly unit-testable without a DOM or Chart.js. */
+export function buildStackedDatasets(series: YearlyBarChartProps["series"]): readonly YearlyBarChartDataset[] {
+  return series.map((item) => ({ label: item.label, data: item.values, stack: "yearly" as const }))
 }
 
 /** Animated, stacked year-by-year bar chart (e.g. principal vs interest) built on Chart.js —
@@ -49,11 +62,10 @@ export function YearlyBarChart({ labels, series, formatTooltipValue, ariaLabel }
       type: "bar",
       data: {
         labels: [...labels],
-        datasets: series.map((item) => ({
-          label: item.label,
-          data: [...item.values],
-          backgroundColor: resolveColor(item.colorVar),
-          stack: "yearly",
+        datasets: buildStackedDatasets(series).map((dataset, index) => ({
+          ...dataset,
+          data: [...dataset.data],
+          backgroundColor: resolveColor(series[index].colorVar),
         })),
       },
       options: {

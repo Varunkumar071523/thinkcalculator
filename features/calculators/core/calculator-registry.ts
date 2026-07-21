@@ -4,6 +4,7 @@ import type {
   RelatedCalculator,
 } from "@/types/calculator"
 import { emiCalculatorDefinition } from "@/features/calculators/emi/emi-definition"
+import { epfCalculatorDefinition } from "@/features/calculators/epf/epf-definition"
 import { homeLoanEligibilityCalculatorDefinition } from "@/features/calculators/home-loan-eligibility/home-loan-eligibility-definition"
 import { sipCalculatorDefinition } from "@/features/calculators/sip/sip-definition"
 import { lumpsumCalculatorDefinition } from "@/features/calculators/lumpsum/lumpsum-definition"
@@ -19,6 +20,7 @@ import { stepUpSIPCalculatorDefinition } from "@/features/calculators/step-up-si
 import { swpCalculatorDefinition } from "@/features/calculators/swp/swp-definition"
 import { inflationCalculatorDefinition } from "@/features/calculators/inflation/inflation-definition"
 import { retirementCalculatorDefinition } from "@/features/calculators/retirement-corpus/retirement-definition"
+import { npsCalculatorDefinition } from "@/features/calculators/nps/nps-definition"
 
 export const demoCalculatorDefinition = {
   id: "framework-demo",
@@ -146,6 +148,8 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   swpCalculatorDefinition,
   inflationCalculatorDefinition,
   retirementCalculatorDefinition,
+  epfCalculatorDefinition,
+  npsCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(
