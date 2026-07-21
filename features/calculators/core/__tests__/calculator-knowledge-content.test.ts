@@ -16,8 +16,10 @@ import { retirementCalculatorDefinition, retirementKnowledgeContent } from "@/fe
 import { incomeTaxCalculatorDefinition, incomeTaxKnowledgeContent } from "@/features/calculators/income-tax"
 import { hraCalculatorDefinition, hraKnowledgeContent } from "@/features/calculators/hra"
 import { homeLoanEligibilityCalculatorDefinition, homeLoanEligibilityKnowledgeContent } from "@/features/calculators/home-loan-eligibility"
+import { epfCalculatorDefinition, epfKnowledgeContent } from "@/features/calculators/epf"
+import { npsCalculatorDefinition, npsKnowledgeContent } from "@/features/calculators/nps"
 
-const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/step-up-sip-calculator", "/glossary/step-up-sip", "/finance/swp-calculator", "/glossary/swp", "/finance/inflation-calculator", "/glossary/inflation", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity", "/finance/retirement-corpus-calculator", "/glossary/retirement-corpus", "/finance/income-tax-calculator", "/finance/hra-calculator", "/finance/home-loan-eligibility-calculator"])
+const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/step-up-sip-calculator", "/glossary/step-up-sip", "/finance/swp-calculator", "/glossary/swp", "/finance/inflation-calculator", "/glossary/inflation", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity", "/finance/retirement-corpus-calculator", "/glossary/retirement-corpus", "/finance/income-tax-calculator", "/finance/hra-calculator", "/finance/home-loan-eligibility-calculator", "/finance/epf-calculator", "/finance/nps-calculator"])
 const calculators = [
   { definition: emiCalculatorDefinition, content: emiKnowledgeContent },
   { definition: homeLoanEligibilityCalculatorDefinition, content: homeLoanEligibilityKnowledgeContent },
@@ -35,11 +37,13 @@ const calculators = [
   { definition: retirementCalculatorDefinition, content: retirementKnowledgeContent },
   { definition: incomeTaxCalculatorDefinition, content: incomeTaxKnowledgeContent },
   { definition: hraCalculatorDefinition, content: hraKnowledgeContent },
+  { definition: epfCalculatorDefinition, content: epfKnowledgeContent },
+  { definition: npsCalculatorDefinition, content: npsKnowledgeContent },
 ]
 
 describe("calculator knowledge content", () => {
   it("is present and structurally complete for every production calculator", () => {
-    expect(calculators).toHaveLength(16)
+    expect(calculators).toHaveLength(18)
     for (const { content } of calculators) {
       expect(content.title.trim()).not.toBe("")
       expect(content.description.trim()).not.toBe("")

@@ -27,6 +27,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - Registry-derived reciprocal cluster navigation on eligible calculator, editorial, and glossary pages, with authored-link precedence, deterministic type-balanced fallbacks, canonical-path deduplication, and linked ordered hub learning paths.
 - Static `/search` shell with a focused Suspense-wrapped Client Component, registry-derived public editorial documents, deterministic literal matching, clean canonical metadata, sitemap coverage, and a factual WebSite SearchAction.
 - Permanent automated accessibility, keyboard/focus, zoom/reflow, and print-output coverage (`tests/e2e/`) via Playwright and `@axe-core/playwright`, run across Chromium, Firefox, and WebKit against every published static route (see docs/PRODUCTION-CHECKLIST.md sections 9-11 and 13 for exact scope and what still needs a human).
+- Sprint N added the EPF and NPS calculators, both bespoke-chart clean-slate builds: EPF's yearly corpus growth as a 3-way stacked bar (employee contribution / employer contribution / interest), and NPS's asset allocation (equity / corporate debt / govt securities) as a donut alongside a blended-rate growth line. `YearlyBarChart` and `SimpleDonutChart` were widened from a fixed 2-way shape to a 2-or-3-way union to support this, with every existing 2-way caller (EMI, PPF, retirement corpus, and others) unchanged — see docs/DECISIONS.md entry 26 for the full architecture reasoning.
 
 ## Known limitations and risks
 
