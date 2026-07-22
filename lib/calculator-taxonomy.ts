@@ -1,5 +1,6 @@
 import {
   BadgeIndianRupee,
+  CalendarCheck,
   HandCoins,
   IndianRupee,
   Landmark,
@@ -49,6 +50,7 @@ export const calculatorGroupBySlug: Readonly<Record<string, CalculatorGroup>> = 
   "retirement-corpus-calculator": "investments",
   "epf-calculator": "savings",
   "nps-calculator": "investments",
+  "leave-encashment-calculator": "taxes",
 }
 
 export const calculatorIconBySlug: Readonly<Record<string, LucideIcon>> = {
@@ -70,6 +72,7 @@ export const calculatorIconBySlug: Readonly<Record<string, LucideIcon>> = {
   "retirement-corpus-calculator": Sunrise,
   "epf-calculator": PiggyBank,
   "nps-calculator": Landmark,
+  "leave-encashment-calculator": CalendarCheck,
 }
 
 export type CalculatorGroupStyle = {
