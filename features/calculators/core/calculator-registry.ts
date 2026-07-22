@@ -15,6 +15,7 @@ import { ppfCalculatorDefinition } from "@/features/calculators/ppf/ppf-definiti
 import { gstCalculatorDefinition } from "@/features/calculators/gst/gst-definition"
 import { gratuityCalculatorDefinition } from "@/features/calculators/gratuity/gratuity-definition"
 import { hraCalculatorDefinition } from "@/features/calculators/hra/hra-definition"
+import { leaveEncashmentCalculatorDefinition } from "@/features/calculators/leave-encashment/leave-encashment-definition"
 import { incomeTaxCalculatorDefinition } from "@/features/calculators/income-tax/income-tax-definition"
 import { stepUpSIPCalculatorDefinition } from "@/features/calculators/step-up-sip/step-up-sip-definition"
 import { swpCalculatorDefinition } from "@/features/calculators/swp/swp-definition"
@@ -150,6 +151,7 @@ export const calculatorRegistry: readonly CalculatorDefinition[] = [
   retirementCalculatorDefinition,
   epfCalculatorDefinition,
   npsCalculatorDefinition,
+  leaveEncashmentCalculatorDefinition,
 ]
 
 export function getCalculatorBySlug(
