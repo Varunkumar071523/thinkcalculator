@@ -19,6 +19,7 @@ import { homeLoanEligibilityCalculatorDefinition, homeLoanEligibilityKnowledgeCo
 import { epfCalculatorDefinition, epfKnowledgeContent } from "@/features/calculators/epf"
 import { npsCalculatorDefinition, npsKnowledgeContent } from "@/features/calculators/nps"
 import { leaveEncashmentCalculatorDefinition, leaveEncashmentKnowledgeContent } from "@/features/calculators/leave-encashment"
+import { epsPensionCalculatorDefinition, epsPensionKnowledgeContent } from "@/features/calculators/eps-pension"
 
 const productionRoutes = new Set(["/finance/emi-calculator", "/finance/sip-calculator", "/finance/step-up-sip-calculator", "/glossary/step-up-sip", "/finance/swp-calculator", "/glossary/swp", "/finance/inflation-calculator", "/glossary/inflation", "/finance/lumpsum-calculator", "/finance/fd-calculator", "/finance/rd-calculator", "/finance/cagr-calculator", "/finance/ppf-calculator", "/business/gst-calculator", "/finance/gratuity-calculator", "/glossary/gratuity", "/finance/retirement-corpus-calculator", "/glossary/retirement-corpus", "/finance/income-tax-calculator", "/finance/hra-calculator", "/finance/home-loan-eligibility-calculator", "/finance/epf-calculator", "/finance/nps-calculator", "/finance/leave-encashment-calculator"])
 const calculators = [
@@ -41,11 +42,12 @@ const calculators = [
   { definition: epfCalculatorDefinition, content: epfKnowledgeContent },
   { definition: npsCalculatorDefinition, content: npsKnowledgeContent },
   { definition: leaveEncashmentCalculatorDefinition, content: leaveEncashmentKnowledgeContent },
+  { definition: epsPensionCalculatorDefinition, content: epsPensionKnowledgeContent },
 ]
 
 describe("calculator knowledge content", () => {
   it("is present and structurally complete for every production calculator", () => {
-    expect(calculators).toHaveLength(19)
+    expect(calculators).toHaveLength(20)
     for (const { content } of calculators) {
       expect(content.title.trim()).not.toBe("")
       expect(content.description.trim()).not.toBe("")

@@ -51,6 +51,7 @@ export const calculatorGroupBySlug: Readonly<Record<string, CalculatorGroup>> = 
   "epf-calculator": "savings",
   "nps-calculator": "investments",
   "leave-encashment-calculator": "taxes",
+  "eps-pension-calculator": "savings",
 }
 
 export const calculatorIconBySlug: Readonly<Record<string, LucideIcon>> = {
@@ -73,6 +74,7 @@ export const calculatorIconBySlug: Readonly<Record<string, LucideIcon>> = {
   "epf-calculator": PiggyBank,
   "nps-calculator": Landmark,
   "leave-encashment-calculator": CalendarCheck,
+  "eps-pension-calculator": PiggyBank,
 }
 
 export type CalculatorGroupStyle = {
