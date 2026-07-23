@@ -14,7 +14,7 @@ describe("income tax production integration", () => {
   it("registers one unique published Finance calculator", () => {
     expect(calculatorRegistry.filter((item) => item.id === "income-tax-calculator")).toEqual([incomeTaxCalculatorDefinition])
     expect(incomeTaxCalculatorDefinition).toMatchObject({ status: "published", category: "Finance", canonicalPath: "/finance/income-tax-calculator" })
-    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(19)
+    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(20)
   })
 
   it("points the popular-calculators entry at the real route, not a placeholder", () => {
