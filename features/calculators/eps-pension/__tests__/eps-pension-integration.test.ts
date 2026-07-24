@@ -25,7 +25,7 @@ describe("EPS pension production integration", () => {
   it("registers exactly one published, unique EPS Pension calculator", () => {
     expect(calculatorRegistry.filter((item) => item.id === "eps-pension-calculator")).toEqual([epsPensionCalculatorDefinition])
     expect(epsPensionCalculatorDefinition).toMatchObject({ status: "published", category: "Finance", canonicalPath: "/finance/eps-pension-calculator" })
-    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(20)
+    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(21)
     expect(new Set(calculatorRegistry.map((item) => item.id)).size).toBe(calculatorRegistry.length)
     expect(new Set(calculatorRegistry.map((item) => item.slug)).size).toBe(calculatorRegistry.length)
     expect(new Set(calculatorRegistry.map((item) => item.canonicalPath)).size).toBe(calculatorRegistry.length)
