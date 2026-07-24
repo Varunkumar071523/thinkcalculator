@@ -6,6 +6,7 @@ import {
   Landmark,
   LineChart,
   type LucideIcon,
+  PieChart,
   PiggyBank,
   ReceiptIndianRupee,
   Sunrise,
@@ -52,6 +53,7 @@ export const calculatorGroupBySlug: Readonly<Record<string, CalculatorGroup>> = 
   "nps-calculator": "investments",
   "leave-encashment-calculator": "taxes",
   "eps-pension-calculator": "savings",
+  "capital-gains-calculator": "taxes",
 }
 
 export const calculatorIconBySlug: Readonly<Record<string, LucideIcon>> = {
@@ -75,6 +77,7 @@ export const calculatorIconBySlug: Readonly<Record<string, LucideIcon>> = {
   "nps-calculator": Landmark,
   "leave-encashment-calculator": CalendarCheck,
   "eps-pension-calculator": PiggyBank,
+  "capital-gains-calculator": PieChart,
 }
 
 export type CalculatorGroupStyle = {

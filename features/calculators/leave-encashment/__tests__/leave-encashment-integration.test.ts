@@ -24,7 +24,7 @@ describe("leave encashment production integration", () => {
   it("registers exactly one published, unique Leave Encashment calculator", () => {
     expect(calculatorRegistry.filter((item) => item.id === "leave-encashment-calculator")).toEqual([leaveEncashmentCalculatorDefinition])
     expect(leaveEncashmentCalculatorDefinition).toMatchObject({ status: "published", category: "Finance", canonicalPath: "/finance/leave-encashment-calculator" })
-    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(20)
+    expect(calculatorRegistry.filter((item) => item.status === "published")).toHaveLength(21)
     expect(new Set(calculatorRegistry.map((item) => item.id)).size).toBe(calculatorRegistry.length)
     expect(new Set(calculatorRegistry.map((item) => item.slug)).size).toBe(calculatorRegistry.length)
     expect(new Set(calculatorRegistry.map((item) => item.canonicalPath)).size).toBe(calculatorRegistry.length)

@@ -8,7 +8,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - Milestone: Sprint 35 domain/HTTPS launch confirmed live and independently verified in production (July 2026).
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI (Base/Nova), Vitest, and Playwright + axe-core for browser-level QA.
 - Architecture: static rendering where practical, Server Components by default, typed version-controlled registries, and no Version 1 database.
-- Verification baseline: 628 automated Vitest tests pass across 55 test files; a permanent 264-test Playwright suite (accessibility, keyboard/focus, zoom/reflow, print, reduced motion) passes across Chromium, Firefox, and WebKit; lint and the 57-page production build pass. `npm run test` runs both suites.
+- Verification baseline (as of the Capital Gains sprint): 1,182 automated Vitest tests pass across 114 test files; lint and the 67-page production build pass; the Playwright suite (accessibility, keyboard/focus, zoom/reflow, print, reduced motion, card-links regression) runs across Chromium, Firefox, and WebKit. `npm run test` runs both suites.
 
 ## Completed capabilities
 
@@ -28,6 +28,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - Static `/search` shell with a focused Suspense-wrapped Client Component, registry-derived public editorial documents, deterministic literal matching, clean canonical metadata, sitemap coverage, and a factual WebSite SearchAction.
 - Permanent automated accessibility, keyboard/focus, zoom/reflow, and print-output coverage (`tests/e2e/`) via Playwright and `@axe-core/playwright`, run across Chromium, Firefox, and WebKit against every published static route (see docs/PRODUCTION-CHECKLIST.md sections 9-11 and 13 for exact scope and what still needs a human).
 - Sprint N added the EPF and NPS calculators, both bespoke-chart clean-slate builds: EPF's yearly corpus growth as a 3-way stacked bar (employee contribution / employer contribution / interest), and NPS's asset allocation (equity / corporate debt / govt securities) as a donut alongside a blended-rate growth line. `YearlyBarChart` and `SimpleDonutChart` were widened from a fixed 2-way shape to a 2-or-3-way union to support this, with every existing 2-way caller (EMI, PPF, retirement corpus, and others) unchanged — see docs/DECISIONS.md entry 26 for the full architecture reasoning.
+- Sprint N added the Capital Gains calculator for STT-paid listed equity shares and equity-oriented mutual funds (sections 111A/112A): FIFO multi-lot matching, the pre-31-January-2018 grandfathering cost-basis rule, and the pooled ₹1,25,000 LTCG exemption, each as independently-tested pure functions. Introduced the site's first repeatable multi-row input (purchase lots) and first calendar-date input (`CalculatorDateInput`) — see docs/DECISIONS.md entries 27-28 for the regulatory-config and new-input-primitive reasoning. `SimpleDonutChart` reused unmodified for the LTCG exempt-vs-taxable split.
 
 ## Known limitations and risks
 
