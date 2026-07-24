@@ -8,7 +8,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - Milestone: Sprint 35 domain/HTTPS launch confirmed live and independently verified in production (July 2026).
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, shadcn UI (Base/Nova), Vitest, and Playwright + axe-core for browser-level QA.
 - Architecture: static rendering where practical, Server Components by default, typed version-controlled registries, and no Version 1 database.
-- Verification baseline (as of the Capital Gains sprint): 1,182 automated Vitest tests pass across 114 test files; lint and the 67-page production build pass; the Playwright suite (accessibility, keyboard/focus, zoom/reflow, print, reduced motion, card-links regression) runs across Chromium, Firefox, and WebKit. `npm run test` runs both suites.
+- Verification baseline (as of the `run-e2e.mjs` teardown-hang sprint): 1,183 automated Vitest tests pass across 115 test files; lint and the 67-page production build pass; the Playwright suite (accessibility, keyboard/focus, zoom/reflow, print, reduced motion, card-links regression) runs across Chromium, Firefox, and WebKit. `npm run test` runs both suites. The Windows `scripts/run-e2e.mjs` teardown hang (previously worked around manually per-sprint) is now fixed at the root and regression-tested — see `docs/DECISIONS.md` #29.
 
 ## Completed capabilities
 

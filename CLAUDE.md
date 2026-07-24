@@ -49,10 +49,20 @@ already in one of those, fix it there instead of duplicating it here.
 - **FTP deploy targeted the wrong Hostinger path** (`public_html/` vs.
   `domains/thinkcalculator.in/public_html/`). Fixed in `8536c62`. Check
   the deploy path if a deploy silently doesn't show up.
-- **Windows `run-e2e.mjs` teardown hang.** Use `Stop-Process` in
-  PowerShell to kill stale Node processes before verification rounds —
-  not `taskkill`. Stale dev-server processes also cause false 404s; kill
-  before each verification round.
+- **Windows `run-e2e.mjs` teardown hang — fixed, not just worked around.**
+  Root cause: Playwright's own `webServer` plugin spawned and tried to
+  signal the `next start` process on teardown, and Windows doesn't
+  reliably honor that signal, so the wait never resolved. Fixed by never
+  letting Playwright own the server at all — the script now starts and
+  polls `next start` itself, then runs Playwright with
+  `reuseExistingServer: true` so its teardown has nothing to wait on;
+  see `docs/DECISIONS.md` #29. Regression-tested by
+  `scripts/__tests__/run-e2e-teardown.test.ts`. Manual `Stop-Process`
+  intervention should no longer be necessary — if a hang recurs, that's a
+  regression, not expected behavior. Stale dev-server processes can still
+  cause false 404s if a run is interrupted before this script's own
+  `SIGINT`/`SIGTERM` cleanup runs; kill before each verification round if
+  so.
 - **Approximate/reconstructed timestamps in sprint reports.** Time-taken
   summaries must use real logged timestamps (`Get-Date` or equivalent) at
   the start and end of each phase as it happens — not "~1m" estimates

@@ -30,6 +30,7 @@ import { execSync, spawn } from "node:child_process"
 import http from "node:http"
 import path from "node:path"
 import process from "node:process"
+import { fileURLToPath } from "node:url"
 
 const PORT = 3104
 const BASE_URL = `http://127.0.0.1:${PORT}`
@@ -76,7 +77,12 @@ function killPort(port) {
   }
 }
 
-function killProcessTree(pid) {
+// Exported for scripts/__tests__/run-e2e-teardown.test.ts: this is the function standing in for
+// "reliably tear down the whole process tree," so it's what a regression needs to exercise.
+// `/T` is load-bearing - it recurses to child/grandchild processes, not just `pid` itself. A bare
+// `process.kill(pid)` (POSIX SIGKILL semantics) has no such recursion and is exactly the shape of
+// regression this would silently reintroduce.
+export function killProcessTree(pid) {
   if (!pid) return
   try {
     if (process.platform === "win32") {
@@ -173,4 +179,10 @@ async function main() {
   process.exitCode = code
 }
 
-main()
+// Guarded so scripts/__tests__/run-e2e-teardown.test.ts can import killProcessTree without also
+// triggering a real `next start` + `playwright test` run as a side effect of the import.
+const isMainModule =
+  process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))
+if (isMainModule) {
+  main()
+}
