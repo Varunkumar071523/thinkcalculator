@@ -237,3 +237,33 @@ Statuses reflect the current platform and may be revisited when their triggers o
 - Decision: Stop letting Playwright spawn or own the server at all, rather than trying to detect-and-kill a hang after the fact. `scripts/run-e2e.mjs` now starts `next start` itself directly with `node` (no `npx`/`.cmd` shell layer in between, so the PID held is the real server process), polls it over real HTTP until it responds, and only then runs `playwright test` with `webServer.reuseExistingServer: true` unconditionally (`playwright.config.ts`). Seeing the URL already answering, Playwright's webServer plugin takes its "already available" fast path and never spawns or owns a process, so its teardown has nothing to wait on and cannot hang — the Windows signal-delivery problem is sidestepped structurally instead of patched around. This script's own teardown, once `playwright test` itself exits, uses `taskkill /PID <pid> /T /F` (`/T` recurses to the full process tree) rather than a bare `process.kill()`, which only signals the one PID it's given. The one exported piece of this, `killProcessTree`, is now covered by `scripts/__tests__/run-e2e-teardown.test.ts`: it spawns a real two-level process tree (a child that spawns a `detached: true` grandchild, deliberately detached so it isn't cleaned up for free by Node's own Windows job-object bookkeeping) and asserts `killProcessTree` reaps both within a bounded time. Reverting `killProcessTree` to a bare `process.kill(pid)` was confirmed to make this test fail (the grandchild survives), so the test actually pins down the fix rather than passing vacuously.
 - Consequences: `node scripts/run-e2e.mjs` (and the `npm test` / `npm run test:e2e` scripts that call it) now reliably returns control to the shell on Windows whether the run passes, fails, or is interrupted (`SIGINT`/`SIGTERM` handlers call the same `killProcessTree` + `killPort` cleanup) — verified by running the full suite twice back to back with no manual process intervention between runs. The non-Windows branch of `killProcessTree` still uses a plain `process.kill(pid, "SIGKILL")` rather than a tree-walk; that remains correct there because this script only ever directly spawns one `next start` process on any platform, with no shell layer in between that could itself fork an untracked grandchild.
 - Revisit trigger: A future change makes this script spawn `next start` (or anything else it owns) via a shell wrapper again on any platform, at which point the POSIX branch of `killProcessTree` would also need to become tree-aware.
+## #20 — Design-system rollout backlog fully closed out (Sprint 40)
+
+Sprint 40 was scoped to restyle SIP, Step-up SIP, Lumpsum, and PPF and adopt
+paired-number-slider-input. Verification (same discipline established in
+Sprint 39 for FD/RD) found all four already migrated in aa028e0 ("Migrate
+SIP, Lumpsum, Step-up SIP, CAGR, SWP to new design system (Batch 2)") and
+1fee75d ("Migrate PPF, Inflation, Retirement Corpus to new design system
+(Batch 3)").
+
+A follow-up verification pass then checked SWP and Retirement Corpus too,
+since the sprint prompt had assumed they were "bespoke and still pending" --
+they are also already fully migrated (DecliningBalanceChart / TwoPhaseChart
+wired in alongside PairedNumberSliderInput and CollapsibleSection, current
+design tokens, no legacy classes).
+
+Conclusion: the entire "design-system rollout to remaining calculators"
+backlog item, spanning FD, RD, SIP, Step-up SIP, Lumpsum, PPF, SWP, and
+Retirement Corpus, is done and has been for some time. No further sprints
+should be scoped against this backlog line.
+
+Side finding (not fixed, logged for later): PPF's worked example uses
+₹1,00,000/year, which doesn't exercise the ₹1,50,000/year Section 80C cap --
+a potential gap against AGENTS.md's binding-constraint requirement for
+worked examples. Pre-existing, not introduced by this sprint.
+
+No code changes in Sprint 40 or its follow-up. Output was a Playwright
+audit of fincalculator.in's SIP/Lumpsum/PPF pages
+(docs/audits/sprint-40-fincalculator-sip-lumpsum-ppf/).
+
+- ~~Design-system rollout to remaining calculators~~ — DONE. All 8 (FD, RD, SIP, Step-up SIP, Lumpsum, PPF, SWP, Retirement Corpus) confirmed already migrated in aa028e0/1fee75d/2fe04fd, verified via raw grep evidence Sprints 39-40. No further rollout work needed.
