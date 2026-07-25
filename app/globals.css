@@ -206,16 +206,19 @@
   .calculator-table th, .calculator-table td { padding: 4px !important; white-space: normal !important; }
   .schedule-extra-row { display: table-row !important; }
   tr { break-inside: avoid; }
-  /* Collapsed accordion content (e.g. the amortization schedule inside a closed <details>)
-     otherwise never enters the render tree, so no visibility override above can reveal it —
-     force it open for print regardless of its on-screen expanded/collapsed state. Chromium renders
-     a closed <details>'s content through the ::details-content pseudo-element and skips it via
-     content-visibility, which a plain `display` override on the light-DOM child does not reach —
-     confirmed via a Playwright probe: the child measured a real, non-zero bounding box while
-     Element.checkVisibility() still reported false, and a full-page print screenshot showed the
-     accordion body genuinely blank. Overriding content-visibility on ::details-content directly
-     (in addition to the plain child override, which still covers browsers without this
-     pseudo-element) is what actually makes it paint. */
+  /* Collapsed accordion content (e.g. the amortization schedule inside a closed <details> in
+     CollapsibleSection) otherwise never enters the render tree, so no visibility override above
+     can reveal it — force it open for print regardless of its on-screen expanded/collapsed state,
+     and regardless of whether JS ever runs (Sprint 44: this used to be a fallback behind a
+     `matchMedia("print")` listener that toggled `details.open`; that listener was removed because
+     it raced the print render and usually lost — this CSS is now the only reveal mechanism, not a
+     backstop). Chromium renders a closed <details>'s content through the ::details-content
+     pseudo-element and skips it via content-visibility, which a plain `display` override on the
+     light-DOM child does not reach — confirmed via a Playwright probe: the child measured a real,
+     non-zero bounding box while Element.checkVisibility() still reported false, and a full-page
+     print screenshot showed the accordion body genuinely blank. Overriding content-visibility on
+     ::details-content directly (in addition to the plain child override, which still covers
+     browsers without this pseudo-element) is what actually makes it paint. */
   details:not([open]) > *:not(summary) { display: block !important; }
   details:not([open])::details-content { content-visibility: visible !important; display: block !important; }
 }

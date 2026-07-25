@@ -12,31 +12,52 @@ type CollapsibleSectionProps = {
 
 /** A collapsed-by-default accordion section, following the same `<details>` + rotating-chevron
  * pattern already used by FAQSection — reusable for any below-the-fold calculator content
- * (schedules, formulas, tips) that shouldn't force a visitor to scroll past it. */
+ * (schedules, formulas, tips) that shouldn't force a visitor to scroll past it.
+ *
+ * Print reveal for closed sections is primarily handled by the `@media print` rules in
+ * `app/globals.css` (the `details:not([open])` / `::details-content` overrides), which are
+ * deterministic — verified across repeated isolated `page.emulateMedia({ media: "print" })` runs —
+ * on Chromium and Firefox. WebKit does not honor that CSS at all: Sprint 44's cross-browser
+ * follow-up found the exact same content stays hidden under print media emulation on WebKit
+ * regardless of the `::details-content` override or the plain light-DOM `display` override, 5/5
+ * calculators failing deterministically across 2 isolated reruns each (not flaky — plainly
+ * unsupported). The `matchMedia("print")` listener below is kept specifically as the WebKit
+ * fallback: it actually sets `details.open = true`, a real state change every engine honors,
+ * sidestepping whatever WebKit does internally to hide closed `<details>` content that no print
+ * stylesheet can reach. It is intentionally not the primary mechanism (see docs/DECISIONS.md
+ * #35/#36): the `change` event fires asynchronously and isn't guaranteed to run before the browser
+ * paints the print layout, which is exactly the race that made Chromium/EMI/Inflation flaky before
+ * the CSS fix landed. On Chromium/Firefox this listener is redundant with the CSS and harmless if
+ * it never fires in time; on WebKit it is the only mechanism available at all. */
 export function CollapsibleSection({ title, description, children, defaultOpen = false }: CollapsibleSectionProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null)
 
-  // The `@media print` CSS override alone is not enough to reveal a closed <details> on every
-  // engine: Chromium renders its collapsed content through the ::details-content pseudo-element
-  // and skips it via content-visibility, which no CSS applied to the light-DOM children can reach
-  // (confirmed directly — a forced `display:block` on the child still left a real, non-zero
-  // bounding box that Element.checkVisibility() reported as false and a print screenshot showed
-  // genuinely blank; only overriding content-visibility on ::details-content itself fixed it), and
-  // that pseudo-element isn't supported at all in every engine. Toggling the actual `open` property
-  // in response to the print media query sidesteps every engine-specific rendering path at once.
   useEffect(() => {
     const details = detailsRef.current
     if (!details) return
     const mediaQuery = window.matchMedia("print")
     let wasOpenBeforePrint = details.open
-    function handleChange(event: MediaQueryListEvent) {
+    function applyPrintState(isPrint: boolean) {
       if (!details) return
-      if (event.matches) {
+      if (isPrint) {
         wasOpenBeforePrint = details.open
         details.open = true
       } else {
         details.open = wasOpenBeforePrint
       }
+    }
+    // A `change` listener alone misses a print media flip that already happened before this
+    // effect runs (e.g. Playwright's `page.emulateMedia({ media: "print" })` firing while this
+    // "use client" component is still hydrating) — `addEventListener` only reports *future*
+    // changes, and a MediaQueryList gives no way to ask "did I miss one?". Checking `.matches`
+    // synchronously here catches that case regardless of which side of hydration the flip landed
+    // on; this is the fix for the hydration-timing race Sprint 44's WebKit follow-up found (see
+    // docs/DECISIONS.md #36) — 5/5 calculators failed deterministically under the old
+    // listener-only version because the emulated print media typically flipped before this
+    // component had finished hydrating on the test machine.
+    applyPrintState(mediaQuery.matches)
+    function handleChange(event: MediaQueryListEvent) {
+      applyPrintState(event.matches)
     }
     mediaQuery.addEventListener("change", handleChange)
     return () => mediaQuery.removeEventListener("change", handleChange)
@@ -51,7 +72,7 @@ export function CollapsibleSection({ title, description, children, defaultOpen =
         </span>
         <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
       </summary>
-      <div className="border-t px-5 pt-5 pb-5 sm:px-6 sm:pb-6">{children}</div>
+      <div className="border-t px-5 pt-5 pb-5 sm:px-6 sm:pb-6" data-collapsible-content>{children}</div>
     </details>
   )
 }
