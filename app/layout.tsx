@@ -2,8 +2,10 @@ import type { Metadata } from "next"
 import { IBM_Plex_Mono, Inter, Newsreader } from "next/font/google"
 
 import { GoogleAnalytics } from "@/components/analytics/google-analytics"
+import { FaqSearchWidget } from "@/components/faq-search/faq-search-widget"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { SiteHeader } from "@/components/layout/site-header"
+import { buildFaqSearchIndex } from "@/features/faq-search/build-faq-search-index"
 import { getAnalyticsConfig } from "@/lib/analytics-config"
 import { createCanonicalUrl, createOpenGraph, createRootStructuredData } from "@/lib/seo"
 import { siteConfig } from "@/lib/site-config"
@@ -28,6 +30,7 @@ export const metadata: Metadata = {
 
 const rootStructuredData = createRootStructuredData()
 const analyticsConfig = getAnalyticsConfig()
+const faqSearchDocuments = buildFaqSearchIndex()
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -38,6 +41,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <main id="main-content" className="flex-1" tabIndex={-1}>{children}</main>
         <SiteFooter />
+        <FaqSearchWidget documents={faqSearchDocuments} />
         {analyticsConfig.enabled && <GoogleAnalytics measurementId={analyticsConfig.measurementId!} />}
       </body>
     </html>
