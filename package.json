@@ -37,8 +37,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "get-port": "^7.2.0",
     "lighthouse": "^13.4.0",
     "tailwindcss": "^4",
+    "tree-kill": "^1.2.2",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

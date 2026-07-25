@@ -1,6 +1,11 @@
 import { defineConfig, devices } from "@playwright/test"
 
-const PORT = 3104
+// scripts/run-e2e.mjs - the only sanctioned way to run these tests, see docs/CONTRIBUTING.md -
+// picks a fresh OS-assigned port per invocation (Sprint 43: a hardcoded port meant two
+// invocations running at once, e.g. this repo and another git worktree, could race for the same
+// port and kill each other's dev server) and passes it through via E2E_PORT. The literal fallback
+// below only matters for a direct `npx playwright test` invocation that skips the wrapper.
+const PORT = Number(process.env.E2E_PORT) || 3104
 const baseURL = `http://127.0.0.1:${PORT}`
 
 export default defineConfig({
@@ -12,7 +17,18 @@ export default defineConfig({
   // occasional transient failures (page not fully settled when axe ran) that were not reproducible
   // in isolation — resource contention, not a real accessibility regression. Capping workers below
   // plus one retry made a full multi-browser run 0-flake across repeated local runs.
-  retries: 1,
+  //
+  // Sprint 43 tried lowering this further (workers=2) as a contention mitigation and measured it
+  // properly: 3 full-suite runs at workers=4 (avg 3.3 flaky tests, avg 13.9min) vs. 3 at workers=2
+  // (avg 3.7 flaky tests, avg 15.4min) - see the Sprint 43 report for the raw numbers. Lower
+  // workers bought no reduction in flakiness and cost ~11% more wall-clock time, so it was reverted
+  // rather than kept on the strength of the intuition alone. Every flaky instance across all 6 runs
+  // was either a bare "Test timeout of 30000ms exceeded" on firefox (16 instances, always a
+  // different specific test, never an assertion-content mismatch) or a timing-sensitive focus-trap
+  // check in faq-search-widget.spec.ts (3 instances) - neither correlates with worker count on this
+  // machine, so the remaining flakiness is left as an open follow-up rather than force-fit to a
+  // config knob the data didn't support. retries=2 (below) is the backstop for it in the meantime.
+  retries: 2,
   workers: 4,
   reporter: [["list"]],
   timeout: 30_000,
