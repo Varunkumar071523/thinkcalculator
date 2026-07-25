@@ -263,6 +263,22 @@ Statuses reflect the current platform and may be revisited when their triggers o
 - Revisit trigger: If guides later want the same derived-related treatment, generalize `getRelatedBlogPosts()` to accept a content type parameter rather than duplicating the logic — do not achieve it by moving the render call into shared `EditorialLayout`, since that would reintroduce the coupling this decision deliberately avoided.
 - Known coverage gap (adversarial review, Sprint 42 follow-up): the shared-calculator fallback branch is only exercised in unit tests against synthetic fixtures — with just 2 live posts and no real same-calculator/different-category pair in the actual registry, there isn't enough live data to prove the fallback end-to-end; revisit test coverage once a third published post creates a genuine fallback case.
 
+## 33. Sprint 43: `workers=2` tested and rejected as an e2e contention mitigation
+
+- Status: Rejected (tested with data, not assumed).
+- Context: Sprint 43 investigated a full 3-browser (chromium/firefox/webkit) Playwright run producing wildly inconsistent results across identical reruns (26 failed/5 flaky in one prior run, 0-4 hard failures with different flakes in another). Hypothesis: `workers=4` was oversubscribing this machine's CPU/memory across three real browser-automation workers hitting one shared `next start` dev server.
+- Decision: Ran 3 full-suite runs (564 tests) at `workers=4` (baseline) and 3 at `workers=2` (after), same machine, same code, same commit. Baseline: 2F/4Flaky/558P (13.3m), 2F/4Flaky/558P (14.6m), 3F/2Flaky/559P (13.9m) — avg 3.3 flaky tests/run, avg 13.9 min. After: 2F/5Flaky/557P (17.2m), 2F/3Flaky/559P (14.1m), 2F/3Flaky/559P (15.0m) — avg 3.7 flaky tests/run, avg 15.4 min. `workers=2` produced same-or-worse flakiness and ~11% longer wall-clock time. Reverted to `workers=4` in `playwright.config.ts`.
+- Consequences: Do not re-attempt lowering `workers` as a fix for this flakiness without new evidence — it was tried and measured, not just assumed to help. The flaky set in both configurations was exclusively bare `Test timeout of 30000ms exceeded` on firefox (16 instances across the 6 runs, no assertion-content mismatches, a different specific test each time) plus a timing-sensitive focus-trap check in `faq-search-widget.spec.ts` (webkit, 3 instances) — neither correlates with worker count on this machine. The 2 `print.spec.ts` EMI/Inflation failures were 100% deterministic across all 6 runs regardless of worker count, confirming they are an unrelated real app bug (see the Sprint 43 report), not part of this contention question.
+- Revisit trigger: If this flakiness is later root-caused (e.g. profiling shows it's specific to firefox startup time under Playwright, or specific to this dev machine's background load), address the actual cause rather than worker count. See #34 for the interim mitigation in place while this stays open.
+
+## 34. Sprint 43: `retries` bumped from 1 to 2 as a backstop for still-open item-3 flakiness, not a fix for it
+
+- Status: Accepted (mitigation, not resolution).
+- Context: Across the 6 full-suite runs measured in #33, one run (`workers=4` baseline run 3) had `faq-search-widget.spec.ts`'s webkit focus-trap check (`focus escaped the panel after 6 Tab press(es)`) fail on both its original attempt and its one retry — a genuine double-failure that `retries: 1` did not catch, even though every other flaky instance across all 6 runs passed within a single retry.
+- Decision: Bumped `retries: 1 -> 2` in `playwright.config.ts`.
+- Consequences: This is a deliberate backstop against the understood-but-unsolved firefox-timeout/webkit-focus-trap-timing flakiness from #33, not a fix for it. A green CI/verification run is not proof the underlying flakiness is gone — it means the backstop caught it.
+- Revisit trigger: If the same test fails on all 3 attempts (original + 2 retries) in a future run, that graduates from "flaky" to "needs its own investigation" — do not just bump retries again; investigate per #33's revisit trigger instead.
+
 ## #20 — Design-system rollout backlog fully closed out (Sprint 40)
 
 Sprint 40 was scoped to restyle SIP, Step-up SIP, Lumpsum, and PPF and adopt
