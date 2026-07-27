@@ -47,7 +47,7 @@ ThinkCalculator is an India-focused calculator and educational-content platform 
 - Financial results are estimates; provider rules, taxes, fees, market movement, and rounding may differ.
 - Google-hosted Geist fonts require network access during a clean production build.
 - Current editorial content is intentionally small and maintained directly in TypeScript.
-- Sprint 46's EMI above-the-fold compacting (docs/DECISIONS.md #38) closed most of the fold-line gap at desktop widths but not on mobile (~390px): the result card still renders below the entire input form there, because the calculator layout is a single-column CSS grid (`grid-cols-1`) until the `lg` breakpoint. Fixing that would mean reordering the grid or changing the breakpoint — a shared-layout change, not a per-calculator one — and was explicitly out of scope for that sprint.
+- Sprint 46's EMI above-the-fold compacting (docs/DECISIONS.md #38) closed most of the fold-line gap at desktop widths but not on mobile (~390px): the result card still renders below the entire input form there, because the calculator layout is a single-column CSS grid (`grid-cols-1`) until the `lg` breakpoint. Sprint 47 (docs/DECISIONS.md #39) closed a further competitor-driven gap in header chrome and result-panel density on desktop but likewise did not touch the mobile grid breakpoint, so mobile remains below the fold at every tested height. Fixing that would mean reordering the grid or changing the breakpoint — a shared-layout change, not a per-calculator one — and remains explicitly out of scope.
 
 ## Sprint 35 launch confirmation
 
@@ -63,7 +63,7 @@ Sprint 35's domain, HTTPS, and launch-preparation code (`feature/sprint-35-domai
 - Strict CSP pending a nonce-compatible design for Next.js scripts, JSON-LD, images, clipboard, and print.
 - Service worker and offline support.
 - CMS/MDX, database, accounts, saved calculations, generated PDFs, newsletter backend, comments, and public APIs.
-- Rollout of Sprint 46's EMI above-the-fold template (`helperTextVariant="tooltip"` on `CalculatorField`, `showInlineLabels` on `SimpleDonutChart`, compacted page chrome) to the other 14 calculators — deliberately deferred until the template is validated in production. See docs/DECISIONS.md #38.
+- Rollout of the EMI above-the-fold template (Sprint 46: `helperTextVariant="tooltip"` on `CalculatorField`, `showInlineLabels` on `SimpleDonutChart`, compacted page chrome; Sprint 47: further header-chrome tightening and stat-cards-beside-donut result panel) to the other 14 calculators — deliberately deferred until the template is validated in production. See docs/DECISIONS.md #38 and #39.
 
 ## Next phase
 

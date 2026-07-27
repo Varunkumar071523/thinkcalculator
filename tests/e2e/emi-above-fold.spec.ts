@@ -22,9 +22,11 @@ test.describe("EMI above-the-fold template", () => {
     // Scoped to the result card by testid: "Monthly EMI" and "Total interest payable" are also
     // echoed in the page's worked-example section further down, which would otherwise make these
     // locators match twice (strict-mode violation) — see hra-calculator.spec.ts's identical
-    // testid-scoping pattern.
+    // testid-scoping pattern. Sprint 47 folded the "for N months at R% p.a." subtitle into this same
+    // label line (see docs/DECISIONS.md), so the label is no longer the exact string "Monthly EMI" —
+    // matched by prefix instead.
     const resultCard = page.getByTestId("calculator-result-card")
-    const monthlyEmi = resultCard.getByText("Monthly EMI", { exact: true })
+    const monthlyEmi = resultCard.getByText(/^Monthly EMI for/)
     const totalInterest = resultCard.getByText("Total interest payable", { exact: true })
     const donutHeading = page.locator("#donut-title")
 
