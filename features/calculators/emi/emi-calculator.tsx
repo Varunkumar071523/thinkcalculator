@@ -12,6 +12,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { calculateAmortizationSchedule } from "@/features/calculators/emi/calculate-amortization"
 import { calculateEMI } from "@/features/calculators/emi/calculate-emi"
 import { calculateYearlyAmortization, type YearlyAmortizationRow } from "@/features/calculators/emi/calculate-yearly-amortization"
@@ -96,6 +97,8 @@ export function EMICalculator() {
   const monthlySchedule = useMemo(() => calculateAmortizationSchedule(liveInput, result), [liveInput, result])
   const yearlySchedule = useMemo(() => calculateYearlyAmortization(monthlySchedule), [monthlySchedule])
   const tenureIsYears = liveInput.tenureUnit === "years"
+
+  useTrackCalculationCompleted("emi", "loans", result)
 
   const yearlyChartLabels = useMemo(() => yearlySchedule.map((row) => `Y${row.year}`), [yearlySchedule])
   const yearlyChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
@@ -226,7 +229,7 @@ export function EMICalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="emi" category="loans" />
             </div>
           </CardContent>
         </Card>

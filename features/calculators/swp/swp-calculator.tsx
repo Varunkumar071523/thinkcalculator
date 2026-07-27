@@ -13,6 +13,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { calculateSWP } from "@/features/calculators/swp/calculate-swp"
 import { parseAndValidateSWPForm, SWP_LIMITS, type SWPFormValues } from "@/features/calculators/swp/swp-schema"
 import type { SWPInput, SWPValidationErrors, SWPWithdrawalMode, SWPYearlyScheduleRow } from "@/features/calculators/swp/swp-types"
@@ -114,6 +115,7 @@ export function SWPCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateSWP(liveInput), [liveInput])
+  useTrackCalculationCompleted("swp", "investments", result)
   const balancePoints = useMemo(() => toBalancePoints(result.schedule, liveInput.initialInvestment), [result.schedule, liveInput.initialInvestment])
   const milestoneItems = useMemo(() => toMilestoneItems(result.schedule, result.totalWithdrawn), [result.schedule, result.totalWithdrawn])
   const isFixedDuration = liveInput.withdrawalMode === "fixedDuration"
@@ -275,7 +277,7 @@ export function SWPCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="swp" category="investments" />
             </div>
           </CardContent>
         </Card>

@@ -12,6 +12,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { calculateRD } from "@/features/calculators/rd/calculate-rd"
 import { calculateRDSchedule } from "@/features/calculators/rd/calculate-rd-schedule"
 import { calculateRDYearlySchedule, type RDYearlyScheduleRow } from "@/features/calculators/rd/calculate-rd-yearly-schedule"
@@ -120,6 +121,7 @@ export function RDCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateRD(liveInput), [liveInput])
+  useTrackCalculationCompleted("rd", "savings", result)
   const yearlySchedule = useMemo(() => calculateRDYearlySchedule(liveInput), [liveInput])
   const detailedSchedule = useMemo(() => calculateRDSchedule(liveInput), [liveInput])
 
@@ -247,7 +249,7 @@ export function RDCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="rd" category="savings" />
             </div>
           </CardContent>
         </Card>

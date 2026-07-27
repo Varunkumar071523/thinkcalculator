@@ -13,6 +13,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { calculateSIP } from "@/features/calculators/sip/calculate-sip"
 import { calculateSIPSchedule } from "@/features/calculators/sip/calculate-sip-schedule"
 import { parseAndValidateSIPForm, SIP_LIMITS, type SIPFormValues } from "@/features/calculators/sip/sip-schema"
@@ -130,6 +131,7 @@ export function SIPCalculator() {
   const growthPoints = useMemo(() => toGrowthPoints(schedule), [schedule])
   const milestoneItems = useMemo(() => toMilestoneItems(schedule, result.estimatedReturns), [schedule, result.estimatedReturns])
   const durationIsYears = liveInput.durationUnit === "years"
+  useTrackCalculationCompleted("sip", "investments", result)
 
   const yearlyChartData = useMemo(() => toYearlyChartData(schedule), [schedule])
   const yearlyChartSeries = useMemo<readonly [YearlyBarChartSeries, YearlyBarChartSeries]>(() => [
@@ -255,7 +257,7 @@ export function SIPCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="sip" category="investments" />
             </div>
           </CardContent>
         </Card>

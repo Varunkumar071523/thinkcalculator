@@ -7,6 +7,7 @@ import { PairedNumberSliderInput } from "@/components/calculators/paired-number-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { calculateCAGR } from "@/features/calculators/cagr/calculate-cagr"
 import { CAGR_LIMITS, parseAndValidateCAGRForm, type CAGRFormValues } from "@/features/calculators/cagr/cagr-schema"
 import { buildCAGRCalculatorUrl, CAGR_DEFAULT_INPUT, parseCAGRUrlState } from "@/features/calculators/cagr/cagr-url-state"
@@ -123,6 +124,7 @@ export function CAGRCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateCAGR(liveInput), [liveInput])
+  useTrackCalculationCompleted("cagr", "investments", result)
   const gainLossLabel = getCAGRGainLossLabel(result)
 
   const shareUrl = buildCAGRCalculatorUrl(liveInput, siteConfig.url)
@@ -229,7 +231,7 @@ export function CAGRCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="cagr" category="investments" />
             </div>
           </CardContent>
         </Card>

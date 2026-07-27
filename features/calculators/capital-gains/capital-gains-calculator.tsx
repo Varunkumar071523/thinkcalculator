@@ -13,6 +13,7 @@ import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency, formatIndianNumber, formatIsoDate } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateCapitalGains } from "./calculate-capital-gains"
@@ -114,6 +115,7 @@ export function CapitalGainsCalculator() {
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const hasNoLots = liveInput.lots.length === 0
   const result = useMemo(() => (hasNoLots ? null : calculateCapitalGains(liveInput)), [liveInput, hasNoLots])
+  useTrackCalculationCompleted("capital-gains", "taxes", result)
 
   const shareUrl = buildCapitalGainsCalculatorUrl(liveInput.lots.length > 0 ? liveInput : CAPITAL_GAINS_DEFAULT_INPUT, siteConfig.url)
   const resultText = result ? createCapitalGainsResultText(liveInput, result) : ""
@@ -298,7 +300,7 @@ export function CapitalGainsCalculator() {
                 </div>
 
                 <div className="mt-5">
-                  <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+                  <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="capital-gains" category="taxes" />
                 </div>
               </>
             ) : (

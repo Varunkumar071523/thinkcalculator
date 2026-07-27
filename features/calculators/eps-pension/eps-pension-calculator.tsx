@@ -9,6 +9,7 @@ import { PairedNumberSliderInput } from "@/components/calculators/paired-number-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency, formatIndianNumber } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateEpsPension } from "./calculate-eps-pension"
@@ -65,6 +66,7 @@ export function EpsPensionCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateEpsPension(liveInput), [liveInput])
+  useTrackCalculationCompleted("eps-pension", "savings", result)
   const isEarly = liveInput.ageOption === "early"
 
   const shareUrl = buildEpsPensionCalculatorUrl(liveInput, siteConfig.url)
@@ -186,7 +188,7 @@ export function EpsPensionCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="eps-pension" category="savings" />
             </div>
           </CardContent>
         </Card>

@@ -13,6 +13,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { calculateLumpsum } from "@/features/calculators/lumpsum/calculate-lumpsum"
 import { calculateLumpsumSchedule } from "@/features/calculators/lumpsum/calculate-lumpsum-schedule"
 import { LUMPSUM_LIMITS, parseAndValidateLumpsumForm, type LumpsumFormValues } from "@/features/calculators/lumpsum/lumpsum-schema"
@@ -126,6 +127,7 @@ export function LumpsumCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateLumpsum(liveInput), [liveInput])
+  useTrackCalculationCompleted("lumpsum", "investments", result)
   const schedule = useMemo(() => calculateLumpsumSchedule(liveInput), [liveInput])
   const growthPoints = useMemo(() => toGrowthPoints(schedule), [schedule])
   const milestoneItems = useMemo(() => toMilestoneItems(schedule, result.estimatedReturns), [schedule, result.estimatedReturns])
@@ -254,7 +256,7 @@ export function LumpsumCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="lumpsum" category="investments" />
             </div>
           </CardContent>
         </Card>

@@ -8,6 +8,7 @@ import { PairedNumberSliderInput } from "@/components/calculators/paired-number-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency, formatIndianNumber } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateGratuity } from "./calculate-gratuity"
@@ -74,6 +75,7 @@ export function GratuityCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateGratuity(liveInput), [liveInput])
+  useTrackCalculationCompleted("gratuity", "taxes", result)
   const ordinaryServiceMet = hasOrdinaryGratuityService(liveInput)
 
   const shareUrl = buildGratuityCalculatorUrl(liveInput, siteConfig.url)
@@ -176,7 +178,7 @@ export function GratuityCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="gratuity" category="taxes" />
             </div>
           </CardContent>
         </Card>

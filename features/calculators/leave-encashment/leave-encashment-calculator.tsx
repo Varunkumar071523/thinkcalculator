@@ -10,6 +10,7 @@ import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency, formatIndianNumber } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateLeaveEncashment } from "./calculate-leave-encashment"
@@ -64,6 +65,7 @@ export function LeaveEncashmentCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateLeaveEncashment(liveInput), [liveInput])
+  useTrackCalculationCompleted("leave-encashment", "taxes", result)
   const isGovernment = liveInput.employeeType === "government"
 
   const shareUrl = buildLeaveEncashmentCalculatorUrl(liveInput, siteConfig.url)
@@ -227,7 +229,7 @@ export function LeaveEncashmentCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="leave-encashment" category="taxes" />
             </div>
           </CardContent>
         </Card>
