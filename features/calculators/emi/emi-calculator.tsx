@@ -141,8 +141,9 @@ export function EMICalculator() {
                     error={errors.principalAmount}
                     required
                     accentClassName="accent-money"
+                    helperTextVariant="tooltip"
                   />
-                  <div className="mt-2 flex gap-1.5">
+                  <div className="mt-1.5 flex gap-1.5">
                     {PRINCIPAL_QUICK_AMOUNTS.map((preset) => (
                       <button key={preset.label} type="button" onClick={() => updateValue("principalAmount", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-money hover:text-money focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                         {preset.label}
@@ -167,6 +168,7 @@ export function EMICalculator() {
                   error={errors.annualInterestRate}
                   required
                   accentClassName="accent-money"
+                  helperTextVariant="tooltip"
                 />
 
                 <PairedNumberSliderInput
@@ -185,6 +187,7 @@ export function EMICalculator() {
                   error={errors.tenure}
                   required
                   accentClassName="accent-money"
+                  helperTextVariant="tooltip"
                 />
 
                 <CalculatorSelectInput id="tenure-unit" label="Tenure unit" value={values.tenureUnit} onValueChange={(value) => updateValue("tenureUnit", value)} options={[{ label: "Years", value: "years" }, { label: "Months", value: "months" }]} error={errors.tenureUnit} required />
@@ -225,6 +228,7 @@ export function EMICalculator() {
                   { label: "Principal", value: result.principalAmount, formattedValue: formatIndianCurrency(result.principalAmount), colorClass: "bg-money", ringClass: "stroke-money" },
                   { label: "Interest", value: result.totalInterest, formattedValue: formatIndianCurrency(result.totalInterest), colorClass: "bg-gold", ringClass: "stroke-gold" },
                 ]}
+                showInlineLabels
               />
             </div>
 
