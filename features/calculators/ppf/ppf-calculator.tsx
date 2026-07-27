@@ -13,6 +13,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculatePPF } from "./calculate-ppf"
@@ -107,6 +108,7 @@ export function PPFCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculatePPF(liveInput), [liveInput])
+  useTrackCalculationCompleted("ppf", "savings", result)
   const growthPoints = useMemo(() => toGrowthPoints(result.schedule), [result.schedule])
   const milestoneItems = useMemo(() => toMilestoneItems(result.schedule, result.totalInterest), [result.schedule, result.totalInterest])
 
@@ -208,7 +210,7 @@ export function PPFCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="ppf" category="savings" />
             </div>
           </CardContent>
         </Card>

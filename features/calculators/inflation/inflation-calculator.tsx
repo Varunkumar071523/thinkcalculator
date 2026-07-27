@@ -10,6 +10,7 @@ import { PairedNumberSliderInput } from "@/components/calculators/paired-number-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateInflation } from "./calculate-inflation"
@@ -97,6 +98,7 @@ export function InflationCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateInflation(liveInput), [liveInput])
+  useTrackCalculationCompleted("inflation", "investments", result)
   const isFutureCost = liveInput.mode === "futureCost"
   const amountLabel = isFutureCost ? "Current amount" : "Future amount"
   const primaryLabel = isFutureCost ? "Equivalent future cost" : "Present value (today's purchasing power)"
@@ -216,7 +218,7 @@ export function InflationCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="inflation" category="investments" />
             </div>
           </CardContent>
         </Card>

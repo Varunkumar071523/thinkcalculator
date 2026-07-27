@@ -11,6 +11,7 @@ import { SimpleDonutChart } from "@/components/calculators/simple-donut-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateNPS } from "./calculate-nps"
@@ -79,6 +80,7 @@ export function NPSCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateNPS(liveInput), [liveInput])
+  useTrackCalculationCompleted("nps", "investments", result)
   const yearsToRetirement = liveInput.retirementAge - liveInput.currentAge
   const growthPoints = useMemo(() => toGrowthPoints(result.schedule), [result.schedule])
   const milestoneItems = useMemo(() => toMilestoneItems(result.schedule, result), [result])
@@ -260,7 +262,7 @@ export function NPSCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="nps" category="investments" />
             </div>
           </CardContent>
         </Card>

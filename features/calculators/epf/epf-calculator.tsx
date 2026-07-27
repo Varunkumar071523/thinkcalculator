@@ -10,6 +10,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateEPF } from "./calculate-epf"
@@ -64,6 +65,7 @@ export function EPFCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateEPF(liveInput), [liveInput])
+  useTrackCalculationCompleted("epf", "savings", result)
   const yearsToRetirement = liveInput.retirementAge - liveInput.currentAge
 
   const yearlyChartLabels = useMemo(() => result.schedule.map((row) => `Age ${row.age}`), [result.schedule])
@@ -220,7 +222,7 @@ export function EPFCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="epf" category="savings" />
             </div>
           </CardContent>
         </Card>

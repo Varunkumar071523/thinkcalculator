@@ -13,6 +13,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { calculateStepUpSIP } from "@/features/calculators/step-up-sip/calculate-step-up-sip"
 import { parseAndValidateStepUpSIPForm, STEP_UP_SIP_LIMITS, type StepUpSIPFormValues } from "@/features/calculators/step-up-sip/step-up-sip-schema"
 import type { StepUpMode, StepUpSIPInput, StepUpSIPScheduleRow, StepUpSIPValidationErrors } from "@/features/calculators/step-up-sip/step-up-sip-types"
@@ -132,6 +133,7 @@ export function StepUpSIPCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateStepUpSIP(liveInput), [liveInput])
+  useTrackCalculationCompleted("step-up-sip", "investments", result)
   const growthPoints = useMemo(() => toGrowthPoints(result.schedule), [result.schedule])
   const milestoneItems = useMemo(() => toMilestoneItems(result.schedule, result.estimatedReturns), [result.schedule, result.estimatedReturns])
   const isPercentageMode = liveInput.stepUpMode === "percentage"
@@ -283,7 +285,7 @@ export function StepUpSIPCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="step-up-sip" category="investments" />
             </div>
           </CardContent>
         </Card>

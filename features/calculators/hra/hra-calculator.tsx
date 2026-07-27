@@ -10,6 +10,7 @@ import { PairedNumberSliderInput } from "@/components/calculators/paired-number-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { computeHraExemption } from "@/lib/hra/engine"
@@ -106,6 +107,7 @@ export function HraCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => computeHraExemption(liveInput, HRA_FINANCIAL_YEAR), [liveInput])
+  useTrackCalculationCompleted("hra", "taxes", result)
 
   const shareUrl = buildHraCalculatorUrl(liveInput, siteConfig.url)
   const resultText = createHraResultText(result)
@@ -242,7 +244,7 @@ export function HraCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="hra" category="taxes" />
             </div>
           </CardContent>
         </Card>

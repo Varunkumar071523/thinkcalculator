@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { IBM_Plex_Mono, Inter, Newsreader } from "next/font/google"
 
+import { ConsentBanner } from "@/components/analytics/consent-banner"
 import { GoogleAnalytics } from "@/components/analytics/google-analytics"
 import { FaqSearchWidget } from "@/components/faq-search/faq-search-widget"
 import { SiteFooter } from "@/components/layout/site-footer"
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <main id="main-content" className="flex-1" tabIndex={-1}>{children}</main>
         <SiteFooter />
         <FaqSearchWidget documents={faqSearchDocuments} />
+        <ConsentBanner enabled={analyticsConfig.enabled} />
         {analyticsConfig.enabled && <GoogleAnalytics measurementId={analyticsConfig.measurementId!} />}
       </body>
     </html>

@@ -9,6 +9,7 @@ import { PairedNumberSliderInput } from "@/components/calculators/paired-number-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateIncomeTax, compareRegimes } from "@/lib/tax/engine"
@@ -175,7 +176,7 @@ function RegimeComparisonPanel({ comparison, selectedRegime, resultText, shareUr
         <p className="mt-3 text-xs text-muted-foreground">The highlighted border marks your currently selected regime — the full breakdown below is for that regime.</p>
 
         <div className="mt-5">
-          <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+          <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="income-tax" category="taxes" />
         </div>
       </CardContent>
     </Card>
@@ -237,6 +238,7 @@ export function IncomeTaxCalculator() {
   const result = useMemo(() => calculateIncomeTax(liveTaxInput, INCOME_TAX_FINANCIAL_YEAR), [liveTaxInput])
   const comparisonInput = useMemo(() => toLiveComparisonInput(values), [values])
   const comparison = useMemo(() => compareRegimes(comparisonInput, INCOME_TAX_FINANCIAL_YEAR), [comparisonInput])
+  useTrackCalculationCompleted("income-tax", "taxes", comparison)
   const deductionErrors = errors.deductions ?? {}
 
   const shareUrl = buildIncomeTaxCalculatorUrl(liveTaxInput, siteConfig.url)

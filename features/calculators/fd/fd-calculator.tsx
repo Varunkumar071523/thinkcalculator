@@ -12,6 +12,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { calculateFD } from "@/features/calculators/fd/calculate-fd"
 import { calculateFDSchedule } from "@/features/calculators/fd/calculate-fd-schedule"
 import { calculateFDYearlySchedule, type FDYearlyScheduleRow } from "@/features/calculators/fd/calculate-fd-yearly-schedule"
@@ -120,6 +121,7 @@ export function FDCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateFD(liveInput), [liveInput])
+  useTrackCalculationCompleted("fd", "savings", result)
   const yearlySchedule = useMemo(() => calculateFDYearlySchedule(liveInput), [liveInput])
   const detailedSchedule = useMemo(() => calculateFDSchedule(liveInput), [liveInput])
 
@@ -248,7 +250,7 @@ export function FDCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="fd" category="savings" />
             </div>
           </CardContent>
         </Card>

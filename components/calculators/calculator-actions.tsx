@@ -4,13 +4,19 @@ import { useRef, useState } from "react"
 import { Check, Copy, Link as LinkIcon, Printer } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { buildCalculatorEventPayload, trackEvent } from "@/lib/analytics"
 
 type CalculatorActionsProps = {
   readonly resultText: string
   readonly shareUrl: string
+  /** Identifies which calculator fired `result_shared` — see
+   * features/calculators/core/use-track-calculation.ts for the matching
+   * `calculation_completed` event. Never a value the user entered. */
+  readonly calculatorType: string
+  readonly category: string
 }
 
-export function CalculatorActions({ resultText, shareUrl }: CalculatorActionsProps) {
+export function CalculatorActions({ resultText, shareUrl, calculatorType, category }: CalculatorActionsProps) {
   const [status, setStatus] = useState("")
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -25,11 +31,16 @@ export function CalculatorActions({ resultText, shareUrl }: CalculatorActionsPro
     timer.current = setTimeout(() => setStatus(""), 3000)
   }
 
+  function shareLink() {
+    trackEvent("result_shared", buildCalculatorEventPayload(calculatorType, category))
+    return copy(shareUrl, "Share link copied.")
+  }
+
   return (
     <div className="calculator-actions" data-print-hide>
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" onClick={() => void copy(resultText, "Results copied.")}><Copy aria-hidden="true" /> Copy results</Button>
-        <Button type="button" variant="outline" aria-describedby="share-link-note" onClick={() => void copy(shareUrl, "Share link copied.")}><LinkIcon aria-hidden="true" /> Copy share link</Button>
+        <Button type="button" variant="outline" aria-describedby="share-link-note" onClick={() => void shareLink()}><LinkIcon aria-hidden="true" /> Copy share link</Button>
         <Button type="button" variant="outline" onClick={() => window.print()}><Printer aria-hidden="true" /> Print</Button>
       </div>
       <p id="share-link-note" className="mt-2 text-xs text-muted-foreground">The share link includes the values you entered — anyone with the link can see them.</p>

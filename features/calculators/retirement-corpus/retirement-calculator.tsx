@@ -12,6 +12,7 @@ import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculat
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCalculatorUrlRestore } from "@/features/calculators/core/use-calculator-url-restore"
+import { useTrackCalculationCompleted } from "@/features/calculators/core/use-track-calculation"
 import { formatIndianCurrency, formatPercentage } from "@/lib/formatters"
 import { siteConfig } from "@/lib/site-config"
 import { calculateRetirement } from "./calculate-retirement"
@@ -203,6 +204,7 @@ export function RetirementCalculator() {
 
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateRetirement(liveInput), [liveInput])
+  useTrackCalculationCompleted("retirement-corpus", "investments", result)
   const chart = useMemo(() => toChartPoints(liveInput, result), [liveInput, result])
   const milestoneItems = useMemo(() => toMilestoneItems(liveInput, result), [liveInput, result])
   const retirementDurationYears = liveInput.lifeExpectancy - liveInput.retirementAge
@@ -437,7 +439,7 @@ export function RetirementCalculator() {
             </div>
 
             <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} />
+              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="retirement-corpus" category="investments" />
             </div>
           </CardContent>
         </Card>
