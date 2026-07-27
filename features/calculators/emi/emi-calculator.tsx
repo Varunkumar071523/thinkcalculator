@@ -205,31 +205,31 @@ export function EMICalculator() {
         <Card className="bg-gradient-to-b from-money-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">Monthly EMI</p>
+              <p className="mb-1.5 text-[13px] text-muted-foreground">Monthly EMI for {result.totalMonths} months at {liveInput.annualInterestRate.toFixed(2)}% p.a.</p>
               <p className="font-mono text-[42px] leading-none font-bold text-money">{formatIndianCurrency(result.monthlyEMI)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">for {result.totalMonths} months at {liveInput.annualInterestRate.toFixed(2)}% p.a.</p>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total interest payable</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalInterest)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total repayment</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalPayment)}</p>
-              </div>
             </div>
 
             <div className="mt-5 border-t border-line pt-5">
-              <SimpleDonutChart
-                title="Principal vs interest"
-                items={[
-                  { label: "Principal", value: result.principalAmount, formattedValue: formatIndianCurrency(result.principalAmount), colorClass: "bg-money", ringClass: "stroke-money" },
-                  { label: "Interest", value: result.totalInterest, formattedValue: formatIndianCurrency(result.totalInterest), colorClass: "bg-gold", ringClass: "stroke-gold" },
-                ]}
-                showInlineLabels
-              />
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <SimpleDonutChart
+                  title="Principal vs interest"
+                  items={[
+                    { label: "Principal", value: result.principalAmount, formattedValue: formatIndianCurrency(result.principalAmount), colorClass: "bg-money", ringClass: "stroke-money" },
+                    { label: "Interest", value: result.totalInterest, formattedValue: formatIndianCurrency(result.totalInterest), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                  ]}
+                  showInlineLabels
+                />
+                <dl className="flex shrink-0 flex-row gap-6 sm:flex-col sm:gap-3">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Total interest payable</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalInterest)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Total repayment</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalPayment)}</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
 
             <div className="mt-5">

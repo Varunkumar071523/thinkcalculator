@@ -443,3 +443,75 @@ audit of fincalculator.in's SIP/Lumpsum/PPF pages
   or a mobile-specific above-the-fold fix is scoped (would need to touch the shared calculator
   results-grid layout, not just EMI's page file — read this entry's fold-line numbers first, mobile
   is not solved by this sprint).
+
+## 39. Sprint 47: EMI header chrome + result panel compacting (template round 2) — both remaining changes stayed EMI-local, no shared component touched
+
+- Status: Accepted.
+- Context: A direct comparison against a competitor (fincalculator.in/emi) after Sprint 46 surfaced
+  two more gaps Sprint 46 had explicitly left out of scope: looser header-chrome spacing than the
+  competitor, and a result panel that spent a full grid row on two bordered "Total interest
+  payable"/"Total repayment" stat cards before the donut chart even started. Sprint scope stayed
+  EMI-only — round 2 of template validation, still not the rollout to the other 14 calculators.
+- Decision:
+  - **Header chrome (`app/finance/emi-calculator/page.tsx`) was tightened further in place**:
+    `mt-4→mt-3` (breadcrumb→header), `mt-2→mt-1.5` (H1→description), `mt-6→mt-4` (header→calculator
+    card). The badge→H1 gap (`mt-2`) was already tight from Sprint 46 and left unchanged. Breadcrumb
+    and category badge both remain, per the sprint's own constraint. This file is not shared with any
+    other calculator (confirmed by inspecting `app/finance/sip-calculator/page.tsx` and others — every
+    calculator page duplicates this breadcrumb/badge/H1/description block locally rather than
+    importing a shared header component), so this change has zero cross-calculator blast radius by
+    construction, the same reasoning Sprint 46 already established for this same file.
+  - **The two bordered stat cards were removed and replaced with a plain `<dl>` of stacked text
+    lines placed beside `SimpleDonutChart` in a flex row** (`features/calculators/emi/emi-calculator.tsx`):
+    `sm:flex-row` puts the totals to the right of the donut+legend on wider viewports (where the old
+    stat-card row's full height is now reclaimed entirely), falling back to `flex-col` (totals below
+    the donut) under the `sm` breakpoint, matching how the card's own grid layout already collapses to
+    a single column on mobile. This markup — like the header chrome — was confirmed EMI-local before
+    touching it: `grep -l 'rounded-lg border border-line bg-card p-3.5' features/calculators/*/*.tsx`
+    returns the same bordered-stat-card pattern duplicated independently in 20+ other calculator
+    files, not a shared component, so removing it in EMI's own file cannot affect any other
+    calculator. `SimpleDonutChart` itself (`components/calculators/simple-donut-chart.tsx`) was not
+    modified — the restructuring is purely an external flex wrapper around the existing component and
+    its existing `showInlineLabels` prop from Sprint 46.
+  - **The "for N months at R% p.a." subtitle was folded into the "Monthly EMI" label line** instead
+    of rendering as a separate line below the big rupee figure: `Monthly EMI for {totalMonths} months
+    at {rate}% p.a.` as one `<p>`, immediately above the figure. This removes a full text line from
+    the result panel's vertical stack. Chosen phrasing keeps "Monthly EMI" first (screen readers and
+    skimming users see what the number means before the caveat), reads as one natural sentence, and
+    needed no new component — same `<p>` element, just a longer string. Flagged in the sprint report
+    for human review since the brief called this phrasing a minor, non-blocking point.
+  - **`tests/e2e/emi-above-fold.spec.ts`'s `monthlyEmi` locator, and `scripts/tmp-measure-fold.mjs`'s
+    equivalent, were updated from an exact `"Monthly EMI"` text match to a `/^Monthly EMI for/` prefix
+    match**, since the exact string no longer appears standalone after the subtitle fold. This is the
+    only test-side change the sprint required; `totalInterest`/`donutHeading` locators were unaffected
+    since `"Total interest payable"` and `#donut-title` both still exist verbatim.
+- Verification:
+  - Fold-line, before vs. after, via two full production builds (`npm run build` + `next start`) on
+    separate ports rather than a git-stash round trip, at 1280×{720,768,800,900} and
+    390×{720,768,800,900} — see the sprint report's before/after table for exact numbers. Summary: the
+    donut heading's top edge moved up ~138px at both widths (entirely from removing the stat-card
+    row — the donut section now starts immediately after the Monthly EMI block), and the Monthly EMI
+    figure's bottom edge moved up ~14px (entirely from the header-chrome tightening, matching the sum
+    of the three margin reductions above). Mobile (390px) remains below the fold at every tested
+    height, unchanged from Sprint 46's own finding — this sprint didn't touch the single-column
+    mobile grid breakpoint, which is the actual mobile blocker (see entry #38's own note on this).
+  - No shared-component backward-compat proof was needed (unlike Sprint 46's `CalculatorField`/
+    `SimpleDonutChart` prop changes) because both touched pieces — the page header stack and the
+    stat-card markup — were confirmed EMI-local before editing, not shared components.
+  - Full suites re-run against a fresh production build: `vitest run` (1251/1251; one unrelated
+    flake in `scripts/__tests__/run-e2e-teardown.test.ts` on the first run, self-resolved and green on
+    a clean re-run in isolation and in the full suite — a pre-existing Windows process-timing test,
+    not touched by this sprint), `npm run lint` (clean), `tests/e2e/a11y.spec.ts` (axe, all routes,
+    Chromium/Firefox/WebKit), `tests/e2e/keyboard.spec.ts`, and `tests/e2e/print.spec.ts` (one
+    Firefox RD-calculator print test flaked once and passed on Playwright's own retry — pre-existing
+    contention flakiness per #33/#34, not touched by this sprint) — 248 passed, 1 flaky-then-passed,
+    0 failures.
+- Consequences: No shared component gained new surface area this sprint (contrast Sprint 46, which
+  added opt-in props to two shared components). `scripts/tmp-measure-fold.mjs` is a new checked-in
+  utility (matching the existing `scripts/tmp-viewport-audit.mjs` precedent) for re-running this same
+  before/after fold-line measurement in a future sprint.
+- Revisit trigger: The still-deferred rollout sprint to the other 14 calculators should apply this
+  entry's header-chrome margins and stat-card-beside-donut pattern alongside Sprint 46's tooltip/
+  inline-label pattern, once EMI's template is considered fully validated in production. The mobile
+  above-the-fold gap (both this entry and #38) still needs a dedicated shared-layout decision, not a
+  per-calculator one.
