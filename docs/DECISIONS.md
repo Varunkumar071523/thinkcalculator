@@ -340,3 +340,106 @@ audit of fincalculator.in's SIP/Lumpsum/PPF pages
 (docs/audits/sprint-40-fincalculator-sip-lumpsum-ppf/).
 
 - ~~Design-system rollout to remaining calculators~~ — DONE. All 8 (FD, RD, SIP, Step-up SIP, Lumpsum, PPF, SWP, Retirement Corpus) confirmed already migrated in aa028e0/1fee75d/2fe04fd, verified via raw grep evidence Sprints 39-40. No further rollout work needed.
+
+## 38. Sprint 46: EMI above-the-fold template — opt-in props on `CalculatorField` and `SimpleDonutChart`, defaulting to today's behavior for every other caller
+
+- Status: Accepted.
+- Context: An audit comparing thinkcalculator.in's EMI calculator against a competitor found the
+  vertical-space gap came from four sources: (1) an always-visible full-sentence helper paragraph
+  under every field, (2) `SimpleDonutChart`'s legend as a separate stacked block instead of inline
+  percentage labels on the ring itself, (3) loose breadcrumb/badge/title/subtitle spacing, and (4)
+  the quick-select amount chips as their own row. Sprint scope was deliberately EMI-only — a
+  template to validate before a future rollout sprint touches the other 14 calculators — so the
+  fix had to reach two components CLAUDE.md names as shared across all 15 (`CalculatorField`,
+  underlying every text/select/date field via `CalculatorNumberInput`/`CalculatorSelectInput`/
+  `CalculatorDateInput`/`PairedNumberSliderInput`, and `SimpleDonutChart` itself) without changing
+  their default rendering for any of the other callers.
+- Decision:
+  - **`CalculatorField` gained an optional `helperTextVariant?: "inline" | "tooltip"` prop,
+    defaulting to `"inline"`.** Inline (default, unchanged) renders the description as a visible
+    paragraph, exactly as before. `"tooltip"` instead renders a small focusable info icon
+    (`components/calculators/field-info-tip.tsx`) next to the label and moves the description text
+    into a visually-hidden (`sr-only`) node instead of a visible paragraph. Both variants give that
+    node the same `id` (`${id}-description`) that `getCalculatorFieldDescriptionIds` already wires
+    into the field's own `aria-describedby` — so screen readers get the description either way,
+    regardless of whether a sighted user has hovered/focused the icon. The icon's own
+    `aria-describedby` points at the same node, literally satisfying "aria-describedby linking the
+    icon to the tooltip content." Threaded through as a plain passthrough prop (no new logic) in
+    `CalculatorNumberInput`, `CalculatorSelectInput`, `CalculatorDateInput`, and
+    `PairedNumberSliderInput`, all four of which already delegate to `CalculatorField` — a caller
+    that never passes it is byte-identical to before.
+  - **The info icon is a Base UI `Popover`, not a `Tooltip`**, per Base UI's own documented
+    guidance: an info-icon disclosure belongs to `Popover` with `openOnHover`, because `Tooltip` is
+    unreachable for touch and screen-reader users (Base UI disables tooltips on touch devices
+    entirely). `openOnHover` alone only wires up hover and click, though — `Popover.Trigger` has no
+    `openOnFocus` prop — so the popover is made `open`/`onOpenChange`-controlled specifically to add
+    keyboard-focus opening back via a manual `onFocus` handler, gated on `event.currentTarget.matches(":focus-visible")`
+    so a mouse click's own focus (which does not match `:focus-visible`) doesn't race Base UI's
+    click-driven open/close toggle. `Popover.Popup`'s `initialFocus={false}` keeps DOM focus on the
+    trigger icon itself rather than Base UI's default of moving focus into the popup panel — without
+    it, tabbing to the icon opened the popover but then handed focus to the popup a moment later,
+    which broke `tests/e2e/keyboard.spec.ts`'s Tab-traversal count (that test's focus check runs a
+    tick after each Tab press and only credits a control still inside `[data-calculator-form]`, so a
+    focus handoff into a portaled, form-external popup silently dropped 3 of 15 controls from the
+    count). See `components/calculators/field-info-tip.tsx`'s own comment for the full trail,
+    including a debug-instrumented reproduction of the click/focus race this fix closes.
+  - **`SimpleDonutChart` gained an optional `showInlineLabels?: boolean` prop, defaulting to
+    `false`.** Default (unchanged) renders exactly the pre-existing markup — verified by keeping the
+    non-`showInlineLabels` JSX branch untouched rather than refactored, and asserting the other 13
+    existing callers still render their original stacked (`space-y-3`) legend with zero percentage
+    labels (`tests/e2e/emi-above-fold.spec.ts`'s "unaffected calculators" test, spot-checking PPF and
+    Retirement Corpus). `true` adds a percentage label on each ring segment (positioned via a new
+    pure, unit-tested `computeDonutLabelPositions` function — same pattern as the pre-existing
+    `computeDonutSegments`) and switches the legend below from a vertical stacked list to a compact
+    horizontal row, trading legend density for vertical space. EMI is the only caller passing `true`.
+  - **EMI's page chrome (`app/finance/emi-calculator/page.tsx`) was tightened in place — margins and
+    line-height only, no font-size changes and no content removed** (breadcrumb, category badge,
+    title, and subtitle all remain): `mt-6→mt-4`, `mt-4→mt-2`, `leading-7→leading-6`, `mt-3→mt-2`,
+    `mt-8→mt-6`. This file is not shared with any other calculator, so the change has zero
+    cross-calculator blast radius by construction.
+  - **The quick-select amount-chip row was evaluated for moving inline with the input row and
+    rejected for this sprint**, kept as its own row with only its top margin tightened
+    (`mt-2→mt-1.5`): squeezing a ₹-prefixed number input plus four preset chips onto one line risks
+    unusable touch targets below ~375px viewport width, and the sprint's own instruction was explicit
+    that mobile usability must not regress. The helper-text and donut changes did the majority of the
+    fold-line work regardless (see measurements below).
+- Verification:
+  - Fold-line, before vs. after, via `git stash` isolating this sprint's tracked changes (not a
+    worktree — a same-machine stash/pop round-trip was sufficient here since no separate build was
+    needed to compare, unlike the donut/FAQ backward-compat proof CLAUDE.md calls for elsewhere):
+    at 1280×{720,768,800,900}, the Monthly EMI figure's bottom edge moved from y=363.6 to y=327.6 and
+    the donut heading's top edge from y=597.4 to y=561.4 (both already above the fold before this
+    sprint at this width; the ~36px reduction comes entirely from the page-chrome tightening, since
+    the gap between the two figures is unchanged, 233.85px both before and after). At 390×{720,...},
+    the EMI figure's bottom edge moved from y=1194.0 to y=1068.0 (a ~126px improvement) but remains
+    below the fold at every tested height — this is because the result card sits below the entire
+    form in the existing single-column mobile grid (`grid-cols-1` until the `lg` breakpoint), a
+    pre-existing structural fact this sprint's scope (compacting existing elements, not
+    restructuring the grid) does not change. Flagged here as a known limitation, not silently
+    dropped: a true mobile fix would need to change result/form ordering or the grid breakpoint
+    itself, which is exactly the kind of shared-layout change CLAUDE.md says to weigh deliberately
+    rather than default into.
+  - `tests/e2e/emi-above-fold.spec.ts` (new): fold visibility at 1280×900, tooltip aria-describedby
+    wiring + hover + real-Tab-keyboard-focus + Escape, inline donut labels present, and the
+    unaffected-calculators spot-check (PPF, Retirement Corpus).
+  - Full existing suites re-run against a fresh production build (a stale build from earlier in the
+    sprint masked a real bug during development — see the caution below): `vitest run` (1251/1251),
+    `tests/e2e/keyboard.spec.ts` (all 6, including the now-3-buttons-heavier EMI form),
+    `tests/e2e/a11y.spec.ts` (all 60 routes, axe WCAG 2.1 A/AA, zero violations), `tests/e2e/print.spec.ts`
+    and `tests/e2e/reflow.spec.ts` (all passing), plus a Firefox/WebKit cross-browser pass on the new
+    spec and `keyboard.spec.ts` (one Firefox SWP timeout self-resolved on retry — pre-existing,
+    documented contention flakiness per this file's own #33/#34, not touched by this sprint).
+- Consequences: Two shared components (`CalculatorField` and its four field-type wrappers;
+  `SimpleDonutChart`) now carry an extra opt-in prop each, established as the pattern for the
+  deferred rollout sprint to the other 14 calculators. `components/calculators/field-info-tip.tsx`
+  is a new shared file, not EMI-local, so the rollout sprint can reuse it directly.
+- Caution for future sprints: `scripts/run-e2e.mjs` runs a production `next start` server built by
+  a separate `npm run build` step — it does not hot-reload. Mid-sprint component edits made after
+  the last build silently test stale code with no error; this sprint lost real time to exactly that
+  (an e2e failure that looked like a genuine focus-handling bug was actually a stale `.next/`
+  build). Rebuild before every e2e run once component code changes, not just before the final one.
+- Revisit trigger: The deferred rollout sprint to the other 14 calculators (apply
+  `helperTextVariant="tooltip"` and `showInlineLabels` there too, following this entry's pattern);
+  or a mobile-specific above-the-fold fix is scoped (would need to touch the shared calculator
+  results-grid layout, not just EMI's page file — read this entry's fold-line numbers first, mobile
+  is not solved by this sprint).

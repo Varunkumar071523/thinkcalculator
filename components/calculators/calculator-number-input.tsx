@@ -17,6 +17,7 @@ type CalculatorNumberInputProps = {
   readonly error?: string
   readonly required?: boolean
   readonly disabled?: boolean
+  readonly helperTextVariant?: "inline" | "tooltip"
 }
 
 export function CalculatorNumberInput({
@@ -34,11 +35,12 @@ export function CalculatorNumberInput({
   error,
   required,
   disabled,
+  helperTextVariant,
 }: CalculatorNumberInputProps) {
   const describedBy = getCalculatorFieldDescriptionIds(id, Boolean(description), Boolean(error))
 
   return (
-    <CalculatorField id={id} label={label} description={description} error={error} required={required}>
+    <CalculatorField id={id} label={label} description={description} error={error} required={required} helperTextVariant={helperTextVariant}>
       <div className="relative">
         {prefix ? <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground" aria-hidden="true">{prefix}</span> : null}
         <Input

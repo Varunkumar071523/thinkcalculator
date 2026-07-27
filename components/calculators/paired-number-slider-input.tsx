@@ -17,6 +17,7 @@ type PairedNumberSliderInputProps = {
   readonly error?: string
   readonly required?: boolean
   readonly accentClassName?: string
+  readonly helperTextVariant?: "inline" | "tooltip"
 }
 
 /** A number input and a range slider bound to the same value, editable from either control —
@@ -38,6 +39,7 @@ export function PairedNumberSliderInput({
   error,
   required,
   accentClassName = "accent-primary",
+  helperTextVariant,
 }: PairedNumberSliderInputProps) {
   return (
     <div>
@@ -54,6 +56,7 @@ export function PairedNumberSliderInput({
         onValueChange={onValueChange}
         error={error}
         required={required}
+        helperTextVariant={helperTextVariant}
       />
       <input
         type="range"

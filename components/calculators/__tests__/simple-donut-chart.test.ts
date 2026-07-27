@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { computeDonutSegments } from "../simple-donut-chart"
+import { computeDonutLabelPositions, computeDonutSegments } from "../simple-donut-chart"
 
 function item(label: string, value: number) {
   return { label, value, formattedValue: String(value), colorClass: "bg-money" }
@@ -50,5 +50,37 @@ describe("computeDonutSegments", () => {
     const segments = computeDonutSegments([item("A", 33.33), item("B", 33.33), item("C", 33.34)])
     expect(segments.every((segment) => Number.isFinite(segment.percent) && Number.isFinite(segment.dashOffset))).toBe(true)
     expect(segments.reduce((sum, segment) => sum + segment.percent, 0)).toBeCloseTo(100)
+  })
+})
+
+describe("computeDonutLabelPositions", () => {
+  it("places a 50/50 split's labels at 3 o'clock and 9 o'clock (each segment's own midpoint, walking clockwise from 12 o'clock)", () => {
+    const segments = computeDonutSegments([item("A", 50), item("B", 50)])
+    const positions = computeDonutLabelPositions(segments)
+    expect(positions[0].xPercent).toBeCloseTo(50 + 37.5)
+    expect(positions[0].yPercent).toBeCloseTo(50)
+    expect(positions[1].xPercent).toBeCloseTo(50 - 37.5)
+    expect(positions[1].yPercent).toBeCloseTo(50)
+  })
+
+  it("places a 75/25 split's second label at its own midpoint, not the first's", () => {
+    const segments = computeDonutSegments([item("A", 75), item("B", 25)])
+    const positions = computeDonutLabelPositions(segments)
+    expect(positions[0]).not.toEqual(positions[1])
+    // Segment B's midpoint sits at 87.5% of the way around the circle (75% + half of 25%).
+    const expectedAngleRad = ((87.5 / 100) * 360 - 90) * (Math.PI / 180)
+    expect(positions[1].xPercent).toBeCloseTo(50 + 37.5 * Math.cos(expectedAngleRad))
+    expect(positions[1].yPercent).toBeCloseTo(50 + 37.5 * Math.sin(expectedAngleRad))
+  })
+
+  it("is stable (no NaN) for the zero-total edge case", () => {
+    const segments = computeDonutSegments([item("A", 0), item("B", 0)])
+    const positions = computeDonutLabelPositions(segments)
+    expect(positions.every((position) => Number.isFinite(position.xPercent) && Number.isFinite(position.yPercent))).toBe(true)
+  })
+
+  it("returns one position per segment, in the same order", () => {
+    const segments = computeDonutSegments([item("Equity", 50), item("Corporate debt", 30), item("Govt securities", 20)])
+    expect(computeDonutLabelPositions(segments)).toHaveLength(3)
   })
 })

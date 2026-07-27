@@ -11,6 +11,7 @@ type CalculatorSelectInputProps = {
   readonly error?: string
   readonly required?: boolean
   readonly disabled?: boolean
+  readonly helperTextVariant?: "inline" | "tooltip"
 }
 
 export function CalculatorSelectInput({
@@ -23,11 +24,12 @@ export function CalculatorSelectInput({
   error,
   required,
   disabled,
+  helperTextVariant,
 }: CalculatorSelectInputProps) {
   const describedBy = getCalculatorFieldDescriptionIds(id, Boolean(description), Boolean(error))
 
   return (
-    <CalculatorField id={id} label={label} description={description} error={error} required={required}>
+    <CalculatorField id={id} label={label} description={description} error={error} required={required} helperTextVariant={helperTextVariant}>
       <select
         id={id}
         value={value}

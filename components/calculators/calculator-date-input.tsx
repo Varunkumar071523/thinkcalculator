@@ -11,6 +11,7 @@ type CalculatorDateInputProps = {
   readonly max?: string
   readonly error?: string
   readonly required?: boolean
+  readonly helperTextVariant?: "inline" | "tooltip"
 }
 
 /** A native date input following the same CalculatorField/aria-describedby pattern as
@@ -28,11 +29,12 @@ export function CalculatorDateInput({
   max,
   error,
   required,
+  helperTextVariant,
 }: CalculatorDateInputProps) {
   const describedBy = getCalculatorFieldDescriptionIds(id, Boolean(description), Boolean(error))
 
   return (
-    <CalculatorField id={id} label={label} description={description} error={error} required={required}>
+    <CalculatorField id={id} label={label} description={description} error={error} required={required} helperTextVariant={helperTextVariant}>
       <Input
         id={id}
         type="date"
