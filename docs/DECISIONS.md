@@ -515,3 +515,120 @@ audit of fincalculator.in's SIP/Lumpsum/PPF pages
   inline-label pattern, once EMI's template is considered fully validated in production. The mobile
   above-the-fold gap (both this entry and #38) still needs a dedicated shared-layout decision, not a
   per-calculator one.
+
+## 40. Sprint 48 batch 1: EMI template rolled out to FD, SIP, RD, and Lumpsum
+
+- Status: Accepted.
+- Context: Sprints 46-47 built and validated the above-the-fold template (tooltip helper text,
+  inline donut labels, tightened header chrome, `<dl>`-beside-donut result panel, folded result
+  subtitle) on EMI alone, deliberately deferring rollout. This sprint is batch 1 of that rollout.
+  Before touching any other calculator, Sprint 47's three unverified claims were re-checked with
+  real command output: (a) the header/breadcrumb/badge/H1/description stack is genuinely duplicated
+  per-page, confirmed by diffing EMI's and FD's (pre-change) `page.tsx` — identical JSX, only the
+  margin utility classes differed; (b) the bordered stat-card pattern
+  (`rounded-lg border border-line bg-card p-3.5`) is independently duplicated, confirmed by
+  `grep -rl` — 19 files under `features/calculators/*/*.tsx` (Sprint 47 said "20+"; the true count is
+  19, and the pattern lives in the calculator component files, not the `app/**/page.tsx` pages
+  directory Sprint 47's own wording named — a minor claim inaccuracy, not a false claim: still
+  independently duplicated, not shared, so the rollout was safe to proceed); (c) EMI's result panel
+  markup is real `<dl>`/`<dt>`/`<dd>`, confirmed by reading the merged file directly. No stale exact
+  `"Monthly EMI"` string references remained in `tests/` (only the intentional `/^Monthly EMI for/`
+  prefix match Sprint 47 itself introduced).
+  - Also found: `PROJECT.md`'s and this log's own recurring "the other 14 calculators" figure is
+    stale. The actual count of published calculators (`app/finance/*` + `/business/gst-calculator`)
+    is 21; minus EMI, 20 remain, not 14 — the figure predates several calculators added after it was
+    first written (EPF, NPS, Capital Gains, Leave Encashment, EPS Pension, Home Loan Eligibility,
+    Income Tax). This sprint's batch selection used the real 20-calculator list, not the stale figure;
+    the "14" wording elsewhere in this log is left as historical record rather than retroactively
+    edited.
+- Decision:
+  - **Audited all 20 non-EMI calculators for structural fit** against EMI's shape (single-phase
+    result, `SimpleDonutChart`-based breakdown, no conditional result states). Excluded as outliers,
+    to be scoped separately:
+    - **SWP, Retirement Corpus** — multi-phase results (accumulation + withdrawal/decumulation),
+      explicitly a different shape.
+    - **EPF** — no `SimpleDonutChart` at all (3-way stacked bar only).
+    - **CAGR, EPS Pension, Gratuity, HRA, Income Tax, Inflation** — no `SimpleDonutChart` (`donut=0`
+      via grep); some also have conditional result states (EPS Pension's eligible/not-eligible
+      branch).
+    - **Capital Gains, Leave Encashment, GST** — donut present, but each has extra result-panel
+      structure beyond EMI's shape (Capital Gains: 4 stat cards + a separate FIFO-matching-summary
+      card; Leave Encashment: 3 stat cards including a spanning cell + a separate exemption-workings
+      card; GST: a separate tax-head-breakdown card).
+    - **Step-up SIP, NPS, PPF, Home Loan Eligibility** — structurally EMI-shaped (single result +
+      donut + 2 stat figures), but held back for a later batch: Step-up SIP carries an extra "Regular
+      SIP comparison" card, NPS's donut items are themselves percentages (asset allocation, not
+      currency), PPF's exemption-cap logic and Home Loan Eligibility's conditional
+      over-budget-warning both add branching this first batch deliberately avoided in favor of the
+      lowest-risk possible batch.
+  - **Selected FD, SIP, RD, and Lumpsum for batch 1**: all four are byte-for-byte structurally
+    identical to EMI's pre-Sprint-46 shape (same `PairedNumberSliderInput`×3 + `CalculatorSelectInput`
+    input column, same single-figure result heading + 2-stat-card grid + donut, same
+    `YearlyBarChart`/`GrowthLineChart` section below, no conditional result states), and among the
+    highest-traffic personal-finance calculator categories (loan/deposit maturity and SIP/lumpsum
+    investment growth). Applied the identical pattern to each: header chrome tightened to EMI's
+    Sprint 47 values (`mt-6→mt-3`, `mt-4→mt-2`, `mt-3→mt-1.5`, `mt-8→mt-4`); the bordered stat-card
+    grid replaced with a `<dl>` beside `SimpleDonutChart` (`showInlineLabels`); `helperTextVariant="tooltip"`
+    added to every field that already had a `description` (fields with no description were left alone
+    — the prop is a no-op without one, so adding it would be inert clutter, matching how EMI itself
+    only added it where it does something).
+  - **Subtitle-fold phrasing, adapted per calculator rather than copied from EMI verbatim**: FD/RD
+    fold to `"Maturity amount over {months} months at {rate}% p.a."`, dropping the original
+    subtitle's compounding-frequency clause (already selectable in the form and present in the
+    shareable result text; keeping the folded label the same short shape as EMI's own
+    period+rate-only fold was judged more valuable than preserving that detail on the fold line).
+    SIP/Lumpsum fold to `"Estimated future value over {duration} {unit} at {rate}% p.a."`, dropping
+    the original subtitle's repeated invested-amount clause (that figure already appears a few lines
+    below in the `<dl>`, so repeating it in the fold line would be redundant). Flagged here per the
+    sprint brief's request for phrasing-choice visibility.
+  - **`tests/e2e/emi-above-fold.spec.ts`'s "unaffected calculators" spot-check swapped FD out** (now
+    migrated, so no longer "unaffected") **for Home Loan Eligibility**, not NPS: NPS was tried first
+    since it's also an untouched second `SimpleDonutChart` caller, but its default (non-inline-label)
+    legend already renders bare `NN%` strings — its donut items are percentages by domain (asset
+    allocation), not currency — which false-positived the test's "no inline percentage labels"
+    assertion even though `showInlineLabels` was never set. Home Loan Eligibility's donut items are
+    both currency-formatted, so it doesn't share that false-positive risk.
+- Verification:
+  - Fold-line, before vs. after, via a real isolated git worktree at the pre-change commit (704f9e5)
+    built and started on a separate port, compared against the working tree's own build — a new
+    `scripts/tmp-measure-fold-batch1.mjs` generalizes Sprint 47's EMI-only measurement script to all
+    four batch calculators at the same 1280×{720,768,800,900} / 390×{720,768,800,900} sweep. At
+    1280px: the result label's bottom edge moved from y=363.6 to y=313.6 (-50px, from header-chrome
+    tightening) and the donut heading's top edge moved from y=597.4 to y=423.6 (-173.8px, from
+    removing the stat-card row) for all four calculators — both already comfortably above the fold at
+    this width before this sprint. At 390px: FD's donut top moved from y=1459.8 to y=1126 (-333.8px),
+    RD from y=1355.8 to y=1126 (-229.8px), SIP/Lumpsum from y=1313.7 to y=1014 (-299.7px) — all
+    remain below the fold at every tested height, unchanged from EMI's own documented mobile finding
+    (the single-column `grid-cols-1` mobile breakpoint is the actual blocker, out of scope for a
+    per-calculator sprint, same as entries #38/#39).
+  - Zero-regression spot-check on two calculators outside this batch (PPF, NPS), stronger than a
+    visual/DOM assertion: `git stash -u` reverted the working tree to the pre-change commit, `next
+    build` produced the pre-change static HTML for both routes, `git stash pop` restored this
+    sprint's changes, `next build` produced the post-change HTML, and the two were diffed directly.
+    Both routes' prerendered HTML were byte-identical once Next's own per-build random `buildId`
+    (embedded once in the RSC payload, the only difference found) was normalized out — not just
+    "no visible difference," a full-document proof.
+  - Full suites re-run against a fresh production build: `vitest run` (1250/1251; the one failure,
+    `scripts/__tests__/run-e2e-teardown.test.ts`, passed in isolation immediately after — a
+    pre-existing Windows process-timing flake per this log's own #29, not touched by this sprint),
+    `npm run lint` (clean), `next build` (all 67 routes generated). `tests/e2e/a11y.spec.ts` (axe,
+    all routes), `tests/e2e/keyboard.spec.ts`, `tests/e2e/print.spec.ts`, and
+    `tests/e2e/emi-above-fold.spec.ts` across Chromium/Firefox/WebKit: first full run had 3 failures
+    (all the same "unaffected calculators" test, broken by the FD→NPS swap described above) plus 4
+    pre-existing WebKit-only a11y timeout flakes on calculators outside this batch (PPF, GST,
+    Gratuity, HRA — all self-resolved on Playwright's own retry); after swapping in Home Loan
+    Eligibility, a second full run was 259 passed, 2 pre-existing flaky-then-passed (Income Tax print
+    on Firefox, Retirement Corpus keyboard on WebKit, neither touched by this sprint), 0 failures.
+- Consequences: No shared component gained new surface area (same as #39 — both touched pieces per
+  calculator were per-calculator files). `scripts/tmp-measure-fold-batch1.mjs` is a new checked-in
+  utility, following the `tmp-measure-fold.mjs`/`tmp-viewport-audit.mjs` precedent, generalized to
+  take a calculator list rather than being EMI-specific.
+- Revisit trigger: Batch 2 (suggested candidates: PPF, NPS, Step-up SIP, Home Loan Eligibility — the
+  four held back above for reasons that are each independently addressable) should apply this same
+  pattern once this batch is considered validated. The multi-phase (SWP, Retirement Corpus),
+  no-donut (EPF, CAGR, EPS Pension, Gratuity, HRA, Income Tax, Inflation), and extra-card (Capital
+  Gains, Leave Encashment, GST) outlier groups each need their own scoping conversation before any
+  template rollout touches them — this entry deliberately does not propose a one-size answer for any
+  of them. The mobile above-the-fold gap remains a dedicated shared-layout decision away from being
+  solved, same as #38/#39.
+  per-calculator one.
