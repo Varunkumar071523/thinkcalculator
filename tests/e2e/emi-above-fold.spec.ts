@@ -90,12 +90,19 @@ test.describe("EMI above-the-fold template", () => {
   // PairedNumberSliderInput, so an earlier version of this test that used only those two never
   // actually covered CalculatorDateInput. Capital Gains is the only calculator using
   // CalculatorDateInput at all (grep-verified: `grep -l CalculatorDateInput features/calculators/*/*.tsx`
-  // returns exactly one file), so it's included here specifically for that. FD is added as a second
-  // SimpleDonutChart caller beyond PPF/Retirement Corpus. `/calculators/demo` (the only caller of a
-  // bare, non-paired CalculatorNumberInput) is intentionally excluded — it's a design-preview route,
-  // not one of the 15 published calculators this sprint's compatibility promise covers.
-  test("unaffected calculators: PPF, Retirement Corpus, FD, and Capital Gains keep the old always-visible helper text and stacked donut legend, with no info icons", async ({ page }) => {
-    for (const path of ["/finance/ppf-calculator", "/finance/retirement-corpus-calculator", "/finance/fd-calculator", "/finance/capital-gains-calculator"]) {
+  // returns exactly one file), so it's included here specifically for that. Home Loan Eligibility is
+  // added as a second SimpleDonutChart caller beyond PPF/Retirement Corpus (FD moved to the new
+  // template in Sprint 48 batch 1, so it no longer belongs in this "unaffected" list — see
+  // docs/DECISIONS.md #40). NPS was tried as the replacement first but rejected: its donut items'
+  // `formattedValue`s are themselves percentage strings (asset-allocation shares, not currency), so
+  // its default/untouched legend already contains bare `NN%` text and false-positives the "no inline
+  // percentage labels" check below even with `showInlineLabels` never set. Home Loan Eligibility's
+  // donut items are both currency-formatted, so it doesn't share that false-positive risk.
+  // `/calculators/demo` (the only caller of a bare, non-paired CalculatorNumberInput) is intentionally
+  // excluded — it's a design-preview route, not one of the published calculators this sprint's
+  // compatibility promise covers.
+  test("unaffected calculators: PPF, Retirement Corpus, Home Loan Eligibility, and Capital Gains keep the old always-visible helper text and stacked donut legend, with no info icons", async ({ page }) => {
+    for (const path of ["/finance/ppf-calculator", "/finance/retirement-corpus-calculator", "/finance/home-loan-eligibility-calculator", "/finance/capital-gains-calculator"]) {
       await page.goto(path)
       const infoIconCount = await page.locator('button[aria-label^="More info:"]').count()
       expect(infoIconCount, `${path} should have no tooltip info icons (opt-in not set)`).toBe(0)
