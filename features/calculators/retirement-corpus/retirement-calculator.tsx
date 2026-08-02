@@ -151,6 +151,63 @@ function toAccumulationChartData(schedule: readonly RetirementAccumulationSchedu
   return { labels, contribution, growth }
 }
 
+export type RetirementResultPhase = "accumulation" | "decumulation"
+
+type PhaseDonutItem = {
+  readonly label: string
+  readonly value: number
+  readonly formattedValue: string
+  readonly colorClass: string
+  readonly ringClass?: string
+}
+
+type PhaseStatCell = { readonly label: string; readonly value: string }
+
+export type RetirementPhaseView = {
+  readonly donutTitle: string
+  readonly donutItems: readonly [PhaseDonutItem, PhaseDonutItem]
+  readonly statCells: readonly [PhaseStatCell, PhaseStatCell, PhaseStatCell, PhaseStatCell]
+}
+
+/** Pure mapping from the above-the-fold phase toggle to the donut + stat-grid content it drives, so
+ * the default phase, the swap, and each phase's field mapping are unit-testable without rendering.
+ * "accumulation"'s donut reproduces exactly what it showed before this toggle existed; its stat grid
+ * does not — the old grid mixed 2 accumulation cells (Corpus at retirement, Total contributions) with
+ * 2 decumulation cells (First-year/Final monthly withdrawal) and is now fully accumulation-scoped,
+ * adding two cells that weren't in the old grid at all (Total growth at retirement, Years to
+ * retirement). "decumulation" is the first caller of totalWithdrawn/totalGrowthInRetirement, which
+ * Sprint 56 found were computed but never referenced anywhere in this component. */
+export function toRetirementPhaseView(phase: RetirementResultPhase, result: RetirementResult): RetirementPhaseView {
+  if (phase === "decumulation") {
+    return {
+      donutTitle: "Withdrawn vs growth during retirement",
+      donutItems: [
+        { label: "Withdrawn", value: result.totalWithdrawn, formattedValue: formatIndianCurrency(result.totalWithdrawn), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
+        { label: "Growth", value: result.totalGrowthInRetirement, formattedValue: formatIndianCurrency(result.totalGrowthInRetirement), colorClass: "bg-gold", ringClass: "stroke-gold" },
+      ],
+      statCells: [
+        { label: "First-year monthly withdrawal", value: formatIndianCurrency(result.firstYearMonthlyWithdrawal) },
+        { label: "Final monthly withdrawal", value: formatIndianCurrency(result.finalMonthlyWithdrawal) },
+        { label: "Total withdrawn", value: formatIndianCurrency(result.totalWithdrawn) },
+        { label: "Total growth in retirement", value: formatIndianCurrency(result.totalGrowthInRetirement) },
+      ],
+    }
+  }
+  return {
+    donutTitle: "Contributions vs growth at retirement",
+    donutItems: [
+      { label: "Contributions", value: result.totalContributions, formattedValue: formatIndianCurrency(result.totalContributions), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
+      { label: "Growth", value: result.totalGainAtRetirement, formattedValue: formatIndianCurrency(result.totalGainAtRetirement), colorClass: "bg-gold", ringClass: "stroke-gold" },
+    ],
+    statCells: [
+      { label: "Corpus at retirement", value: formatIndianCurrency(result.corpusAtRetirement) },
+      { label: "Total contributions", value: formatIndianCurrency(result.totalContributions) },
+      { label: "Total growth at retirement", value: formatIndianCurrency(result.totalGainAtRetirement) },
+      { label: "Years to retirement", value: `${result.yearsToRetirement} years` },
+    ],
+  }
+}
+
 const accumulationColumns: readonly DataTableColumn<RetirementAccumulationScheduleRow>[] = [
   { header: "Age", cell: (row) => row.age },
   { header: "Contribution this year", cell: (row) => formatIndianCurrency(row.contributionThisYear) },
@@ -172,6 +229,8 @@ export function RetirementCalculator() {
   const [values, setValues] = useState<RetirementFormValues>(() => toFormValues(RETIREMENT_DEFAULT_INPUT))
   const [errors, setErrors] = useState<RetirementValidationErrors>({})
   const [scheduleView, setScheduleView] = useState<"chart" | "table">("chart")
+  // Default is "accumulation" so page load matches today's existing above-the-fold view unchanged.
+  const [phase, setPhase] = useState<RetirementResultPhase>("accumulation")
   // Tracks whether the user has deliberately changed the post-retirement return away from the
   // pre-retirement return. Until they do, changing the pre-retirement field also updates the
   // post-retirement field, so the single-rate case (decision 2 in calculate-retirement.ts) never
@@ -205,6 +264,7 @@ export function RetirementCalculator() {
   const liveInput = useMemo(() => toLiveInput(values), [values])
   const result = useMemo(() => calculateRetirement(liveInput), [liveInput])
   useTrackCalculationCompleted("retirement-corpus", "investments", result)
+  const phaseView = useMemo(() => toRetirementPhaseView(phase, result), [phase, result])
   const chart = useMemo(() => toChartPoints(liveInput, result), [liveInput, result])
   const milestoneItems = useMemo(() => toMilestoneItems(liveInput, result), [liveInput, result])
   const retirementDurationYears = liveInput.lifeExpectancy - liveInput.retirementAge
@@ -409,33 +469,27 @@ export function RetirementCalculator() {
               <p className="mt-2 text-[12.5px] text-muted-foreground">{subtitle}</p>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Corpus at retirement</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.corpusAtRetirement)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total contributions</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalContributions)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">First-year monthly withdrawal</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.firstYearMonthlyWithdrawal)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Final monthly withdrawal</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.finalMonthlyWithdrawal)}</p>
+            <div className="mt-5 flex items-center justify-between gap-3">
+              <h3 className="text-[13px] font-semibold tracking-wide text-muted-foreground uppercase">Show figures for</h3>
+              <div role="group" aria-label="Retirement phase" className="inline-flex gap-1.5">
+                <Button type="button" size="sm" variant={phase === "accumulation" ? "default" : "outline"} aria-pressed={phase === "accumulation"} onClick={() => setPhase("accumulation")}>At retirement</Button>
+                <Button type="button" size="sm" variant={phase === "decumulation" ? "default" : "outline"} aria-pressed={phase === "decumulation"} onClick={() => setPhase("decumulation")}>During retirement</Button>
               </div>
             </div>
 
-            <div className="mt-5 border-t border-line pt-5">
-              <SimpleDonutChart
-                title="Contributions vs growth at retirement"
-                items={[
-                  { label: "Contributions", value: result.totalContributions, formattedValue: formatIndianCurrency(result.totalContributions), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
-                  { label: "Growth", value: result.totalGainAtRetirement, formattedValue: formatIndianCurrency(result.totalGainAtRetirement), colorClass: "bg-gold", ringClass: "stroke-gold" },
-                ]}
-              />
+            <div className="mt-3" aria-live="polite">
+              <div className="grid grid-cols-2 gap-3">
+                {phaseView.statCells.map((cell) => (
+                  <div key={cell.label} className="rounded-lg border border-line bg-card p-3.5">
+                    <p className="mb-1 text-xs text-muted-foreground">{cell.label}</p>
+                    <p className="font-mono text-lg font-semibold">{cell.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 border-t border-line pt-5">
+                <SimpleDonutChart title={phaseView.donutTitle} items={phaseView.donutItems} />
+              </div>
             </div>
 
             <div className="mt-5">
