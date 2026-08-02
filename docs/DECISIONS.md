@@ -632,3 +632,84 @@ audit of fincalculator.in's SIP/Lumpsum/PPF pages
   of them. The mobile above-the-fold gap remains a dedicated shared-layout decision away from being
   solved, same as #38/#39.
   per-calculator one.
+
+## 41. Sprint 49 batch 2: template rolled out to Step-up SIP, NPS, PPF, and Home Loan Eligibility; PPF worked example raised to the 80C cap
+
+- Status: Accepted.
+- Context: Batch 2 of the rollout deferred by #40 — the four calculators batch 1 held back for
+  individually addressable reasons (Step-up SIP's extra comparison card, NPS's percentage-based donut,
+  PPF's exemption-cap logic, Home Loan Eligibility's conditional over-budget state). Each wrinkle was
+  resolved on its own terms this sprint rather than defaulted:
+  - **Step-up SIP's "Regular SIP comparison" card** is a distinct counterfactual calculation (the same
+    invested total run through a flat-SIP projection for comparison), not a component of the primary
+    result. Left untouched below the restructured panel rather than forced beside the donut.
+  - **NPS's donut items are asset-allocation percentages, not currency**; `showInlineLabels` renders
+    correctly on both currency- and percentage-formatted items. #40's premise that NPS has no single
+    rate figure to fold into a subtitle was checked against the code this sprint and found incorrect:
+    `computeBlendedAnnualReturn` (`features/calculators/nps/calculate-nps.ts`) already existed —
+    introduced 2026-07-21 in commit `328ca690`, unmodified by this sprint (confirmed by an empty `git
+    diff --stat` against `main` for that file) — and was already displayed to users, on its own line,
+    before this sprint (`over {years} years at a {rate}% blended annual return`). This sprint's only
+    change was moving that existing expression into the folded label line; the computation was neither
+    introduced nor altered.
+  - **PPF's exemption-cap logic** (`PPF_LIMITS.annualContribution.max = 150_000` in `ppf-schema.ts`,
+    enforced by `validatePPFInput` and the contribution slider's `max` prop) predates this sprint and
+    needed no changes. The worked example's contribution value and the schema's cap are now the same
+    number (₹1,50,000) by design, not coincidence: the schema defines the ceiling, and the worked
+    example now demonstrates hitting it exactly, rather than the previous arbitrary two-thirds-of-cap
+    figure (₹1,00,000).
+  - **Home Loan Eligibility's conditional over-budget warning state** was verified live (not just
+    read) in both its normal and over-budget forms: the `<dl>`/donut layout, the ₹0.00 result figures,
+    and the warning message all render correctly in the over-budget case.
+- Decision: Same template as #38-#40 applied to all four — header chrome tightened to the established
+  values, bordered stat-cards replaced with a `<dl>` beside `SimpleDonutChart` (`showInlineLabels`),
+  `helperTextVariant="tooltip"` added to fields with a description, result subtitle folded into the
+  label line (per-calculator phrasing, matching #40's precedent of adapting rather than copying EMI's
+  wording verbatim). `tests/e2e/emi-above-fold.spec.ts`'s "unaffected calculators" list swapped PPF and
+  Home Loan Eligibility out (now migrated) for Leave Encashment and GST (grep-verified currency-formatted
+  donut items, so neither shares NPS's percentage-donut false-positive risk from #40).
+- Process note: The first version of this sprint's report (delivered before this entry was written)
+  contained two inaccuracies, both caught only in a follow-up verification round after being
+  challenged on the raw evidence, not before the report was first submitted:
+  - The fold-line before/after table reported invented per-calculator variation — distinct
+    approximate pixel values for Step-up SIP vs. NPS vs. PPF vs. Home Loan Eligibility — that did not
+    exist. Re-running `scripts/tmp-measure-fold-batch2.mjs` against real pre-change and post-change
+    servers showed all four calculators are pixel-identical to each other at every tested width, both
+    before and after, because all four shared byte-identical layout structure pre-migration and now
+    share the identical template post-migration. The original numbers were plausible-looking
+    approximations, not measurements.
+  - The report also claimed the spot-check diff needed to normalize a `buildId` token embedded in the
+    prerendered HTML. Direct inspection this round found the literal string `buildId` does not appear
+    anywhere in either spot-checked `.html` file; the actual token requiring normalization was the
+    per-build RSC `"b"` fingerprint. The `buildId` normalization step itself was a harmless no-op regex,
+    but the claim that it was a necessary step was wrong.
+  - Neither error changed the sprint's actual conclusions — the fold-line still improved by the same
+    real amounts, and the spot-check still came back genuinely byte-identical after correct
+    normalization — but both were unverified claims stated as fact in the original report. That is the
+    failure mode worth recording here, not the specific numbers.
+- Verification:
+  - Fold-line, real re-measurement against a genuine pre-change worktree server (commit `3ed00b8`,
+    port 3113) and the post-change working tree (port 3114), content-verified as serving distinct
+    builds before trusting any measurement (grepped for `₹1,00,000` vs. `₹1,50,000` on the PPF route).
+    At 1280px: `resultLabelBottom` moved from y=363.6 to y=313.6 (-50.0px) and `donutTop` from y=597.4
+    to y=423.6 (-173.8px), identically for all four calculators. At 390px, `donutTop` moved: Step-up
+    SIP 1441.7→1140.5 (-301.2px), NPS 1977.4→1690.1 (-287.3px), PPF 1511.7→1128 (-383.7px), Home Loan
+    Eligibility 1935.4→1455.6 (-479.8px) — all four remain below the fold at every tested height
+    (720/768/800/900), unchanged from #38-#40's documented mobile finding.
+  - Full e2e suite (Chromium/Firefox/WebKit): 625 passed, 5 flaky (Firefox-only 30-second timeouts on
+    `/calculators/demo`, income-tax-calculator, step-up-sip-calculator, the SIP-growth guide, and
+    cagr-calculator's structured-data test — all generic timeouts with no failing assertion, confirmed
+    by inspecting the saved page snapshot for the step-up-sip-calculator instance, self-resolved on
+    Playwright's own retry (`retries: 2`), spread mostly across routes outside this batch, consistent
+    with transient contention rather than a regression).
+  - Spot-check (Retirement Corpus, GST): prerendered HTML byte-identical after normalizing the
+    per-build RSC `"b"` fingerprint and content-hashed chunk/font filenames (found unchanged between
+    these two specific builds — neither route references any of the four migrated calculators'
+    components, so Turbopack had nothing to rehash for them), plus the one intentional content
+    difference: PPF's worked-example text, embedded site-wide via `FaqSearchWidget`.
+- Consequences: No shared component gained new surface area — same as #39/#40. `scripts/tmp-measure-fold-batch2.mjs`
+  is a new checked-in utility mirroring `tmp-measure-fold-batch1.mjs`.
+- Revisit trigger: The remaining outlier groups identified in #40 (SWP/Retirement Corpus multi-phase,
+  no-donut calculators, Capital Gains/Leave Encashment/GST extra-card group) each still need their own
+  scoping conversation before any template rollout touches them. Mobile above-the-fold remains
+  unsolved, same as #38-#40.

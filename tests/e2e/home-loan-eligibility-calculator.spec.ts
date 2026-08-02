@@ -3,10 +3,15 @@ import { expect, test } from "@playwright/test"
 // Sprint 39: covers the Home Loan Eligibility calculator's FOIR-band-driven results and its
 // worked example, mirroring the pattern in hra-calculator.spec.ts (read the primary result card
 // value directly rather than relying on visibility of the collapsed worked-example/FAQ sections).
-async function primaryValueFor(page: import("@playwright/test").Page, label: string): Promise<string | null> {
+// Sprint 49: the "Max eligible EMI" label was folded together with the FOIR-band subtitle into one
+// line (`Max eligible EMI at the {band} FOIR band`), matching the fold pattern this file's own
+// `emi-above-fold.spec.ts` precedent established for EMI's "Monthly EMI for..." line in Sprint 47 —
+// so an exact-text match no longer finds it. A string label still exact-matches unchanged labels
+// (the `<dt>` cells below the donut); a RegExp label prefix-matches the folded one.
+async function primaryValueFor(page: import("@playwright/test").Page, label: string | RegExp): Promise<string | null> {
   return page
     .getByTestId("calculator-result-card")
-    .getByText(label, { exact: true })
+    .getByText(label, typeof label === "string" ? { exact: true } : undefined)
     .evaluate((el) => el.nextElementSibling?.textContent ?? null)
 }
 
@@ -34,7 +39,7 @@ test.describe("Home Loan Eligibility calculator", () => {
 
     // ₹1,00,000 × 50% − ₹10,000 existing EMI = ₹40,000 eligible EMI, matching the codebase's own
     // worked example (home-loan-eligibility-content.ts) and unit test ground truth.
-    expect(await primaryValueFor(page, "Max eligible EMI")).toBe("₹40,000.00")
+    expect(await primaryValueFor(page, /^Max eligible EMI at the/)).toBe("₹40,000.00")
     expect(await primaryValueFor(page, "Max eligible loan amount")).toContain("₹46,09,2")
     expect(await primaryValueFor(page, "Total property affordability")).toContain("₹56,09,2")
   })
@@ -44,13 +49,13 @@ test.describe("Home Loan Eligibility calculator", () => {
     await waitForHydration(page)
 
     await page.locator("#foir-band").selectOption("conservative")
-    const conservativeEmi = await primaryValueFor(page, "Max eligible EMI")
+    const conservativeEmi = await primaryValueFor(page, /^Max eligible EMI at the/)
 
     await page.locator("#foir-band").selectOption("standard")
-    const standardEmi = await primaryValueFor(page, "Max eligible EMI")
+    const standardEmi = await primaryValueFor(page, /^Max eligible EMI at the/)
 
     await page.locator("#foir-band").selectOption("aggressive")
-    const aggressiveEmi = await primaryValueFor(page, "Max eligible EMI")
+    const aggressiveEmi = await primaryValueFor(page, /^Max eligible EMI at the/)
 
     expect(conservativeEmi).toBe("₹30,000.00")
     expect(standardEmi).toBe("₹40,000.00")
@@ -64,7 +69,7 @@ test.describe("Home Loan Eligibility calculator", () => {
 
     await page.locator("#existing-monthly-emi").fill("60000")
 
-    expect(await primaryValueFor(page, "Max eligible EMI")).toBe("₹0.00")
+    expect(await primaryValueFor(page, /^Max eligible EMI at the/)).toBe("₹0.00")
     await expect(page.getByTestId("calculator-result-card").getByText(/existing monthly EMIs already exceed/i)).toBeVisible()
   })
 

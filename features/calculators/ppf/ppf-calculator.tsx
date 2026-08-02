@@ -144,6 +144,7 @@ export function PPFCalculator() {
                     error={errors.annualContribution}
                     required
                     accentClassName="accent-cat-savings"
+                    helperTextVariant="tooltip"
                   />
                   <div className="mt-2 flex gap-1.5">
                     {CONTRIBUTION_QUICK_AMOUNTS.map((preset) => (
@@ -168,9 +169,10 @@ export function PPFCalculator() {
                   error={errors.assumedAnnualInterestRate}
                   required
                   accentClassName="accent-cat-savings"
+                  helperTextVariant="tooltip"
                 />
 
-                <CalculatorSelectInput id="duration" label="Projection duration" description="The selector counts projection years. Official maturity timing, extension eligibility, and applications are outside this calculator." value={values.durationYears} onValueChange={(value) => updateValue("durationYears", value)} options={durationOptions} error={errors.durationYears} required />
+                <CalculatorSelectInput id="duration" label="Projection duration" description="The selector counts projection years. Official maturity timing, extension eligibility, and applications are outside this calculator." value={values.durationYears} onValueChange={(value) => updateValue("durationYears", value)} options={durationOptions} error={errors.durationYears} required helperTextVariant="tooltip" />
 
                 <div className="rounded-lg border bg-muted/30 p-4 text-sm leading-6"><strong>Projection assumptions:</strong> the entered rate stays constant, and each annual contribution is added at the beginning of the projection year. Actual PPF rates may change, and official interest eligibility is determined monthly.</div>
 
@@ -183,30 +185,31 @@ export function PPFCalculator() {
         <Card className="bg-gradient-to-b from-cat-savings-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated maturity value</p>
+              <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated maturity value over {liveInput.durationYears} years at {liveInput.assumedAnnualInterestRate.toFixed(2)}% p.a.</p>
               <p className="font-mono text-[42px] leading-none font-bold text-cat-savings">{formatIndianCurrency(result.maturityValue)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">from {formatIndianCurrency(result.totalContributions)} contributed over {liveInput.durationYears} years at {liveInput.assumedAnnualInterestRate.toFixed(2)}% p.a.</p>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total contributions</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalContributions)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Estimated interest</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalInterest)}</p>
-              </div>
             </div>
 
             <div className="mt-5 border-t border-line pt-5">
-              <SimpleDonutChart
-                title="Contributions vs interest"
-                items={[
-                  { label: "Contributions", value: result.totalContributions, formattedValue: formatIndianCurrency(result.totalContributions), colorClass: "bg-money", ringClass: "stroke-money" },
-                  { label: "Interest", value: result.totalInterest, formattedValue: formatIndianCurrency(result.totalInterest), colorClass: "bg-gold", ringClass: "stroke-gold" },
-                ]}
-              />
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <SimpleDonutChart
+                  title="Contributions vs interest"
+                  items={[
+                    { label: "Contributions", value: result.totalContributions, formattedValue: formatIndianCurrency(result.totalContributions), colorClass: "bg-money", ringClass: "stroke-money" },
+                    { label: "Interest", value: result.totalInterest, formattedValue: formatIndianCurrency(result.totalInterest), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                  ]}
+                  showInlineLabels
+                />
+                <dl className="flex shrink-0 flex-row gap-6 sm:flex-col sm:gap-3">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Total contributions</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalContributions)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Estimated interest</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalInterest)}</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
 
             <div className="mt-5">
