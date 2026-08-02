@@ -60,12 +60,12 @@ export default function SWPCalculatorPage() {
       />
       <SiteContainer className="py-8 sm:py-10">
         <CalculatorBreadcrumbs category={calculator.category} calculatorTitle={calculator.shortTitle} />
-        <header className="mt-6 max-w-2xl">
+        <header className="mt-3 max-w-2xl">
           <Badge className="bg-cat-invest-soft text-cat-invest" variant="outline">{calculator.category}</Badge>
-          <h1 className="mt-4 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">{calculator.title}</h1>
-          <p className="mt-3 text-base leading-7 text-muted-foreground">{calculator.description}</p>
+          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">{calculator.title}</h1>
+          <p className="mt-1.5 text-base leading-6 text-muted-foreground">{calculator.description}</p>
         </header>
-        <div className="mt-8">
+        <div className="mt-4">
           <SWPCalculator />
         </div>
         <div className="mt-16 space-y-6 sm:mt-20 sm:space-y-8">
