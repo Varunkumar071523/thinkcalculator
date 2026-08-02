@@ -12,8 +12,7 @@ import { CollapsibleSection } from "@/components/calculators/collapsible-section
 import { SiteContainer } from "@/components/layout/site-container"
 import { Badge } from "@/components/ui/badge"
 import { CAGRCalculator, cagrCalculatorDefinition, cagrKnowledgeContent } from "@/features/calculators/cagr"
-import { createCalculatorMetadata } from "@/lib/seo"
-import { siteConfig } from "@/lib/site-config"
+import { createCalculatorMetadata, createCanonicalUrl } from "@/lib/seo"
 
 const calculator = cagrCalculatorDefinition
 
@@ -22,11 +21,11 @@ export const metadata = createCalculatorMetadata(calculator)
 const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
-    { "@type": "WebApplication", name: calculator.title, url: `${siteConfig.url}${calculator.canonicalPath}`, description: calculator.description, applicationCategory: "FinanceApplication", operatingSystem: "Any", browserRequirements: "Requires a modern web browser" },
+    { "@type": "WebApplication", name: calculator.title, url: createCanonicalUrl(calculator.canonicalPath), description: calculator.description, applicationCategory: "FinanceApplication", operatingSystem: "Any", browserRequirements: "Requires a modern web browser" },
     { "@type": "BreadcrumbList", itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
-      { "@type": "ListItem", position: 2, name: "Finance", item: `${siteConfig.url}/finance` },
-      { "@type": "ListItem", position: 3, name: calculator.title, item: `${siteConfig.url}${calculator.canonicalPath}` },
+      { "@type": "ListItem", position: 1, name: "Home", item: createCanonicalUrl("/") },
+      { "@type": "ListItem", position: 2, name: "Finance", item: createCanonicalUrl("/finance") },
+      { "@type": "ListItem", position: 3, name: calculator.title, item: createCanonicalUrl(calculator.canonicalPath) },
     ] },
     { "@type": "FAQPage", mainEntity: calculator.faqs.map((faq) => ({ "@type": "Question", name: faq.question, acceptedAnswer: { "@type": "Answer", text: faq.answer } })) },
   ],

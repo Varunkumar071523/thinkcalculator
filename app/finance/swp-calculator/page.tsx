@@ -12,8 +12,7 @@ import { CollapsibleSection } from "@/components/calculators/collapsible-section
 import { SiteContainer } from "@/components/layout/site-container"
 import { Badge } from "@/components/ui/badge"
 import { SWPCalculator, swpCalculatorDefinition, swpKnowledgeContent } from "@/features/calculators/swp"
-import { siteConfig } from "@/lib/site-config"
-import { createCalculatorMetadata } from "@/lib/seo"
+import { createCalculatorMetadata, createCanonicalUrl } from "@/lib/seo"
 
 const calculator = swpCalculatorDefinition
 
@@ -25,7 +24,7 @@ const structuredData = {
     {
       "@type": "WebApplication",
       name: calculator.title,
-      url: `${siteConfig.url}${calculator.canonicalPath}`,
+      url: createCanonicalUrl(calculator.canonicalPath),
       description: calculator.description,
       applicationCategory: "FinanceApplication",
       operatingSystem: "Any",
@@ -34,9 +33,9 @@ const structuredData = {
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
-        { "@type": "ListItem", position: 2, name: "Finance", item: `${siteConfig.url}/finance` },
-        { "@type": "ListItem", position: 3, name: calculator.title, item: `${siteConfig.url}${calculator.canonicalPath}` },
+        { "@type": "ListItem", position: 1, name: "Home", item: createCanonicalUrl("/") },
+        { "@type": "ListItem", position: 2, name: "Finance", item: createCanonicalUrl("/finance") },
+        { "@type": "ListItem", position: 3, name: calculator.title, item: createCanonicalUrl(calculator.canonicalPath) },
       ],
     },
     {
