@@ -838,4 +838,113 @@ sprint.
 Revisit trigger: if a calculator's conditional headline needs a state count
 or branch shape that the label/value/subtitle 3-line structure genuinely
 can't express (not the case for either SWP or EPS Pension today), that
-would be the point to design a new pattern rather than reuse this one.  
+would be the point to design a new pattern rather than reuse this one.
+
+### #59 — No-donut above-the-fold template: the bordered-stat-card shape CAGR/EPS Pension already use is the recommended anchor, not a gap to fill with a forced donut
+
+Date: 2026-08-02
+Sprint: 59 (investigation and design only)
+
+Context: DECISIONS.md #40 excluded CAGR, EPS Pension, Gratuity, HRA, Income
+Tax, and Inflation from the donut-based rollout for having no
+`SimpleDonutChart` at all, without ever designing what an above-the-fold
+template should look like for a calculator with no donut. This sprint
+investigated CAGR as the pilot (plus EPS Pension per the site owner's
+request) — see
+`docs/audits/sprint-59-no-donut-template-design/findings.md` for full
+evidence.
+
+Findings — confidence level stated explicitly per calculator, since a
+follow-up review found the first version of this entry overstated how much
+of Gratuity/HRA/Inflation/EPF was actually verified (see "Process note"
+below):
+- **CAGR — fully verified.** No part-to-whole pair in its result data
+  (`cagrPercentage`, `absoluteGainLoss`, `totalReturnPercentage`,
+  `growthMultiple` are all derived scalars, not parts summing to a displayed
+  total) — `SimpleDonutChart`'s prop contract requires exactly that, so
+  forcing a donut onto CAGR would misrepresent the data, not just add a
+  chart. The full result-card JSX was read: single `text-[42px]` headline +
+  `grid-cols-2` bordered stat-card grid, no chart import anywhere in the
+  file.
+- **EPS Pension — fully verified.** Full result-card JSX read: same
+  headline + stat-card-grid shape, no chart import, unchanged since Sprint
+  58. Its `isEligible` ternary duplication (logged as an open backlog item
+  in #58) is orthogonal to this decision and remains untouched.
+- **Gratuity, HRA, Inflation, EPF — spot-checked only, not fully verified.**
+  Each showed the same `text-[42px]` headline + `grid-cols-2` bordered
+  stat-card opening shape in a single grep-sized excerpt, but three specific
+  open questions were not resolved and should not be treated as settled by
+  this entry:
+  1. **Inflation** renders its headline via `{primaryLabel}` /
+     `{primaryValue}` (computed variables), not a hardcoded string like
+     Gratuity's `"Estimated gratuity after ceiling"` or HRA's `"Exempt
+     HRA"`. That variable-naming shape is the same one SWP and Retirement
+     Corpus use for a *conditional* headline. Whether `primaryLabel`/
+     `primaryValue`/`secondaryLabel` actually branch anywhere in
+     `inflation-calculator.tsx`, or are just named that way for a single
+     fixed case, was **not checked**. If they do branch, Inflation belongs
+     in the SWP/Retirement-Corpus conditional-headline category, not the
+     CAGR/Gratuity/HRA single-fixed-value category this entry assumes.
+  2. **Gratuity's** stat-card grid was only confirmed for its first cell
+     (`Gratuity before ceiling`); the remaining cell(s) were not read, so
+     its full grid shape (cell count, any `col-span-2` cell, any
+     conditional sub-line) is unconfirmed.
+  3. **EPF's** headline uses the `text-money` color token, not
+     `text-cat-invest`/`text-cat-tax`/`text-cat-savings` like the other
+     three. Whether that's a distinct semantic token (a deliberate design
+     decision) or a legacy leftover predating the category-token system is
+     **unconfirmed** — not investigated this sprint.
+- **Income Tax — result-card shape confirmed by code; the slab-breakdown
+  claim is a lower-confidence inference, not a verified read.** The result
+  card itself (`income-tax-calculator.tsx:154-175`) was read directly and
+  does confirm a two-regime-comparison shape: the headline is
+  `comparison.savings` (a *difference* between regimes, not a single result
+  value), and the two stat cells are labeled "Old Regime"/"New Regime" with
+  independent `beneficialRegime === "old"`/`"new"` badges — structurally
+  unlike CAGR/Gratuity/HRA's single-figure-plus-derived-stats shape. However,
+  this entry's additional claim that Income Tax "carries slab-by-slab data
+  the flat stat-card grid was never designed to represent" was **inferred
+  from general knowledge of how Indian income tax works, not from having
+  located and read an actual slab-rendering block in this file**. The
+  two-regime-comparison-shape conclusion stands on its own from the code
+  above regardless; the slab-breakdown detail is weaker and should be
+  re-verified before being relied on.
+
+Process note: the first version of this entry (and the sprint's chat report)
+stated Gratuity, HRA, Inflation, and EPF as "already independently converged
+on the identical shape" to CAGR — a confirmed-identical claim — based only on
+a single grep-sized excerpt per file. A follow-up review challenged this and
+found three of the four excerpts left real open questions (above) rather than
+confirming full identity. No new investigation was done to resolve them; this
+correction only downgrades the claim to the actual evidence gathered, per
+this project's standing rule against unverified claims stated as fact (see
+#41's own process note for the same failure mode on a different sprint).
+
+Decision: Recommend the existing bordered-stat-card grid (tightened to the
+donut-based calculators' established header-chrome spacing values from
+#38-#41) as the no-donut template's visual anchor for CAGR and EPS Pension.
+A CAGR-specific two-bar "beginning vs ending value" comparison chart was
+also designed as an option (`findings.md` section 4, Option C) — genuinely
+well-suited to CAGR's one true before/after pair — but scoped as a separate,
+later, higher-effort enhancement (new chart primitive, own geometry/a11y
+work) rather than bundled into this template decision. No implementation was
+done this sprint; Gratuity, HRA, Income Tax, Inflation, and EPF were not
+touched.
+
+Consequences: No shared component (`SimpleDonutChart`, `FAQSection`,
+`growth-area-chart`) gained new surface area or was modified. No calculation
+file was touched — `CAGRResult`/`EpsPensionResult` already carry every field
+either recommended option would use.
+
+Revisit trigger: once an implementation sprint applies the recommended
+header-chrome spacing to CAGR/EPS Pension's `page.tsx` files (not yet
+confirmed to need it — this sprint didn't check), or once Option C (the
+two-bar comparison) is scoped as its own sprint. Gratuity, HRA, Inflation,
+and EPF are **not yet fully scoped** — before a template is applied to any
+of them, a future sprint must resolve the three open questions above
+(Inflation's possible conditional headline, Gratuity's unread remaining
+stat cells, EPF's `text-money` token) via a real structural audit, not just
+the shape spot-check this sprint did. Income Tax's two-regime-comparison
+shape is confirmed, but the slab-breakdown detail behind "won't generalize"
+needs re-verification (it was inferred, not read) before being relied on in
+a future sprint.  
