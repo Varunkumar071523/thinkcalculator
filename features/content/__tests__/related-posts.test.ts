@@ -19,11 +19,12 @@ describe("getRelatedBlogPosts", () => {
   })
 
   it("returns the other same-category posts for a post that shares a category with several others", () => {
-    // Sprint 52 added a second Investing-category blog post; Sprint 53 added two more
-    // (understanding-cagr, understanding-swp), so sipPost now matches three, capped at the
-    // default limit of 3, in registry order.
+    // Sprint 53 added two more Investing-category blog posts (understanding-cagr,
+    // understanding-swp). Sprint 55 moved sip-vs-lumpsum-investing to draft when it was
+    // merged into sipPost, so it's excluded from candidates (getPublishedContent filters
+    // drafts) and sipPost now matches the remaining two, in registry order.
     const related = getRelatedBlogPosts(sipPost)
-    expect(related.map((item) => item.slug)).toEqual(["sip-vs-lumpsum-investing", "understanding-cagr", "understanding-swp"])
+    expect(related.map((item) => item.slug)).toEqual(["understanding-cagr", "understanding-swp"])
   })
 
   it("excludes the item itself and draft posts from candidates", () => {
