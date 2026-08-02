@@ -9,5 +9,5 @@ export const editorialCategories = {
 export const editorialTags = {
   emi: { slug: "emi", name: "EMI" }, loans: { slug: "loans", name: "Loans" }, sip: { slug: "sip", name: "SIP" },
   mutualFunds: { slug: "mutual-funds", name: "Mutual Funds" }, compounding: { slug: "compounding", name: "Compounding" },
-  financialPlanning: { slug: "financial-planning", name: "Financial Planning" },
+  financialPlanning: { slug: "financial-planning", name: "Financial Planning" }, investments: { slug: "investments", name: "Investments" },
 } as const satisfies Record<string, EditorialTag>

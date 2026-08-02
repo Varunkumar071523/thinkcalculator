@@ -12,9 +12,15 @@ const unmatchedCategory: EditorialCategory = { slug: "test-unmatched-category", 
 
 describe("getRelatedBlogPosts", () => {
   it("returns no results when the post shares neither category nor a linked calculator with any other published post", () => {
-    // Today's live catalogue: Loans vs Investing categories, EMI vs SIP/Lumpsum calculators — no overlap either way.
+    // Today's live catalogue: EMI is the only Loans-category blog post, and no other blog
+    // links to the EMI calculator, so it has no same-category or shared-calculator match.
     expect(getRelatedBlogPosts(emiPost)).toEqual([])
-    expect(getRelatedBlogPosts(sipPost)).toEqual([])
+  })
+
+  it("returns the other same-category post for a post that now shares a category", () => {
+    // Sprint 52 added a second Investing-category blog post, so sipPost now has a real match.
+    const related = getRelatedBlogPosts(sipPost)
+    expect(related.map((item) => item.slug)).toEqual(["sip-vs-lumpsum-investing"])
   })
 
   it("excludes the item itself and draft posts from candidates", () => {
