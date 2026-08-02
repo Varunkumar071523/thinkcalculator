@@ -947,4 +947,72 @@ stat cells, EPF's `text-money` token) via a real structural audit, not just
 the shape spot-check this sprint did. Income Tax's two-regime-comparison
 shape is confirmed, but the slab-breakdown detail behind "won't generalize"
 needs re-verification (it was inferred, not read) before being relied on in
-a future sprint.  
+a future sprint.
+
+### #60 — Sprint 61: Inflation's headline branches on `mode`, is not a single fixed case; migration deferred pending its own scoping
+
+Date: 2026-08-02
+Sprint: 61 (investigation only; no migration performed)
+
+Context: #59's open question 1 asked whether Inflation's `primaryLabel`/
+`primaryValue`/`secondaryLabel`/`secondaryValue` variables
+(`inflation-calculator.tsx:104-109`) branch across multiple states or are
+just named that way for a single fixed case. This sprint read the full file
+to resolve it.
+
+Finding: They branch. `isFutureCost = liveInput.mode === "futureCost"`
+(line 102) drives a two-way ternary for six variables — three label strings
+and three of the result fields read (`primaryValue`, `secondaryValue`,
+`multipleValue`). `liveInput.mode` comes directly from the user-facing
+"Calculation mode" select input (`values.mode` via
+`toFormValues`/`toLiveInput`), not from a derived-from-results eligibility
+check like EPS Pension's `isEligible`/`isEarly`/`isFloorBinding` — but the
+mechanical shape (each variable assigned exactly once, above the JSX, via a
+single ternary — confirmed by grep showing one assignment site per
+variable) is the same computed-once pattern Sprint 60 refactored EPS Pension
+into. Inflation was never in EPS Pension's pre-Sprint-60
+duplicated-per-branch-markup state, so there is no de-duplication step to do
+first.
+
+The two states:
+- `futureCost` mode: `primaryLabel` "Equivalent future cost" / `primaryValue`
+  `result.futureValue`; `secondaryLabel` "Total inflation impact" /
+  `secondaryValue` `result.totalInflationImpact`; `multipleLabel` "Inflation
+  multiple" / `multipleValue` `result.inflationMultiple`; `amountLabel`
+  "Current amount".
+- `presentValue` mode: `primaryLabel` "Present value (today's purchasing
+  power)" / `primaryValue` `result.presentValue`; `secondaryLabel`
+  "Purchasing power change" / `secondaryValue` `result.purchasingPowerChange`;
+  `multipleLabel` "Discount multiple" / `multipleValue`
+  `result.discountMultiple`; `amountLabel` "Future amount".
+
+The rest of the card already matches the established shape: a `grid-cols-2`
+two-cell bordered stat grid (secondary + multiple cells,
+`inflation-calculator.tsx:209-218`) below the `text-[42px]` headline
+(lines 203-207), same as CAGR/EPS Pension.
+
+Decision: Per this sprint's scope, a conditional headline routes to
+"document and stop," not migration — so Inflation is not migrated onto
+`NoDonutResultCard` this sprint, regardless of how mechanically simple the
+eventual migration looks. Corrects #59's open question 1: Inflation belongs
+in the conditional-headline category (like EPS Pension), not the
+CAGR/Gratuity/HRA single-fixed-value category #59 tentatively assumed for
+it.
+
+Consequences: No code changed this sprint. `NoDonutResultCard`'s
+`headlineValueColorClassName` prop already supports a conditional value
+(built for "CAGR/EPS's isEligible-style branches" per its own doc comment in
+`components/calculators/no-donut-result-card.tsx`), so Inflation's props
+would map directly in a future sprint: pass the already-computed
+`primaryLabel`/`primaryValue`/`stats` through as-is — no markup-deduplication
+step is needed first, unlike EPS Pension's pre-Sprint-60 state.
+
+Revisit trigger: When Inflation is scoped for migration, wire the existing
+computed `primaryLabel`/`primaryValue`/`secondaryLabel`/`secondaryValue`/
+`multipleLabel`/`multipleValue` variables directly into `NoDonutResultCard`'s
+props (`headlineLabel`/`headlineValue`/`stats`), verify via the same
+prerendered-HTML-diff method as Sprint 60, and confirm the two `amountLabel`
+states used elsewhere in the file (the lower "current vs future value"
+comparison card and the schedule description — both outside the
+above-the-fold card and outside this sprint's scope) aren't accidentally
+affected by whatever refactor touches the primary card.  
