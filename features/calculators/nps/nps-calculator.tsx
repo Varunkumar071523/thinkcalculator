@@ -160,6 +160,7 @@ export function NPSCalculator() {
                     error={errors.equityAllocationPercent}
                     required
                     accentClassName="accent-cat-invest"
+                    helperTextVariant="tooltip"
                   />
                   <PairedNumberSliderInput
                     id="corporate-debt-allocation-percent"
@@ -175,6 +176,7 @@ export function NPSCalculator() {
                     error={errors.corporateDebtAllocationPercent}
                     required
                     accentClassName="accent-cat-loans"
+                    helperTextVariant="tooltip"
                   />
                 </fieldset>
 
@@ -194,6 +196,7 @@ export function NPSCalculator() {
                     error={errors.equityExpectedReturn}
                     required
                     accentClassName="accent-cat-invest"
+                    helperTextVariant="tooltip"
                   />
                   <PairedNumberSliderInput
                     id="corporate-debt-expected-return"
@@ -234,31 +237,32 @@ export function NPSCalculator() {
         <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated corpus at retirement</p>
+              <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated corpus at retirement over {yearsToRetirement} years at a {formatPercentage(result.blendedAnnualReturn)} blended annual return</p>
               <p className="font-mono text-[42px] leading-none font-bold text-cat-invest">{formatIndianCurrency(result.corpusAtRetirement)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">over {yearsToRetirement} years at a {formatPercentage(result.blendedAnnualReturn)} blended annual return</p>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total contributions</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalContributions)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Estimated growth</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalGrowth)}</p>
-              </div>
             </div>
 
             <div className="mt-5 border-t border-line pt-5">
-              <SimpleDonutChart
-                title="Asset allocation"
-                items={[
-                  { label: "Equity", value: result.equityAllocationPercent, formattedValue: formatPercentage(result.equityAllocationPercent), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
-                  { label: "Corporate debt", value: result.corporateDebtAllocationPercent, formattedValue: formatPercentage(result.corporateDebtAllocationPercent), colorClass: "bg-cat-loans", ringClass: "stroke-cat-loans" },
-                  { label: "Govt securities", value: result.govtSecuritiesAllocationPercent, formattedValue: formatPercentage(result.govtSecuritiesAllocationPercent), colorClass: "bg-cat-business", ringClass: "stroke-cat-business" },
-                ]}
-              />
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <SimpleDonutChart
+                  title="Asset allocation"
+                  items={[
+                    { label: "Equity", value: result.equityAllocationPercent, formattedValue: formatPercentage(result.equityAllocationPercent), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
+                    { label: "Corporate debt", value: result.corporateDebtAllocationPercent, formattedValue: formatPercentage(result.corporateDebtAllocationPercent), colorClass: "bg-cat-loans", ringClass: "stroke-cat-loans" },
+                    { label: "Govt securities", value: result.govtSecuritiesAllocationPercent, formattedValue: formatPercentage(result.govtSecuritiesAllocationPercent), colorClass: "bg-cat-business", ringClass: "stroke-cat-business" },
+                  ]}
+                  showInlineLabels
+                />
+                <dl className="flex shrink-0 flex-row gap-6 sm:flex-col sm:gap-3">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Total contributions</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalContributions)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Estimated growth</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalGrowth)}</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
 
             <div className="mt-5">

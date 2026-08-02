@@ -185,6 +185,7 @@ export function StepUpSIPCalculator() {
                     error={errors.initialMonthlyInvestment}
                     required
                     accentClassName="accent-cat-invest"
+                    helperTextVariant="tooltip"
                   />
                   <div className="mt-2 flex gap-1.5">
                     {MONTHLY_QUICK_AMOUNTS.map((preset) => (
@@ -214,6 +215,7 @@ export function StepUpSIPCalculator() {
                   error={errors.annualStepUpValue}
                   required
                   accentClassName="accent-cat-invest"
+                  helperTextVariant="tooltip"
                 />
 
                 <PairedNumberSliderInput
@@ -232,6 +234,7 @@ export function StepUpSIPCalculator() {
                   error={errors.expectedAnnualReturn}
                   required
                   accentClassName="accent-cat-invest"
+                  helperTextVariant="tooltip"
                 />
 
                 <PairedNumberSliderInput
@@ -258,30 +261,31 @@ export function StepUpSIPCalculator() {
         <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated maturity value</p>
+              <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated maturity value over {liveInput.durationYears} years, final monthly SIP {formatIndianCurrency(result.finalMonthlyInvestment)}</p>
               <p className="font-mono text-[42px] leading-none font-bold text-cat-invest">{formatIndianCurrency(result.estimatedMaturityValue)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">from {formatIndianCurrency(result.totalInvested)} invested over {liveInput.durationYears} years, final monthly SIP {formatIndianCurrency(result.finalMonthlyInvestment)}</p>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total invested</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalInvested)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Estimated returns</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.estimatedReturns)}</p>
-              </div>
             </div>
 
             <div className="mt-5 border-t border-line pt-5">
-              <SimpleDonutChart
-                title="Invested vs returns"
-                items={[
-                  { label: "Invested", value: result.totalInvested, formattedValue: formatIndianCurrency(result.totalInvested), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
-                  { label: "Returns", value: result.estimatedReturns, formattedValue: formatIndianCurrency(result.estimatedReturns), colorClass: "bg-gold", ringClass: "stroke-gold" },
-                ]}
-              />
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <SimpleDonutChart
+                  title="Invested vs returns"
+                  items={[
+                    { label: "Invested", value: result.totalInvested, formattedValue: formatIndianCurrency(result.totalInvested), colorClass: "bg-cat-invest", ringClass: "stroke-cat-invest" },
+                    { label: "Returns", value: result.estimatedReturns, formattedValue: formatIndianCurrency(result.estimatedReturns), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                  ]}
+                  showInlineLabels
+                />
+                <dl className="flex shrink-0 flex-row gap-6 sm:flex-col sm:gap-3">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Total invested</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalInvested)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Estimated returns</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.estimatedReturns)}</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
 
             <div className="mt-5">

@@ -155,6 +155,7 @@ export function HomeLoanEligibilityCalculator() {
                   error={errors.netMonthlyIncome}
                   required
                   accentClassName="accent-money"
+                  helperTextVariant="tooltip"
                 />
 
                 <PairedNumberSliderInput
@@ -172,6 +173,7 @@ export function HomeLoanEligibilityCalculator() {
                   error={errors.existingMonthlyEMI}
                   required
                   accentClassName="accent-money"
+                  helperTextVariant="tooltip"
                 />
 
                 <CalculatorSelectInput
@@ -183,6 +185,7 @@ export function HomeLoanEligibilityCalculator() {
                   options={FOIR_BAND_OPTIONS}
                   error={errors.foirBand}
                   required
+                  helperTextVariant="tooltip"
                 />
 
                 <PairedNumberSliderInput
@@ -199,6 +202,7 @@ export function HomeLoanEligibilityCalculator() {
                   error={errors.annualInterestRate}
                   required
                   accentClassName="accent-money"
+                  helperTextVariant="tooltip"
                 />
 
                 <PairedNumberSliderInput
@@ -215,6 +219,7 @@ export function HomeLoanEligibilityCalculator() {
                   error={errors.tenureYears}
                   required
                   accentClassName="accent-money"
+                  helperTextVariant="tooltip"
                 />
 
                 <PairedNumberSliderInput
@@ -232,6 +237,7 @@ export function HomeLoanEligibilityCalculator() {
                   error={errors.ownContribution}
                   required
                   accentClassName="accent-money"
+                  helperTextVariant="tooltip"
                 />
 
                 <div className="rounded-lg border border-dashed border-line p-4 text-[13px] leading-6 text-muted-foreground">
@@ -247,9 +253,8 @@ export function HomeLoanEligibilityCalculator() {
         <Card className="bg-gradient-to-b from-money-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">Max eligible EMI</p>
+              <p className="mb-1.5 text-[13px] text-muted-foreground">Max eligible EMI at the {FOIR_BAND_LABELS[liveInput.foirBand]} FOIR band</p>
               <p className="font-mono text-[42px] leading-none font-bold text-money">{formatIndianCurrency(result.maxEligibleEMI)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">at the {FOIR_BAND_LABELS[liveInput.foirBand]} FOIR band</p>
               {result.existingEMIExceedsBudget ? (
                 <p className="mt-3 rounded-lg border border-dashed border-line bg-card px-3 py-2 text-[12.5px] font-medium text-destructive">
                   Your existing monthly EMIs already exceed this FOIR band&apos;s budget, so no additional loan is eligible here. Try a higher FOIR band or reduce existing EMIs.
@@ -257,25 +262,27 @@ export function HomeLoanEligibilityCalculator() {
               ) : null}
             </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Max eligible loan amount</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.maxEligibleLoanAmount)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total property affordability</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalPropertyAffordability)}</p>
-              </div>
-            </div>
-
             <div className="mt-5 border-t border-line pt-5">
-              <SimpleDonutChart
-                title="Loan amount vs own contribution"
-                items={[
-                  { label: "Loan amount", value: result.maxEligibleLoanAmount, formattedValue: formatIndianCurrency(result.maxEligibleLoanAmount), colorClass: "bg-money", ringClass: "stroke-money" },
-                  { label: "Own contribution", value: result.ownContribution, formattedValue: formatIndianCurrency(result.ownContribution), colorClass: "bg-gold", ringClass: "stroke-gold" },
-                ]}
-              />
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <SimpleDonutChart
+                  title="Loan amount vs own contribution"
+                  items={[
+                    { label: "Loan amount", value: result.maxEligibleLoanAmount, formattedValue: formatIndianCurrency(result.maxEligibleLoanAmount), colorClass: "bg-money", ringClass: "stroke-money" },
+                    { label: "Own contribution", value: result.ownContribution, formattedValue: formatIndianCurrency(result.ownContribution), colorClass: "bg-gold", ringClass: "stroke-gold" },
+                  ]}
+                  showInlineLabels
+                />
+                <dl className="flex shrink-0 flex-row gap-6 sm:flex-col sm:gap-3">
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Max eligible loan amount</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.maxEligibleLoanAmount)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Total property affordability</dt>
+                    <dd className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalPropertyAffordability)}</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
 
             <div className="mt-5">

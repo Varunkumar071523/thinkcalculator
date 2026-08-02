@@ -86,23 +86,23 @@ test.describe("EMI above-the-fold template", () => {
   })
 
   // Chosen to cover every CalculatorField wrapper type used by a real (non-demo) calculator, not
-  // arbitrarily: PPF and Retirement Corpus both only exercise CalculatorSelectInput +
-  // PairedNumberSliderInput, so an earlier version of this test that used only those two never
-  // actually covered CalculatorDateInput. Capital Gains is the only calculator using
-  // CalculatorDateInput at all (grep-verified: `grep -l CalculatorDateInput features/calculators/*/*.tsx`
-  // returns exactly one file), so it's included here specifically for that. Home Loan Eligibility is
-  // added as a second SimpleDonutChart caller beyond PPF/Retirement Corpus (FD moved to the new
-  // template in Sprint 48 batch 1, so it no longer belongs in this "unaffected" list — see
-  // docs/DECISIONS.md #40). NPS was tried as the replacement first but rejected: its donut items'
-  // `formattedValue`s are themselves percentage strings (asset-allocation shares, not currency), so
-  // its default/untouched legend already contains bare `NN%` text and false-positives the "no inline
-  // percentage labels" check below even with `showInlineLabels` never set. Home Loan Eligibility's
-  // donut items are both currency-formatted, so it doesn't share that false-positive risk.
+  // arbitrarily: Retirement Corpus exercises CalculatorSelectInput + PairedNumberSliderInput.
+  // Capital Gains is the only calculator using CalculatorDateInput at all (grep-verified:
+  // `grep -l CalculatorDateInput features/calculators/*/*.tsx` returns exactly one file), so it's
+  // included here specifically for that. Leave Encashment and GST are the two other SimpleDonutChart
+  // callers beyond Retirement Corpus/Capital Gains still outside the template as of Sprint 49 batch 2
+  // (both are in the "extra result-panel structure" outlier group per docs/DECISIONS.md #40, not
+  // yet scoped for a rollout batch). PPF and Home Loan Eligibility were this list's previous two
+  // entries but both moved to the new template in Sprint 49 batch 2, so they no longer belong here —
+  // see docs/DECISIONS.md #41. NPS remains excluded from ever being used here (moved to the template
+  // this same sprint, and even before that its donut items' `formattedValue`s were themselves
+  // percentage strings, which false-positives the "no inline percentage labels" check below).
+  // Leave Encashment and GST's donut items are both currency-formatted, so neither shares that risk.
   // `/calculators/demo` (the only caller of a bare, non-paired CalculatorNumberInput) is intentionally
   // excluded — it's a design-preview route, not one of the published calculators this sprint's
   // compatibility promise covers.
-  test("unaffected calculators: PPF, Retirement Corpus, Home Loan Eligibility, and Capital Gains keep the old always-visible helper text and stacked donut legend, with no info icons", async ({ page }) => {
-    for (const path of ["/finance/ppf-calculator", "/finance/retirement-corpus-calculator", "/finance/home-loan-eligibility-calculator", "/finance/capital-gains-calculator"]) {
+  test("unaffected calculators: Retirement Corpus, Capital Gains, Leave Encashment, and GST keep the old always-visible helper text and stacked donut legend, with no info icons", async ({ page }) => {
+    for (const path of ["/finance/retirement-corpus-calculator", "/finance/capital-gains-calculator", "/finance/leave-encashment-calculator", "/business/gst-calculator"]) {
       await page.goto(path)
       const infoIconCount = await page.locator('button[aria-label^="More info:"]').count()
       expect(infoIconCount, `${path} should have no tooltip info icons (opt-in not set)`).toBe(0)

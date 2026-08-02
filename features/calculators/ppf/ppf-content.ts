@@ -46,10 +46,10 @@ export function createPPFPrintDisclaimer(): string {
   return `${PPF_RATE_CONFIG.defaultRate}% is a reference default for ${PPF_RATE_CONFIG.verifiedPeriod.toLowerCase()}, not a current-rate claim. This illustration assumes beginning-of-year contributions eligible for a full year's interest and one constant rate; actual notified rates, the official lowest-balance rule between the close of the fifth day and month-end, account events, and processing can differ.`
 }
 
-const workedExampleResult = calculatePPF({ annualContribution: 100_000, assumedAnnualInterestRate: PPF_RATE_CONFIG.defaultRate, durationYears: 15 })
+const workedExampleResult = calculatePPF({ annualContribution: 150_000, assumedAnnualInterestRate: PPF_RATE_CONFIG.defaultRate, durationYears: 15 })
 export const ppfWorkedExample: CalculatorWorkedExample = {
   title: "PPF projection example",
-  description: `This example adds ₹1,00,000 at the beginning of every projection year and applies a constant ${PPF_RATE_CONFIG.defaultRate}% annual rate for 15 years. It is an illustration, not an account statement or guaranteed outcome.`,
-  inputs: [{ label: "Annual contribution", value: "₹1,00,000" }, { label: "Assumed annual rate", value: `${PPF_RATE_CONFIG.defaultRate}% constant` }, { label: "Duration", value: "15 years" }],
+  description: `This example adds ₹1,50,000 — the scheme's maximum annual contribution — at the beginning of every projection year and applies a constant ${PPF_RATE_CONFIG.defaultRate}% annual rate for 15 years. It is an illustration, not an account statement or guaranteed outcome.`,
+  inputs: [{ label: "Annual contribution", value: "₹1,50,000 (maximum)" }, { label: "Assumed annual rate", value: `${PPF_RATE_CONFIG.defaultRate}% constant` }, { label: "Duration", value: "15 years" }],
   results: [{ label: "Estimated maturity value", value: formatIndianCurrency(workedExampleResult.maturityValue) }, { label: "Total contributions", value: formatIndianCurrency(workedExampleResult.totalContributions) }, { label: "Estimated interest", value: formatIndianCurrency(workedExampleResult.totalInterest) }],
 }
