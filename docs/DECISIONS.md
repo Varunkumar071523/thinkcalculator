@@ -750,4 +750,92 @@ two independent follow-ups:
    Corpus phase work.
 
 #40/#41 remain as historical record of the original (incorrect) grouping;
-this entry supersedes their "multi-phase" framing for SWP specifically.  
+this entry supersedes their "multi-phase" framing for SWP specifically.
+
+### #58 — SWP and EPS Pension's conditional headlines already match the pattern Retirement Corpus established; only page-chrome spacing was missing
+
+Date: 2026-08-02
+Sprint: 58
+
+Context: #56 deferred SWP's "conditional-headline fix" as its own sprint,
+"closer in shape to whatever approach eventually unblocks EPS Pension than
+to the Retirement Corpus phase work." This sprint investigated both SWP's
+3-way headline (`isExhausted` / `cappedAtMaxDuration` /
+`swp-calculator.tsx:123-127`, `calculate-swp.ts:74-77`) and EPS Pension's
+eligible/not-eligible branch (`eps-pension-calculator.tsx:153-171`,
+`isEligible: boolean` on `EpsPensionResult`) to find a shared design.
+
+Findings:
+- `cappedAtMaxDuration`'s own definition includes `&& !isExhausted &&`
+  (`calculate-swp.ts:77`), so the two SWP flags are mutually exclusive by
+  construction — never a 2-of-3 combined state, always exactly one of three.
+- EPS Pension's `isEligible` is a single boolean; the `isEligible: true`
+  branch has a further `isEarly` axis that changes the label/subtitle text
+  but not the branch's shape (still one label, one currency value, one
+  subtitle) — no change needed there, it predates this sprint and isn't a
+  headline-collapse concern.
+- Both calculators' result cards *already* use the exact label → value →
+  subtitle 3-line structure Retirement Corpus's Sprint 57 phase toggle used
+  for its own 2-way `isExhausted` branch (`retirement-calculator.tsx:466-470`,
+  `primaryLabel`/`primaryValue`/`subtitle` at lines 284-286) — not the folded
+  2-line label the 9 non-branching calculators (EMI etc.) use. Retirement
+  Corpus never attempted to fold its branching label into one line; it kept
+  the subtitle as a separate line and only tightened spacing. That is the
+  established, working pattern for *any* conditional headline in this
+  template family, and SWP/EPS already conform to it byte-for-byte in
+  structure (`border-b border-line pb-5 text-center` wrapping
+  `mb-1.5 text-[13px]` label / `text-[42px]` value / `mt-2 text-[12.5px]`
+  subtitle).
+- The only actual gap was `app/finance/swp-calculator/page.tsx` and
+  `app/finance/eps-pension-calculator/page.tsx` still carrying the
+  pre-migration header spacing (`mt-6`/`mt-4`/`mt-3`+`leading-7`/`mt-8`)
+  that Sprint 57 already fixed for Retirement Corpus's `page.tsx`
+  (`mt-3`/`mt-2`/`mt-1.5`+`leading-6`/`mt-4`, identical to all 9 migrated
+  calculators' page files, e.g. `app/finance/emi-calculator/page.tsx`).
+- Open backlog item (no action taken this sprint): unlike SWP and
+  Retirement Corpus, which compute `primaryLabel`/`primaryValue`/`subtitle`
+  once and render one JSX block, EPS Pension's `isEligible` ternary
+  (`eps-pension-calculator.tsx:153-171`) fully duplicates the
+  `border-b border-line pb-5 text-center` card markup across both branches
+  — two separate `<div>` trees rather than one rendered from computed
+  variables. Every distinct subtitle state under `isEligible === true`:
+  (1) `isEarly` → `"Standard-age pension {standardMonthlyPension}, reduced
+  {earlyPensionReductionPercent}%"`; (2) `!isEarly && isFloorBinding` →
+  `"Minimum-pension floor applied — formula alone gave {formulaPension}"`;
+  (3) `!isEarly && !isFloorBinding` → `"Based on the EPS 2026 formula"` —
+  plus the `isEligible === false` branch's own subtitle (years-short
+  message), four subtitle states total across the two top-level branches.
+  A future cleanup could collapse this to the SWP/RC computed-variable
+  pattern; not done here since it's a pure refactor with no behavior or
+  headline-state change, outside this sprint's scope.
+
+Decision: no shared component was touched, and no headline-rendering logic
+in either `swp-calculator.tsx` or `eps-pension-calculator.tsx` needed to
+change — the "generalization" is that the 3-line conditional-headline shape
+already *is* the shared pattern, validated by Retirement Corpus and already
+present in both calculators. The only edit was the mechanical page-chrome
+spacing fix, applied identically to both `page.tsx` files, matching Sprint
+57's diff for Retirement Corpus's `page.tsx` line for line. Per CLAUDE.md's
+non-negotiable on shared-layout changes: this stayed page-local, so no
+backward-compatibility proof against other callers was needed. The stat
+grid (bordered cards, not `<dl>`-beside-donut) and chart components
+(`DecliningBalanceChart` for SWP; EPS Pension has no chart) were left
+unchanged, per this sprint's explicit scope.
+
+Verification: `vitest run` 1261/1261 unmodified tests passing (no
+calculator logic touched). `npm run lint` clean. `next build` — all 70
+routes generated. New `tests/e2e/swp-eps-headline-states.spec.ts` (6 states
+× 3 browsers = 18 tests, all passing) exercises SWP's normal/isExhausted/
+cappedAtMaxDuration states and EPS Pension's eligible-standard/eligible-
+early/not-eligible states via URL query state
+(`?initial=...&withdrawal=...&mode=...` / `?salary=...&years=...&ageOption=...`)
+rather than simulated form input, so each state is reached deterministically.
+
+Consequences: none of `SimpleDonutChart`, `FAQSection`, or
+`growth-area-chart` gained new surface area or were modified at all this
+sprint.
+
+Revisit trigger: if a calculator's conditional headline needs a state count
+or branch shape that the label/value/subtitle 3-line structure genuinely
+can't express (not the case for either SWP or EPS Pension today), that
+would be the point to design a new pattern rather than reuse this one.  
