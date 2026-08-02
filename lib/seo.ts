@@ -20,7 +20,14 @@ type PageMetadataOptions = {
 }
 
 export function createCanonicalUrl(path = "/"): string {
-  return new URL(path, `${siteConfig.url}/`).toString()
+  const url = new URL(path, `${siteConfig.url}/`)
+  // next.config.ts sets trailingSlash: true, so every route's real canonical
+  // URL ends in "/" except static files (which Next itself never slashes).
+  const isStaticFile = /\.[^/]+$/.test(url.pathname)
+  if (url.pathname !== "/" && !url.pathname.endsWith("/") && !isStaticFile) {
+    url.pathname += "/"
+  }
+  return url.toString()
 }
 
 export function createRootStructuredData() {
