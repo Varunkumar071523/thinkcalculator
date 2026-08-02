@@ -5,6 +5,7 @@ import { useMemo, useState } from "react"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
 import { CollapsibleSection } from "@/components/calculators/collapsible-section"
+import { NoDonutResultCard } from "@/components/calculators/no-donut-result-card"
 import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -68,6 +69,17 @@ export function EpsPensionCalculator() {
   const result = useMemo(() => calculateEpsPension(liveInput), [liveInput])
   useTrackCalculationCompleted("eps-pension", "savings", result)
   const isEarly = liveInput.ageOption === "early"
+
+  const headlineLabel = result.isEligible ? (isEarly ? `Monthly pension from age ${result.earlyPensionAge}` : "Monthly pension") : "Monthly pension"
+  const headlineValue = result.isEligible ? formatIndianCurrency(result.monthlyPension) : "Not eligible"
+  const headlineValueColorClassName = result.isEligible ? "text-cat-savings" : "text-destructive"
+  const subtitle = result.isEligible
+    ? isEarly
+      ? `Standard-age pension ${formatIndianCurrency(result.standardMonthlyPension)}, reduced ${formatIndianNumber(result.earlyPensionReductionPercent)}%`
+      : result.isFloorBinding
+        ? `Minimum-pension floor applied — formula alone gave ${formatIndianCurrency(result.formulaPension)}`
+        : "Based on the EPS 2026 formula"
+    : `${formatIndianNumber(liveInput.yearsOfPensionableService)} years is short of the ${EPS_PENSION_MIN_ELIGIBLE_SERVICE_YEARS}-year minimum for a monthly EPS pension.`
 
   const shareUrl = buildEpsPensionCalculatorUrl(liveInput, siteConfig.url)
   const resultText = createEpsPensionResultText(liveInput, result)
@@ -148,50 +160,28 @@ export function EpsPensionCalculator() {
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-savings-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
-          <CardContent>
-            {result.isEligible ? (
-              <div className="border-b border-line pb-5 text-center">
-                <p className="mb-1.5 text-[13px] text-muted-foreground">{isEarly ? `Monthly pension from age ${result.earlyPensionAge}` : "Monthly pension"}</p>
-                <p className="font-mono text-[42px] leading-none font-bold text-cat-savings">{formatIndianCurrency(result.monthlyPension)}</p>
-                <p className="mt-2 text-[12.5px] text-muted-foreground">
-                  {isEarly
-                    ? `Standard-age pension ${formatIndianCurrency(result.standardMonthlyPension)}, reduced ${formatIndianNumber(result.earlyPensionReductionPercent)}%`
-                    : result.isFloorBinding
-                      ? `Minimum-pension floor applied — formula alone gave ${formatIndianCurrency(result.formulaPension)}`
-                      : "Based on the EPS 2026 formula"}
-                </p>
-              </div>
-            ) : (
-              <div className="border-b border-line pb-5 text-center">
-                <p className="mb-1.5 text-[13px] text-muted-foreground">Monthly pension</p>
-                <p className="font-mono text-[42px] leading-none font-bold text-destructive">Not eligible</p>
-                <p className="mt-2 text-[12.5px] text-muted-foreground">{`${formatIndianNumber(liveInput.yearsOfPensionableService)} years is short of the ${EPS_PENSION_MIN_ELIGIBLE_SERVICE_YEARS}-year minimum for a monthly EPS pension.`}</p>
-              </div>
-            )}
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Pensionable salary used</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.pensionableSalaryUsed)}</p>
-                {result.isWageCeilingBinding ? <p className="mt-1 text-xs text-muted-foreground">Capped from {formatIndianCurrency(liveInput.averageMonthlySalary)}</p> : null}
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Pensionable service used</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianNumber(result.pensionableServiceUsed)} years</p>
-                {result.bonusYearsApplied ? <p className="mt-1 text-xs text-muted-foreground">Includes {EPS_PENSION_BONUS_SERVICE_THRESHOLD_YEARS}-year bonus</p> : null}
-              </div>
-              <div className="col-span-2 rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Standard-age pension (age {EPS_PENSION_STANDARD_RETIREMENT_AGE})</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.standardMonthlyPension)}</p>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="eps-pension" category="savings" />
-            </div>
-          </CardContent>
-        </Card>
+        <NoDonutResultCard
+          gradientFromClassName="from-cat-savings-soft"
+          headlineLabel={headlineLabel}
+          headlineValue={headlineValue}
+          headlineValueColorClassName={headlineValueColorClassName}
+          subtitle={subtitle}
+          stats={[
+            {
+              label: "Pensionable salary used",
+              value: formatIndianCurrency(result.pensionableSalaryUsed),
+              note: result.isWageCeilingBinding ? `Capped from ${formatIndianCurrency(liveInput.averageMonthlySalary)}` : undefined,
+            },
+            {
+              label: "Pensionable service used",
+              value: `${formatIndianNumber(result.pensionableServiceUsed)} years`,
+              note: result.bonusYearsApplied ? `Includes ${EPS_PENSION_BONUS_SERVICE_THRESHOLD_YEARS}-year bonus` : undefined,
+            },
+            { label: `Standard-age pension (age ${EPS_PENSION_STANDARD_RETIREMENT_AGE})`, value: formatIndianCurrency(result.standardMonthlyPension), spanFull: true },
+          ]}
+        >
+          <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="eps-pension" category="savings" />
+        </NoDonutResultCard>
       </div>
 
       <div className="mt-6" data-calculation-experience>
