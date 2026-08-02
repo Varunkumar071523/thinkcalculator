@@ -713,3 +713,41 @@ audit of fincalculator.in's SIP/Lumpsum/PPF pages
   no-donut calculators, Capital Gains/Leave Encashment/GST extra-card group) each still need their own
   scoping conversation before any template rollout touches them. Mobile above-the-fold remains
   unsolved, same as #38-#40.
+### #56 — SWP and Retirement Corpus are not the same category of exclusion (supersedes grouping in #40/#41)
+
+Date: 2026-08-02
+Sprint: 56 (investigation)
+
+#40 and #41 excluded SWP and Retirement Corpus from the above-the-fold
+template rollout together, under a "multi-phase" label. Sprint 56's
+investigation (docs/audits/sprint-56-swp-retirement-investigation/findings.md)
+found this grouping was incorrect:
+
+- SWP is single-phase (decumulation-only). Its SWPInput/SWPResult types have
+  no accumulation fields, and it uses DecliningBalanceChart, not
+  TwoPhaseChart. Its actual blocker is a 3-way conditional headline
+  (isExhausted / cappedAtMaxDuration) — the same category of exclusion
+  reason #40 already used for EPS Pension (conditional eligible/not-eligible
+  branch), not a phase-count issue.
+- Retirement Corpus is genuinely two-phase. Its above-the-fold donut
+  currently shows only the accumulation phase (Contributions vs growth at
+  retirement); the decumulation phase (totalWithdrawn,
+  totalGrowthInRetirement on RetirementResult) is fully computed but
+  referenced nowhere above the fold.
+- TwoPhaseChart's own data model and calculation logic require no changes
+  for any of the three design options considered for Retirement Corpus —
+  it's a below-the-fold component today, and every number a phase-aware
+  above-the-fold design needs already lives on RetirementResult
+  independently of it.
+
+Decision: split the former combined "multi-phase batch" backlog item into
+two independent follow-ups:
+1. Retirement Corpus — phase-native above-the-fold redesign. Option 2
+   (single donut with a phase toggle, default state: accumulation/"at
+   retirement") selected for Sprint 57.
+2. SWP — conditional-headline fix, scoped separately, closer in shape to
+   whatever approach eventually unblocks EPS Pension than to the Retirement
+   Corpus phase work.
+
+#40/#41 remain as historical record of the original (incorrect) grouping;
+this entry supersedes their "multi-phase" framing for SWP specifically.  
