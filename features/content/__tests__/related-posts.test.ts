@@ -11,16 +11,19 @@ const sipPost = contentRegistry.find((item) => item.slug === "sip-vs-lumpsum")!
 const unmatchedCategory: EditorialCategory = { slug: "test-unmatched-category", name: "Test", description: "" }
 
 describe("getRelatedBlogPosts", () => {
-  it("returns no results when the post shares neither category nor a linked calculator with any other published post", () => {
-    // Today's live catalogue: EMI is the only Loans-category blog post, and no other blog
-    // links to the EMI calculator, so it has no same-category or shared-calculator match.
-    expect(getRelatedBlogPosts(emiPost)).toEqual([])
+  it("returns the other same-category Loans post now that FOIR shares emiPost's category", () => {
+    // Sprint 53 added a second Loans-category blog post (understanding-foir-loan-eligibility),
+    // so emiPost now has a real same-category match where it previously had none.
+    const related = getRelatedBlogPosts(emiPost)
+    expect(related.map((item) => item.slug)).toEqual(["understanding-foir-loan-eligibility"])
   })
 
-  it("returns the other same-category post for a post that now shares a category", () => {
-    // Sprint 52 added a second Investing-category blog post, so sipPost now has a real match.
+  it("returns the other same-category posts for a post that shares a category with several others", () => {
+    // Sprint 52 added a second Investing-category blog post; Sprint 53 added two more
+    // (understanding-cagr, understanding-swp), so sipPost now matches three, capped at the
+    // default limit of 3, in registry order.
     const related = getRelatedBlogPosts(sipPost)
-    expect(related.map((item) => item.slug)).toEqual(["sip-vs-lumpsum-investing"])
+    expect(related.map((item) => item.slug)).toEqual(["sip-vs-lumpsum-investing", "understanding-cagr", "understanding-swp"])
   })
 
   it("excludes the item itself and draft posts from candidates", () => {
