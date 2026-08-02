@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
+import { NoDonutResultCard } from "@/components/calculators/no-donut-result-card"
 import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -207,34 +208,20 @@ export function CAGRCalculator() {
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
-          <CardContent>
-            <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">Compound annual growth rate</p>
-              <p className="font-mono text-[42px] leading-none font-bold text-cat-invest">{formatCAGRPercentageForDisplay(result.cagrPercentage)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">from {formatIndianCurrency(liveInput.beginningValue)} to {formatIndianCurrency(liveInput.endingValue)} over {formatIndianNumber(liveInput.investmentPeriodYears)} years</p>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">{gainLossLabel}</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(normaliseCAGRDisplayZero(result.absoluteGainLoss))}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total return</p>
-                <p className="font-mono text-lg font-semibold">{formatPercentage(normaliseCAGRDisplayZero(result.totalReturnPercentage))}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5 col-span-2">
-                <p className="mb-1 text-xs text-muted-foreground">Growth multiple</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianNumber(normaliseCAGRDisplayZero(result.growthMultiple))}×</p>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="cagr" category="investments" />
-            </div>
-          </CardContent>
-        </Card>
+        <NoDonutResultCard
+          gradientFromClassName="from-cat-invest-soft"
+          headlineLabel="Compound annual growth rate"
+          headlineValue={formatCAGRPercentageForDisplay(result.cagrPercentage)}
+          headlineValueColorClassName="text-cat-invest"
+          subtitle={`from ${formatIndianCurrency(liveInput.beginningValue)} to ${formatIndianCurrency(liveInput.endingValue)} over ${formatIndianNumber(liveInput.investmentPeriodYears)} years`}
+          stats={[
+            { label: gainLossLabel, value: formatIndianCurrency(normaliseCAGRDisplayZero(result.absoluteGainLoss)) },
+            { label: "Total return", value: formatPercentage(normaliseCAGRDisplayZero(result.totalReturnPercentage)) },
+            { label: "Growth multiple", value: `${formatIndianNumber(normaliseCAGRDisplayZero(result.growthMultiple))}×`, spanFull: true },
+          ]}
+        >
+          <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="cagr" category="investments" />
+        </NoDonutResultCard>
       </div>
 
       <div className="mt-6">
