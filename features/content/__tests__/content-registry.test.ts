@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { contentRegistry, editorialCategories, editorialTags, getContentByCategory, getContentBySlug, getContentByType, getPublishedContent } from "@/features/content"
 import sitemap from "@/app/sitemap"
+import { createCanonicalUrl } from "@/lib/seo"
 
 const published = getPublishedContent()
 describe("editorial content registry", () => {
@@ -10,7 +11,7 @@ describe("editorial content registry", () => {
   it("has unique section IDs and FAQ questions per item", () => { published.forEach((item) => { const ids = item.sections.flatMap((section) => [section.id, ...(section.subsections ?? []).map((child) => child.id)]); expect(new Set(ids).size).toBe(ids.length); const questions = item.faqs.map((faq) => faq.question); expect(new Set(questions).size).toBe(questions.length) }) })
   it("has unique taxonomy slugs", () => { const categories = Object.values(editorialCategories).map((item) => item.slug); const tags = Object.values(editorialTags).map((item) => item.slug); expect(new Set(categories).size).toBe(categories.length); expect(new Set(tags).size).toBe(tags.length) })
   it("only exposes non-empty categories represented by published content", () => { const publicCategories = new Set(published.map((item) => item.category.slug)); publicCategories.forEach((slug) => expect(getContentByCategory(slug).length).toBeGreaterThan(0)) })
-  it("excludes drafts from sitemap input", () => { const urls = sitemap().map((entry) => entry.url); expect(urls).not.toContain("https://thinkcalculator.in/blog/choosing-between-fd-and-rd"); published.forEach((item) => expect(urls).toContain(`https://thinkcalculator.in${item.canonicalPath}`)) })
+  it("excludes drafts from sitemap input", () => { const urls = sitemap().map((entry) => entry.url); expect(urls).not.toContain(createCanonicalUrl("/blog/choosing-between-fd-and-rd")); published.forEach((item) => expect(urls).toContain(createCanonicalUrl(item.canonicalPath))) })
   it("uses only published content for route generation", () => { expect(getContentByType("blog")).toHaveLength(2); expect(getContentByType("guide")).toHaveLength(3); expect(getContentByType("blog").every((item) => item.status === "published")).toBe(true) })
   it("has unique metadata titles", () => { const titles = published.map((item) => item.metadata.title); expect(new Set(titles).size).toBe(titles.length) })
 
