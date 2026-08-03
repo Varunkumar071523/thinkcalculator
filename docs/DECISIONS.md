@@ -1090,4 +1090,71 @@ against.
 
 Revisit trigger: When Gratuity, HRA, Inflation, or EPF are scoped for
 migration (Inflation specifically needs its conditional-headline handling
-designed first, per #60/Sprint 61's finding).  
+designed first, per #60/Sprint 61's finding).
+
+### #62 — Sprint 63: Gratuity's full stat grid confirmed to fit `NoDonutResultCard` as-is, closing #59's open question 2
+
+Date: 2026-08-03
+Sprint: 63 (investigation only; no migration performed)
+
+Context: #59's open question 2 flagged that Gratuity's stat-card grid was
+only confirmed for its first cell (`Gratuity before ceiling`); the remaining
+cell(s) were not read, so its full grid shape (cell count, any `col-span-2`
+cell, any conditional sub-line) was unconfirmed. This sprint read the full
+result-card JSX in `features/calculators/gratuity/gratuity-calculator.tsx`
+(lines 157-184) to resolve it, and compared it against the current shape of
+`components/calculators/no-donut-result-card.tsx` and its test file
+`components/calculators/__tests__/no-donut-result-card.test.tsx`.
+
+Finding: Gratuity's grid has three cells, not the single cell #59 confirmed:
+- "Gratuity before ceiling" — plain value
+  (`formatIndianCurrency(result.gratuityBeforeCeiling)`), no `spanFull`.
+- "Daily wage basis" — plain value
+  (`formatIndianCurrency(result.dailyWageBasis)`), no `spanFull`.
+- "Ceiling status" — `col-span-2` (spans both columns), value derived from
+  two result fields via a ternary: `` result.ceilingApplied ? `Applied —
+  reduced by ${formatIndianCurrency(result.ceilingAdjustment)}` : "Not
+  applied" ``.
+
+All three map directly onto the existing `NoDonutStat` type
+(`label`/`value`/optional `note`/optional `spanFull`) with no new prop or
+feature needed: the two plain cells need only `label`/`value`, and the third
+needs only `spanFull: true` added — `NoDonutStat.value` is typed as a plain
+`string`, so it doesn't matter that the value is computed from a ternary
+over two fields before being passed in, the same way CAGR/EPS Pension's own
+conditional cells already work. `no-donut-result-card.test.tsx`'s second
+test already proves a `spanFull` cell mixed with non-`spanFull` cells in the
+same grid renders correctly (`col-span-2` applied only to the marked cell),
+which is exactly Gratuity's 2-then-1-full-width layout. The card-level props
+also map cleanly: `gradientFromClassName="from-cat-tax-soft"`,
+`headlineLabel="Estimated gratuity after ceiling"`,
+`headlineValue={formatIndianCurrency(result.estimatedGratuity)}`,
+`headlineValueColorClassName="text-cat-tax"`, and the existing subtitle
+string — with `CalculatorActions` passable as `children`.
+
+Noted in passing, not investigated: none of Gratuity's three stat cells
+carry a per-cell category-color token — only the headline value uses
+`text-cat-tax`. This is a distinct scoping boundary from #59's open question
+3 (EPF's `text-money` headline token); the EPF question is about a
+*headline* token on a different calculator and remains fully open and
+untouched by this entry. This entry only establishes that no analogous
+per-cell token question exists for Gratuity's stat cells, because Gratuity's
+cells don't use any color token at all.
+
+Decision: Gratuity is confirmed ready for a direct-migration sprint onto
+`NoDonutResultCard`, with no changes to `NoDonutResultCard` itself required
+first. This resolves #59's open question 2. No migration was performed this
+sprint — Gratuity's component was read only, not modified.
+
+Consequences: No code changed this sprint (`git status --porcelain` and
+`git diff --stat` for source/test files were both empty at the end of this
+sprint). `NoDonutResultCard` gained no new surface area, since Gratuity's
+grid already fits its current prop shape.
+
+Revisit trigger: When Gratuity is scoped for migration (Sprint 64 or later),
+wire `gratuityBeforeCeiling`/`dailyWageBasis`/the ceiling-status ternary
+directly into `NoDonutResultCard`'s `stats` prop, and verify via the same
+prerendered-HTML-diff method Sprint 60 used for CAGR/EPS Pension. HRA,
+Inflation (per #60/Sprint 61), and EPF's `text-money` token question (#59's
+open question 3) remain separately open and are not addressed by this
+entry.
