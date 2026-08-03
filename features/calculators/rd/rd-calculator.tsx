@@ -173,7 +173,7 @@ export function RDCalculator() {
                   />
                   <div className="mt-2 flex gap-1.5">
                     {DEPOSIT_QUICK_AMOUNTS.map((preset) => (
-                      <button key={preset.label} type="button" onClick={() => updateValue("monthlyDeposit", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-money hover:text-cat-savings focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                      <button key={preset.label} type="button" onClick={() => updateValue("monthlyDeposit", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-cat-savings hover:text-cat-savings focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                         {preset.label}
                       </button>
                     ))}
