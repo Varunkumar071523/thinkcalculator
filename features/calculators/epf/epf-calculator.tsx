@@ -5,6 +5,7 @@ import { useMemo, useState } from "react"
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
+import { NoDonutResultCard } from "@/components/calculators/no-donut-result-card"
 import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { YearlyBarChart, type YearlyBarChartSeries } from "@/components/calculators/yearly-bar-chart"
 import { Button } from "@/components/ui/button"
@@ -194,38 +195,21 @@ export function EPFCalculator() {
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-money-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
-          <CardContent>
-            <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated corpus at retirement</p>
-              <p className="font-mono text-[42px] leading-none font-bold text-cat-savings">{formatIndianCurrency(result.maturityValue)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">over {yearsToRetirement} years at {liveInput.expectedAnnualInterestRate.toFixed(2)}% p.a.</p>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total employee contribution</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalEmployeeContribution)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Total employer contribution</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalEmployerContribution)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Estimated interest</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.totalInterest)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Monthly contribution (both)</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.monthlyEmployeeContribution + result.monthlyEmployerContribution)}</p>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="epf" category="savings" />
-            </div>
-          </CardContent>
-        </Card>
+        <NoDonutResultCard
+          gradientFromClassName="from-cat-savings-soft"
+          headlineLabel="Estimated corpus at retirement"
+          headlineValue={formatIndianCurrency(result.maturityValue)}
+          headlineValueColorClassName="text-cat-savings"
+          subtitle={`over ${yearsToRetirement} years at ${liveInput.expectedAnnualInterestRate.toFixed(2)}% p.a.`}
+          stats={[
+            { label: "Total employee contribution", value: formatIndianCurrency(result.totalEmployeeContribution) },
+            { label: "Total employer contribution", value: formatIndianCurrency(result.totalEmployerContribution) },
+            { label: "Estimated interest", value: formatIndianCurrency(result.totalInterest) },
+            { label: "Monthly contribution (both)", value: formatIndianCurrency(result.monthlyEmployeeContribution + result.monthlyEmployerContribution) },
+          ]}
+        >
+          <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="epf" category="savings" />
+        </NoDonutResultCard>
       </div>
 
       <section className="mt-10 border-t border-line pt-8" aria-labelledby="epf-yearly-chart-heading">
