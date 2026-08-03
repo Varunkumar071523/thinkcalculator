@@ -6,6 +6,7 @@ import { ArrowRight, X } from "lucide-react"
 
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
+import { NoDonutResultCard } from "@/components/calculators/no-donut-result-card"
 import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -216,38 +217,21 @@ export function HraCalculator() {
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-tax-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
-          <CardContent>
-            <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">Exempt HRA</p>
-              <p className="font-mono text-[42px] leading-none font-bold text-cat-tax">{formatIndianCurrency(result.exemptHra)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">of {formatIndianCurrency(liveInput.hraReceived)} HRA received, {liveInput.city === "metro" ? "metro" : "non-metro"} city</p>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Taxable HRA</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.taxableHra)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Actual HRA received</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.actualHraReceived)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Rent minus 10% of salary</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.rentMinusTenPercentSalary)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">{result.percentOfSalaryRate * 100}% of salary</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.percentOfSalary)}</p>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="hra" category="taxes" />
-            </div>
-          </CardContent>
-        </Card>
+        <NoDonutResultCard
+          gradientFromClassName="from-cat-tax-soft"
+          headlineLabel="Exempt HRA"
+          headlineValue={formatIndianCurrency(result.exemptHra)}
+          headlineValueColorClassName="text-cat-tax"
+          subtitle={`of ${formatIndianCurrency(liveInput.hraReceived)} HRA received, ${liveInput.city === "metro" ? "metro" : "non-metro"} city`}
+          stats={[
+            { label: "Taxable HRA", value: formatIndianCurrency(result.taxableHra) },
+            { label: "Actual HRA received", value: formatIndianCurrency(result.actualHraReceived) },
+            { label: "Rent minus 10% of salary", value: formatIndianCurrency(result.rentMinusTenPercentSalary) },
+            { label: `${result.percentOfSalaryRate * 100}% of salary`, value: formatIndianCurrency(result.percentOfSalary) },
+          ]}
+        >
+          <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="hra" category="taxes" />
+        </NoDonutResultCard>
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-[1fr_auto] sm:items-start" data-calculation-experience>
