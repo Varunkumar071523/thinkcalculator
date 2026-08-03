@@ -1158,3 +1158,76 @@ prerendered-HTML-diff method Sprint 60 used for CAGR/EPS Pension. HRA,
 Inflation (per #60/Sprint 61), and EPF's `text-money` token question (#59's
 open question 3) remain separately open and are not addressed by this
 entry.
+
+### #63 — Sprint 65: EPF's `text-money` headline token confirmed a legacy leftover, not intentional, closing #59's open question 3
+
+Date: 2026-08-03
+Sprint: 65 (investigation only; no fix applied)
+
+Context: #59's open question 3 flagged that EPF's headline uses the
+`text-money` color token instead of `text-cat-invest`/`text-cat-tax`/
+`text-cat-savings` like CAGR/EPS Pension/Gratuity, and that whether this was
+a deliberate distinct semantic token or a legacy leftover predating the
+category-token system was unconfirmed. This sprint read the full headline
+section in `features/calculators/epf/epf-calculator.tsx` (the maturity-value
+headline at line 201 and the "Corpus breakdown" section label at line 232),
+grepped the repo for every other `text-money` usage, compared `--money`
+against the `--cat-*` tokens in `app/globals.css`, and ran `git blame` on the
+introducing commit to resolve it.
+
+Finding: `text-money` is a legacy leftover, not a deliberate design choice.
+- `app/globals.css` defines `--money: #0E5C4A` and `--cat-invest: #0E5C4A`
+  as byte-identical color values (and `--money-soft: #E5F0EB` matches
+  `--cat-invest-soft: #E5F0EB` too) — there is no separate "always
+  green/money" hue backing `text-money`; it resolves to exactly the invest
+  category's color.
+- `text-money` appears in 19 files repo-wide, not just EPF's. Among
+  calculator result cards it's used identically on EMI (category loans),
+  home-loan-eligibility (loans), FD (savings), RD (savings), and EPF
+  (savings) — three different categories rendering the same token with zero
+  variation — plus site-wide marketing chrome (home page, blog, glossary,
+  guides nav labels, "New" badges) unrelated to any calculator category at
+  all. That pattern is what a pre-category-system default token looks like,
+  not a token designed to track category.
+- `git blame -L 195,235` on `epf-calculator.tsx` attributes both `text-money`
+  lines to commit `328ca69` ("Add bespoke EPF/NPS charts with
+  allocation/clamp test coverage", 2026-07-21). Its commit message covers
+  chart extension, live-input clamp extraction, rate-config rationale, and
+  comparison-content expansion, with no mention of color-token intent —
+  `text-money` was simply carried over from the older bespoke-card template
+  EMI/FD/RD already used, not chosen for EPF specifically.
+- EPF's own category badge (`app/finance/epf-calculator/page.tsx:65`, `bg-
+  cat-savings-soft text-cat-savings`) and its `CalculatorActions` call
+  (`epf-calculator.tsx:225`, `category="savings"`) both declare EPF as
+  "savings." Its headline nonetheless renders in the color that equals
+  "invest," a real visual mismatch against EPF's own declared category —
+  not just an inconsistently named class.
+- `NoDonutResultCard` (extracted in Sprint 60, see #61) is what introduced
+  the `headlineValueColorClassName="text-cat-*"` pattern Gratuity/CAGR/EPS
+  Pension use. EPF's bespoke `Card` markup predates that extraction and was
+  never migrated onto it, consistent with `text-money` being inherited
+  scaffolding rather than a considered choice.
+
+Decision: `text-money` on EPF is confirmed a legacy leftover predating the
+category-token system, not an intentional category-neutral design choice.
+Recommended fix (not applied this sprint): swap `text-money` to
+`text-cat-savings` on both the headline value (line 201) and the section
+label (line 232), matching EPF's own declared "savings" category — the same
+narrow swap Gratuity's headline already uses for its own category
+(`text-cat-tax`). This resolves #59's open question 3; both of #59's open
+questions are now closed (#62 closed question 2, this entry closes
+question 3). No source file was modified this sprint — investigation only.
+
+Consequences: No code changed this sprint (`git status --porcelain` and
+`git diff --stat` for source/test files were both empty at the end of this
+sprint, confirmed separately from this docs-only commit). No shared
+component gained or lost surface area.
+
+Revisit trigger: When the EPF headline-token fix is scoped as its own sprint
+(Sprint 66 or later) — a narrow class swap on two lines, no
+`NoDonutResultCard` migration bundled in. Separately, flag for a future
+sweep: FD, RD, EMI, and home-loan-eligibility carry the same `text-money`
+pattern against their own declared categories (savings, savings, loans,
+loans respectively) but were out of scope for this investigation and remain
+unresolved — not confirmed as leftovers the way EPF now is, just noted as
+likely candidates for the same audit.
