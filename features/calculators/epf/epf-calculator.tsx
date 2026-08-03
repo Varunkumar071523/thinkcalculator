@@ -198,7 +198,7 @@ export function EPFCalculator() {
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated corpus at retirement</p>
-              <p className="font-mono text-[42px] leading-none font-bold text-money">{formatIndianCurrency(result.maturityValue)}</p>
+              <p className="font-mono text-[42px] leading-none font-bold text-cat-savings">{formatIndianCurrency(result.maturityValue)}</p>
               <p className="mt-2 text-[12.5px] text-muted-foreground">over {yearsToRetirement} years at {liveInput.expectedAnnualInterestRate.toFixed(2)}% p.a.</p>
             </div>
 
@@ -229,7 +229,7 @@ export function EPFCalculator() {
       </div>
 
       <section className="mt-10 border-t border-line pt-8" aria-labelledby="epf-yearly-chart-heading">
-        <p className="font-mono text-xs font-medium tracking-wide text-money uppercase">Corpus breakdown</p>
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-savings uppercase">Corpus breakdown</p>
         <h2 id="epf-yearly-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Employee, employer, and interest, year by year</h2>
         <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one year&apos;s corpus growth, split by employee contribution, employer contribution, and interest earned that year. Illustrative only, not an official EPFO statement.</p>
         <div className="mt-6">
