@@ -6,6 +6,7 @@ import { CalculatorActions } from "@/components/calculators/calculator-actions"
 import { CalculatorSelectInput } from "@/components/calculators/calculator-select-input"
 import { CollapsibleSection } from "@/components/calculators/collapsible-section"
 import { DataTable, type DataTableColumn } from "@/components/calculators/data-table"
+import { NoDonutResultCard } from "@/components/calculators/no-donut-result-card"
 import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -107,6 +108,7 @@ export function InflationCalculator() {
   const secondaryValue = result.mode === "futureCost" ? result.totalInflationImpact : result.purchasingPowerChange
   const multipleLabel = isFutureCost ? "Inflation multiple" : "Discount multiple"
   const multipleValue = result.mode === "futureCost" ? result.inflationMultiple : result.discountMultiple
+  const subtitle = `from ${formatIndianCurrency(liveInput.amount)} (${amountLabel.toLowerCase()}) over ${liveInput.years} years at ${liveInput.annualInflationRate.toFixed(1)}% p.a.`
 
   const shareUrl = buildInflationCalculatorUrl(liveInput, siteConfig.url)
   const resultText = [
@@ -198,30 +200,19 @@ export function InflationCalculator() {
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-invest-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
-          <CardContent>
-            <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">{primaryLabel}</p>
-              <p className="font-mono text-[42px] leading-none font-bold text-cat-invest">{formatIndianCurrency(primaryValue)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">from {formatIndianCurrency(liveInput.amount)} ({amountLabel.toLowerCase()}) over {liveInput.years} years at {liveInput.annualInflationRate.toFixed(1)}% p.a.</p>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">{secondaryLabel}</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(secondaryValue)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">{multipleLabel}</p>
-                <p className="font-mono text-lg font-semibold">{multipleValue.toFixed(4)}×</p>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="inflation" category="investments" />
-            </div>
-          </CardContent>
-        </Card>
+        <NoDonutResultCard
+          gradientFromClassName="from-cat-invest-soft"
+          headlineLabel={primaryLabel}
+          headlineValue={formatIndianCurrency(primaryValue)}
+          headlineValueColorClassName="text-cat-invest"
+          subtitle={subtitle}
+          stats={[
+            { label: secondaryLabel, value: formatIndianCurrency(secondaryValue) },
+            { label: multipleLabel, value: `${multipleValue.toFixed(4)}×` },
+          ]}
+        >
+          <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="inflation" category="investments" />
+        </NoDonutResultCard>
       </div>
 
       <div className="mt-6">
