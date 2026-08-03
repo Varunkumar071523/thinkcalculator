@@ -254,7 +254,7 @@ export function HomeLoanEligibilityCalculator() {
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Max eligible EMI at the {FOIR_BAND_LABELS[liveInput.foirBand]} FOIR band</p>
-              <p className="font-mono text-[42px] leading-none font-bold text-money">{formatIndianCurrency(result.maxEligibleEMI)}</p>
+              <p className="font-mono text-[42px] leading-none font-bold text-cat-loans">{formatIndianCurrency(result.maxEligibleEMI)}</p>
               {result.existingEMIExceedsBudget ? (
                 <p className="mt-3 rounded-lg border border-dashed border-line bg-card px-3 py-2 text-[12.5px] font-medium text-destructive">
                   Your existing monthly EMIs already exceed this FOIR band&apos;s budget, so no additional loan is eligible here. Try a higher FOIR band or reduce existing EMIs.
