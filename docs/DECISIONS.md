@@ -1015,4 +1015,79 @@ prerendered-HTML-diff method as Sprint 60, and confirm the two `amountLabel`
 states used elsewhere in the file (the lower "current vs future value"
 comparison card and the schedule description — both outside the
 above-the-fold card and outside this sprint's scope) aren't accidentally
-affected by whatever refactor touches the primary card.  
+affected by whatever refactor touches the primary card.
+
+### #61 — Sprint 60 (backfilled): `NoDonutResultCard` extracted from CAGR/EPS Pension, closing the #58 headline-duplication item
+
+Date: 2026-08-02
+Sprint: 60 (entry backfilled during Sprint 62, 2026-08-03, after Sprint 61's
+numbering check found it missing)
+
+Note on retroactivity: Sprint 60's code (PR #78, commit `48d13bd`) is already
+merged and correct on `main`; only its DECISIONS.md entry was missed — `git
+show --stat` on the merge commit confirms `docs/DECISIONS.md` was untouched.
+This entry is dated to Sprint 60's actual merge date rather than Sprint 62's,
+so it appears out of chronological order relative to #60 (which documents
+the later Sprint 61, written the same day it shipped). Written explicitly as
+a backfill rather than disguised as contemporaneous, consistent with this
+file's existing practice of flagging process/verification gaps rather than
+silently correcting them (see the process notes in #41 and #59). Readers
+relying on entry order for chronology should check each entry's own
+`Sprint:` line, not just its `#NN`.
+
+Context: #59 recommended the existing bordered-stat-card grid (a centered
+label → value → subtitle headline over a `grid-cols-2` stat grid) as the
+no-donut above-the-fold template's visual anchor, evidenced by CAGR and EPS
+Pension having already independently converged on that exact markup. #58
+separately logged an open backlog item: EPS Pension's `isEligible` ternary
+fully duplicated the `border-b border-line pb-5 text-center` card markup
+across both branches instead of computing the headline once, unlike SWP and
+Retirement Corpus.
+
+What Sprint 60 did:
+- Added `components/calculators/no-donut-result-card.tsx`
+  (`NoDonutResultCard`): a centered headline (label/value/subtitle, with a
+  configurable `headlineValueColorClassName` so a conditional headline can
+  swap color per branch) over a `grid-cols-2` grid of bordered stat cells,
+  each optionally `spanFull` or carrying a `note` sub-line. Actions are
+  passed as `children` rather than a fixed prop shape, so the component
+  doesn't need to know about share/print/copy at all.
+- Migrated CAGR onto it — a pure presentational refactor, no behavior or
+  calculation change.
+- Migrated EPS Pension onto it, which also closed the #58 backlog item:
+  `headlineLabel`/`headlineValue`/`subtitle`/`headlineValueColorClassName`
+  are now computed once from `result.isEligible`/`isEarly`/`isFloorBinding`
+  and rendered through a single `NoDonutResultCard`, replacing the
+  two-branch ternary that duplicated the entire card markup across both
+  `isEligible` states.
+- No calculation logic or type changes to either calculator. A
+  prerendered-HTML diff confirmed no visible content or DOM-structure change
+  beyond Tailwind class-order and text-node/comment merging from
+  template-literal strings.
+- `components/calculators/__tests__/no-donut-result-card.test.tsx` was added,
+  covering the 2-cell grid, `spanFull`, note presence/absence, and headline
+  color-class assignment. Verification note: this file's commit history
+  shows a single commit/PR for all of Sprint 60 (`48d13bd`, PR #78) with the
+  test file included from that same commit — no separate follow-up
+  commit adding tests afterward was found. Framing this as tests being
+  added in a distinct later round could not be corroborated against git
+  history and is not carried into this entry as fact.
+- Designed generically for future reuse by Gratuity/HRA/Inflation/EPF per
+  #59's recommendation. None of the four were touched this sprint — #59's
+  open questions about their exact shape, and #60/Sprint 61's finding that
+  Inflation's headline branches on `mode`, remain unresolved.
+
+Decision: Extract the shared component now that two independent, already-
+converged callers exist, rather than waiting for a third caller to prove the
+shape. Keep it narrow — no chart, no actions logic, no category-token
+assumptions baked in — so it stays reusable for the four still-unmigrated
+calculators without a redesign.
+
+Consequences: `SimpleDonutChart`, `FAQSection`, and `growth-area-chart` were
+not touched. `NoDonutResultCard` is new shared surface area, but this is its
+first version — no prior callers exist to prove backward compatibility
+against.
+
+Revisit trigger: When Gratuity, HRA, Inflation, or EPF are scoped for
+migration (Inflation specifically needs its conditional-headline handling
+designed first, per #60/Sprint 61's finding).  
