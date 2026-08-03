@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import { AlertTriangle, CheckCircle2 } from "lucide-react"
 
 import { CalculatorActions } from "@/components/calculators/calculator-actions"
+import { NoDonutResultCard } from "@/components/calculators/no-donut-result-card"
 import { PairedNumberSliderInput } from "@/components/calculators/paired-number-slider-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -154,34 +155,20 @@ export function GratuityCalculator() {
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-cat-tax-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
-          <CardContent>
-            <div className="border-b border-line pb-5 text-center">
-              <p className="mb-1.5 text-[13px] text-muted-foreground">Estimated gratuity after ceiling</p>
-              <p className="font-mono text-[42px] leading-none font-bold text-cat-tax">{formatIndianCurrency(result.estimatedGratuity)}</p>
-              <p className="mt-2 text-[12.5px] text-muted-foreground">from {formatIndianCurrency(liveInput.eligibleMonthlyWages)} monthly wages over {formatIndianNumber(result.countedServiceYears)} counted years</p>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Gratuity before ceiling</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.gratuityBeforeCeiling)}</p>
-              </div>
-              <div className="rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Daily wage basis</p>
-                <p className="font-mono text-lg font-semibold">{formatIndianCurrency(result.dailyWageBasis)}</p>
-              </div>
-              <div className="col-span-2 rounded-lg border border-line bg-card p-3.5">
-                <p className="mb-1 text-xs text-muted-foreground">Ceiling status</p>
-                <p className="font-mono text-lg font-semibold">{result.ceilingApplied ? `Applied — reduced by ${formatIndianCurrency(result.ceilingAdjustment)}` : "Not applied"}</p>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="gratuity" category="taxes" />
-            </div>
-          </CardContent>
-        </Card>
+        <NoDonutResultCard
+          gradientFromClassName="from-cat-tax-soft"
+          headlineLabel="Estimated gratuity after ceiling"
+          headlineValue={formatIndianCurrency(result.estimatedGratuity)}
+          headlineValueColorClassName="text-cat-tax"
+          subtitle={`from ${formatIndianCurrency(liveInput.eligibleMonthlyWages)} monthly wages over ${formatIndianNumber(result.countedServiceYears)} counted years`}
+          stats={[
+            { label: "Gratuity before ceiling", value: formatIndianCurrency(result.gratuityBeforeCeiling) },
+            { label: "Daily wage basis", value: formatIndianCurrency(result.dailyWageBasis) },
+            { label: "Ceiling status", value: result.ceilingApplied ? `Applied — reduced by ${formatIndianCurrency(result.ceilingAdjustment)}` : "Not applied", spanFull: true },
+          ]}
+        >
+          <CalculatorActions resultText={resultText} shareUrl={shareUrl} calculatorType="gratuity" category="taxes" />
+        </NoDonutResultCard>
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2" data-calculation-experience>
