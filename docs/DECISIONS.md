@@ -1231,3 +1231,91 @@ pattern against their own declared categories (savings, savings, loans,
 loans respectively) but were out of scope for this investigation and remain
 unresolved — not confirmed as leftovers the way EPF now is, just noted as
 likely candidates for the same audit.
+
+### #64 — Sprint 70: HRA's full result card confirmed to fit `NoDonutResultCard` as-is, headline confirmed non-conditional
+
+Date: 2026-08-03
+Sprint: 70 (investigation only; no migration performed)
+
+Context: #61 named HRA as one of four calculators designed for future reuse
+of `NoDonutResultCard`, alongside Gratuity and EPF — but unlike Gratuity
+(closed by #62) and EPF (closed by #63), HRA's own grid shape, cell count,
+declared category, and headline conditionality had never actually been
+read or confirmed. This sprint read the full result-card JSX in
+`features/calculators/hra/hra-calculator.tsx` (lines 219-250) and compared
+it against the current shape of `components/calculators/no-donut-result-
+card.tsx` and its test file
+`components/calculators/__tests__/no-donut-result-card.test.tsx`, following
+the same method #62 and #63 used.
+
+Finding: HRA's card is structurally near-identical to `NoDonutResultCard`'s
+existing shape — same `bg-gradient-to-b … to-card to-55%` card wrapper,
+same `data-testid="calculator-result-card" data-print-summary aria-live=
+"polite"` attributes, same centered headline block, same `grid-cols-2
+gap-3` stat grid with `rounded-lg border border-line bg-card p-3.5` cells,
+same trailing slot for `CalculatorActions`. Four cells, all plain
+`{label, value}` with no `spanFull` and no `note`:
+- "Taxable HRA" — `formatIndianCurrency(result.taxableHra)`.
+- "Actual HRA received" — `formatIndianCurrency(result.actualHraReceived)`.
+- "Rent minus 10% of salary" —
+  `formatIndianCurrency(result.rentMinusTenPercentSalary)`.
+- `` `${result.percentOfSalaryRate * 100}% of salary` `` (an interpolated
+  label, 50 vs. 40 depending on city) —
+  `formatIndianCurrency(result.percentOfSalary)`.
+
+None of the four cells carries a per-cell category-color token — only the
+headline value uses `text-cat-tax` and the card wrapper uses
+`from-cat-tax-soft`, the same pattern #62 found for Gratuity. This is
+noted in passing only and not investigated further, consistent with the
+scope boundary #63 drew around the EPF headline-token question.
+
+Headline conditionality, checked specifically because it gates migration
+per #60's rule: HRA's headline is a single fixed case, not conditional.
+Label is always the literal `"Exempt HRA"`, value is always
+`result.exemptHra`, color is always `text-cat-tax` — no branch swaps any
+of the three. The only variability anywhere near the headline is a
+one-word ternary *inside* the subtitle string
+(`{liveInput.city === "metro" ? "metro" : "non-metro"}`, interpolated into
+an otherwise-static sentence) — this fills in one word of a fixed
+template, not a structural branch on headline shape the way Inflation's
+`mode`-based branch (#60) or pre-Sprint-60 EPS Pension's `isEligible`
+branch swapped the entire headline label/value/color. HRA's case does not
+trigger the "conditional headline → document-and-stop" rule; it is the
+CAGR/Gratuity/EPS-Pension-after-its-fix shape, not the Inflation shape.
+
+Also noted in passing, not investigated further: the page badge at
+`app/finance/hra-calculator/page.tsx:64` renders the literal text
+`"Finance"` (`calculator.category` from `hra-definition.ts:12`) styled
+with `bg-cat-tax-soft text-cat-tax` — a generic breadcrumb-category label
+combined with a functional accent color. This is a repo-wide pattern
+(every calculator definition surveyed uses the same generic `"Finance"`/
+`"Business"` value for this field, independent of its `CalculatorActions`
+`category` prop), not HRA-specific, and unrelated to the per-cell token
+question #63 closed for EPF. Flagged only, per this sprint's scope
+boundary.
+
+Decision: HRA is confirmed ready for a direct-migration sprint onto
+`NoDonutResultCard`, with no changes to `NoDonutResultCard` itself
+required first and no conditional-headline handling needed (unlike
+Inflation, #60). This closes the last of the three #61-named future
+candidates left unconfirmed after #62 (Gratuity) and #63 (EPF's separate
+token question). No migration was performed this sprint — HRA's component
+was read only, not modified.
+
+Consequences: No code changed this sprint (`git status --porcelain` and
+`git diff --stat` for source/test files were both empty at the end of this
+sprint, confirmed separately from this docs-only commit). `NoDonutResult
+Card` gained no new surface area, since HRA's grid already fits its
+current prop shape.
+
+Revisit trigger: When HRA is scoped for migration (Sprint 71), wire
+`taxableHra`/`actualHraReceived`/`rentMinusTenPercentSalary`/
+`percentOfSalary` directly into `NoDonutResultCard`'s `stats` prop and
+`result.exemptHra` into `headlineValue`, verifying via the same
+prerendered-HTML-diff method Sprint 60 used for CAGR/EPS Pension. The
+`HraBindingConstraintCard` and the "Use this in the Income Tax Calculator"
+CTA sit below the result card in a separate section
+(`hra-calculator.tsx:253-263`) and are unaffected by this migration either
+way. Inflation (#60) and the repo-wide `text-money`/generic-category-badge
+patterns (#63, and the badge observation above) remain separately open and
+are not addressed by this entry.
