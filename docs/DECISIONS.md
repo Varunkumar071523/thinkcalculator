@@ -1319,3 +1319,84 @@ CTA sit below the result card in a separate section
 way. Inflation (#60) and the repo-wide `text-money`/generic-category-badge
 patterns (#63, and the badge observation above) remain separately open and
 are not addressed by this entry.
+
+### #65 — Sprint 72: Inflation migrated onto `NoDonutResultCard`, closing #60's deferred migration question
+
+Date: 2026-08-03
+Sprint: 72
+
+Context: #60 (Sprint 61) found Inflation's headline branches on
+`liveInput.mode` (`futureCost` vs `presentValue`) across `primaryLabel`/
+`primaryValue`, `secondaryLabel`/`secondaryValue`, and `multipleLabel`/
+`multipleValue` — a user-facing toggle, not a derived-eligibility check
+like pre-Sprint-60 EPS Pension — and deferred migration pending its own
+scoping, while noting the eventual migration should be direct prop-wiring
+with no dedup step, since Inflation was never in EPS Pension's
+pre-Sprint-60 duplicated-markup state. This sprint did that scoping and,
+since the design held up cleanly, performed the migration in the same
+pass.
+
+Finding: reading the full current
+`features/calculators/inflation/inflation-calculator.tsx`, Sprint 61's
+field names (`primaryLabel`/`primaryValue`/`secondaryLabel`/
+`secondaryValue`/`multipleLabel`/`multipleValue`) still matched reality
+exactly — nothing had drifted since #60. Per mode:
+- `futureCost`: headline "Equivalent future cost" / `result.futureValue`;
+  stats "Total inflation impact" / `result.totalInflationImpact` and
+  "Inflation multiple" / `result.inflationMultiple`.
+- `presentValue`: headline "Present value (today's purchasing power)" /
+  `result.presentValue`; stats "Purchasing power change" /
+  `result.purchasingPowerChange` and "Discount multiple" /
+  `result.discountMultiple`.
+
+Critically, the stat grid itself does NOT vary by mode — both modes
+render exactly two cells, neither `spanFull`, no `note`, only the
+label/value text differing. This resolves #60's key open question
+(whether the grid shape, not just the headline, differs per mode): it
+doesn't. The card-level gradient (`from-cat-invest-soft`) and headline
+color (`text-cat-invest`) are also fixed across both modes, not
+conditional.
+
+Decision: No `NoDonutResultCard` change was needed. Migration performed
+using the same compute-once-before-JSX pattern EPS Pension uses
+post-Sprint-60: branch on `liveInput.mode` to compute
+`headlineLabel`/`headlineValue`/`subtitle`/`stats` once above the JSX,
+then a single `<NoDonutResultCard>` call replaced the hand-written
+`Card`/`CardContent` block, with `CalculatorActions` passed through as
+`children` unchanged.
+
+Consequences: `features/calculators/inflation/inflation-calculator.tsx`
+changed (1 file, 15 insertions(+), 24 deletions(-)). Zero visible output
+change confirmed for both modes via `renderToStaticMarkup` against
+pre-sprint HEAD (`85f1700`): both modes' rendered HTML was
+byte-length-identical pre vs post, with exactly one differing region in
+each — the result card's `class` attribute, reordered by `cn()`'s merge
+(`from-cat-invest-soft to-card to-55%` → `to-card to-55%
+from-cat-invest-soft`), the same Tailwind-class-token-reorder-only
+pattern Gratuity/HRA's migrations produced. Normalizing that one
+substring back to pre-migration order made the two HTML strings
+byte-for-byte identical in both modes. A new permanent test file,
+`features/calculators/inflation/__tests__/inflation-calculator.test.tsx`
+(4 tests), was added covering futureCost rendering, presentValue
+rendering with every label/value swapped, gradient/headline-color
+pass-through for both modes, and a structural check that the grid stays
+at exactly two non-spanning cells for both modes. Full project suite (124
+files / 1272 tests), lint, and build all passed clean.
+
+This closes #60's deferred migration question and completes the reuse of
+`NoDonutResultCard` across the calculators named or surfaced since #59:
+CAGR and EPS Pension (its origin, #61), Gratuity (#62), HRA (#64), and now
+Inflation (this entry) are all migrated. EPF's separate per-cell/headline-
+token question (#63) is a distinct, still-open scoping question — not a
+migration-readiness confirmation in the same sense as the others — and is
+not resolved by this entry.
+
+Revisit trigger: None specific to Inflation — migration is complete. The
+EPF `text-money` headline-token question (#63) and the repo-wide sweep it
+flagged (FD, RD, EMI, home-loan-eligibility) remain open and unrelated to
+this entry. If a future calculator's stat grid genuinely varies in cell
+*count* by branch (unlike Inflation's fixed-2-cell case here), that would
+be the first real test of `NoDonutResultCard`'s `stats` array handling a
+variable-length array across renders of the same component instance —
+worth flagging explicitly in that sprint's report per the standing
+convention, rather than assuming it's fine by analogy to this entry.
