@@ -154,7 +154,7 @@ export function HomeLoanEligibilityCalculator() {
                   onValueChange={(value) => updateValue("netMonthlyIncome", value)}
                   error={errors.netMonthlyIncome}
                   required
-                  accentClassName="accent-money"
+                  accentClassName="accent-cat-loans"
                   helperTextVariant="tooltip"
                 />
 
@@ -172,7 +172,7 @@ export function HomeLoanEligibilityCalculator() {
                   onValueChange={(value) => updateValue("existingMonthlyEMI", value)}
                   error={errors.existingMonthlyEMI}
                   required
-                  accentClassName="accent-money"
+                  accentClassName="accent-cat-loans"
                   helperTextVariant="tooltip"
                 />
 
@@ -201,7 +201,7 @@ export function HomeLoanEligibilityCalculator() {
                   onValueChange={(value) => updateValue("annualInterestRate", value)}
                   error={errors.annualInterestRate}
                   required
-                  accentClassName="accent-money"
+                  accentClassName="accent-cat-loans"
                   helperTextVariant="tooltip"
                 />
 
@@ -218,7 +218,7 @@ export function HomeLoanEligibilityCalculator() {
                   onValueChange={(value) => updateValue("tenureYears", value)}
                   error={errors.tenureYears}
                   required
-                  accentClassName="accent-money"
+                  accentClassName="accent-cat-loans"
                   helperTextVariant="tooltip"
                 />
 
@@ -236,7 +236,7 @@ export function HomeLoanEligibilityCalculator() {
                   onValueChange={(value) => updateValue("ownContribution", value)}
                   error={errors.ownContribution}
                   required
-                  accentClassName="accent-money"
+                  accentClassName="accent-cat-loans"
                   helperTextVariant="tooltip"
                 />
 
@@ -250,7 +250,7 @@ export function HomeLoanEligibilityCalculator() {
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-b from-money-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
+        <Card className="bg-gradient-to-b from-cat-loans-soft to-card to-55%" data-testid="calculator-result-card" data-print-summary aria-live="polite">
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Max eligible EMI at the {FOIR_BAND_LABELS[liveInput.foirBand]} FOIR band</p>
@@ -267,7 +267,7 @@ export function HomeLoanEligibilityCalculator() {
                 <SimpleDonutChart
                   title="Loan amount vs own contribution"
                   items={[
-                    { label: "Loan amount", value: result.maxEligibleLoanAmount, formattedValue: formatIndianCurrency(result.maxEligibleLoanAmount), colorClass: "bg-money", ringClass: "stroke-money" },
+                    { label: "Loan amount", value: result.maxEligibleLoanAmount, formattedValue: formatIndianCurrency(result.maxEligibleLoanAmount), colorClass: "bg-cat-loans", ringClass: "stroke-cat-loans" },
                     { label: "Own contribution", value: result.ownContribution, formattedValue: formatIndianCurrency(result.ownContribution), colorClass: "bg-gold", ringClass: "stroke-gold" },
                   ]}
                   showInlineLabels
