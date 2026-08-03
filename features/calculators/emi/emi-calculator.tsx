@@ -145,7 +145,7 @@ export function EMICalculator() {
                   />
                   <div className="mt-1.5 flex gap-1.5">
                     {PRINCIPAL_QUICK_AMOUNTS.map((preset) => (
-                      <button key={preset.label} type="button" onClick={() => updateValue("principalAmount", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-money hover:text-money focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                      <button key={preset.label} type="button" onClick={() => updateValue("principalAmount", preset.value)} className="rounded-full border border-line px-2.5 py-1 text-[11.5px] font-semibold text-muted-foreground hover:border-money hover:text-cat-loans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                         {preset.label}
                       </button>
                     ))}
@@ -206,7 +206,7 @@ export function EMICalculator() {
           <CardContent>
             <div className="border-b border-line pb-5 text-center">
               <p className="mb-1.5 text-[13px] text-muted-foreground">Monthly EMI for {result.totalMonths} months at {liveInput.annualInterestRate.toFixed(2)}% p.a.</p>
-              <p className="font-mono text-[42px] leading-none font-bold text-money">{formatIndianCurrency(result.monthlyEMI)}</p>
+              <p className="font-mono text-[42px] leading-none font-bold text-cat-loans">{formatIndianCurrency(result.monthlyEMI)}</p>
             </div>
 
             <div className="mt-5 border-t border-line pt-5">
@@ -240,7 +240,7 @@ export function EMICalculator() {
       </div>
 
       <section className="mt-10 border-t border-line pt-8" aria-labelledby="yearly-chart-heading">
-        <p className="font-mono text-xs font-medium tracking-wide text-money uppercase">Repayment breakdown</p>
+        <p className="font-mono text-xs font-medium tracking-wide text-cat-loans uppercase">Repayment breakdown</p>
         <h2 id="yearly-chart-heading" className="mt-2 font-serif text-2xl font-semibold tracking-tight">Principal vs interest, year by year</h2>
         <p className="mt-1.5 text-[13.5px] text-muted-foreground">Each bar is one year of payments, split by what goes to principal vs interest. Hover a bar for exact figures.</p>
         <div className="mt-6">
